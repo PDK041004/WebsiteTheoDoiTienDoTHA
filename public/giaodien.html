@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống quản lý thi hành án</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">
+            CỤC THI HÀNH ÁN DÂN SỰ TP HẢI PHÒNG
+        </a>
+
+    <div class="ms-auto">
+      <button class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
+      <a href="dangky.html" class="btn btn-outline-light">Đăng ký</a>
+    </div>
+    </div>
+</nav>
+
+<!-- MENU -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <div class="container">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Tra cứu hồ sơ</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- BANNER -->
+<div class="container mt-3">
+    <div class="bg-secondary text-white text-center p-5 rounded">
+        <h2>HỆ THỐNG QUẢN LÝ THI HÀNH ÁN DÂN SỰ</h2>
+        <p>Hỗ trợ quản lý, theo dõi và tra cứu hồ sơ nhanh chóng</p>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- LEFT -->
+        <div class="col-md-8">
+            <h4>Giới thiệu hệ thống</h4>
+            <p>
+                Hệ thống website quản lý tiến độ thực hiện hồ sơ thi hành án dân sự
+                giúp nâng cao hiệu quả quản lý, hỗ trợ công chức và người dân
+                tra cứu thông tin một cách minh bạch và nhanh chóng.
+            </p>
+
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    Tính năng chính
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Quản lý hồ sơ thi hành án</li>
+                        <li>Theo dõi tiến độ xử lý</li>
+                        <li>Tra cứu hồ sơ</li>
+                        <li>Phân công xử lý</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-md-4">
+
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    Văn bản điều hành
+                </div>
+                <div class="card-body">
+                    <p>Văn bản trung ương</p>
+                    <p>Văn bản địa phương</p>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    Thông báo
+                </div>
+                <div class="card-body">
+                    <p>Lịch làm việc</p>
+                    <p>Thông báo thi hành án</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    Hỗ trợ
+                </div>
+                <div class="card-body">
+                    <p>Đường dây nóng: 02433.xxx.xxx</p>
+                    <p>Hướng dẫn sử dụng</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-dark text-white text-center p-3 mt-4">
+    © 2026 - Hệ thống quản lý thi hành án dân sự Hải Phòng
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal fade" id="loginModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Đăng nhập</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form onsubmit="login(event)">
+          <div class="mb-3">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="user" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Mật khẩu</label>
+            <input type="password" id="pass" class="form-control" required>
+          </div>
+
+          <!-- QUÊN MẬT KHẨU -->
+          <div class="mb-3 text-end">
+            <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#forgotModal">
+              Quên mật khẩu?
+            </a>
+          </div>
+
+          <button class="btn btn-danger w-100">Đăng nhập</button>
+
+          <!-- LINK ĐĂNG KÝ -->
+          <div class="text-center mt-3">
+            <span>Chưa có tài khoản? </span>
+            <a href="dangky.html" class="text-danger">Đăng ký ngay</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ================= FORGOT PASSWORD MODAL ================= -->
+<div class="modal fade" id="forgotModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Quên mật khẩu</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label>Nhập email đã đăng ký</label>
+            <input type="email" class="form-control" required>
+          </div>
+
+          <button class="btn btn-danger w-100">Gửi yêu cầu</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function login(e){
+    e.preventDefault();
+
+    const username = document.getElementById("user").value;
+    const password = document.getElementById("pass").value;
+
+    fetch("/login",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("DATA:", data); // 🔥 kiểm tra ở console
+
+        if(!data.role){
+            alert("Sai tài khoản hoặc mật khẩu");
+            return;
+        }
+
+        // 🔥 CHUẨN HÓA ROLE (fix mọi lỗi dấu + viết hoa + khoảng trắng)
+        const role = data.role
+            .toLowerCase()
+            .trim()
+            .normalize("NFD") // bỏ dấu tiếng Việt
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s/g, ""); // bỏ khoảng trắng
+
+        console.log("ROLE:", role); // debug
+
+        // 🔥 PHÂN QUYỀN
+        if(role === "admin"){
+            window.location.href = "taikhoan.html";
+        }
+        else if(role === "congchuc"){
+            window.location.href = "congchuc.html";
+        }
+        else if(role === "chaphanhvien"){
+            window.location.href = "chaphanhvien.html";
+        }
+        else{
+            window.location.href = "nguoidan.html";
+        }
+    })
+    .catch(err => {
+        console.error("Lỗi:", err);
+        alert("Không kết nối được server");
+    });
+}
+</script>
+
+</body>
+</html>

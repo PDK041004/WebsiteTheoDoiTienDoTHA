@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Người dân - Quản lý hồ sơ</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<nav class="navbar navbar-dark bg-danger">
+    <div class="container">
+        <span class="navbar-brand">CỔNG DỊCH VỤ NGƯỜI DÂN</span>
+        <div class="ms-auto">
+          <a href="giaodien.html" class="btn btn-outline-light">Đăng xuất</a>
+    </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- TABS -->
+    <ul class="nav nav-tabs" id="myTab">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dangky">
+                Đăng ký hồ sơ
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tracuu">
+                Tra cứu hồ sơ
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tiendo">
+                Xem tiến độ
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+
+        <!-- ĐĂNG KÝ HỒ SƠ -->
+        <div class="tab-pane fade show active" id="dangky">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    Đăng ký hồ sơ thi hành án
+                </div>
+                <div class="card-body">
+
+                    <form onsubmit="sendHoSo(event)">
+                        <div class="mb-2">
+                            <label>Tên người yêu cầu</label>
+                            <input type="text" class="form-control">
+                        </div>
+
+                        <div class="mb-2">
+                            <label>CCCD</label>
+                            <input type="text" class="form-control">
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Nội dung yêu cầu</label>
+                            <textarea class="form-control"></textarea>
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Loại hồ sơ</label>
+                            <select class="form-control">
+                                <option>Dân sự</option>
+                                <option>Kinh doanh thương mại</option>
+                                <option>Hình sự</option>
+                                <option>Lao động</option>
+                                <option>Trọng tải thương mại</option>
+                                <option>Phá sản</option>
+                                <option>Hành chính</option>
+                                <option>Vụ việc cạnh tranh</option>
+                                <option>Tín dụng ngân hàng</option>
+                                <option>Biện pháp khẩn cấp tạm thời</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-danger">Gửi hồ sơ</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TRA CỨU -->
+        <div class="tab-pane fade" id="tracuu">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    Tra cứu hồ sơ
+                </div>
+                <div class="card-body">
+
+                   <input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableHoso')">
+
+                   <table class="table table-bordered" id="tableHoso">
+                   <thead>
+                   <tr>
+                   <th>Mã hồ sơ</th>
+                   <th>Người dân</th>
+                   <th>Trạng thái</th>
+                   </tr>
+                   </thead>
+
+                    <tbody>
+                   <tr>
+                                <td>224</td>
+                                <td>Nguyễn Văn Đinh</td>
+                                <td>Đang xử lý</td>
+                            </tr>
+                             <tr>
+                                <td>5656</td>
+                                <td>Nguyễn Quang Thắng</td>
+                                <td>Đang xử lý</td>                                
+                            </tr>
+                              <tr>
+                                <td>3247</td>
+                                <td>Nguyễn Quang Long</td>
+                                <td>Chờ xử lý</td>                           
+                            </tr>
+                             </tr>
+                              <tr>
+                                <td>3849</td>
+                                <td>Trần Trọng Thái </td>
+                                <td>Đang xử lý</td>                    
+                            </tr>
+                             <tr>
+                                <td>2903</td>
+                                <td>Ngọc Văn Thịnh</td>
+                                <td>Chờ xử lý</td>
+                            </tr>
+                             <tr>
+                                <td>4801</td>
+                                <td>Nguyễn Thanh Nhàn</td>
+                                <td>Trì hoãn xử lý</td>                                
+                            </tr>
+                              <tr>
+                                <td>3097</td>
+                                <td>Phạm Hà Phương</td>
+                                <td>Trì hoãn xử lý</td>                           
+                            </tr>
+                             </tr>
+                              <tr>
+                                <td>109</td>
+                                <td>Trần Kim Phú </td>
+                                <td>Đang xử lý</td>                    
+                            </tr>
+                             <tr>
+                                <td>689</td>
+                                <td>Nguyễn Giang Nam</td>
+                                <td>Đang xử lý</td>
+                            </tr>
+                             <tr>
+                                <td>793</td>
+                                <td>Nguyễn Ngọc Đặng</td>
+                                <td>Đang xử lý</td>                                
+                            </tr>
+                              <tr>
+                                <td>327</td>
+                                <td>Nguyễn Minh Đức</td>
+                                <td>Đang xử lý</td>                           
+                            </tr>
+                             </tr>
+                              <tr>
+                                <td>4802</td>
+                                <td>Trần Thanh Loan </td>
+                                <td>Đang xử lý</td>                    
+                            </tr>
+                            
+                    </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TIẾN ĐỘ -->
+        <div class="tab-pane fade" id="tiendo">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    Tiến độ xử lý hồ sơ
+                </div>
+                <div class="card-body">
+
+                    <input type="text" class="form-control mb-2" placeholder="Nhập mã hồ sơ...">
+                    <button class="btn btn-danger mb-3">Xem tiến độ</button>
+
+                    <ul class="list-group">
+                        <li class="list-group-item">01/01/2026 - Tiếp nhận hồ sơ</li>
+                        <li class="list-group-item">02/01/2026 - Đang xác minh</li>
+                        <li class="list-group-item">05/01/2026 - Đang xử lý</li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function sendHoso(e){
+    e.preventDefault();
+
+    const tennguoi = document.querySelector("input[type='text']").value;
+    const cccd = document.querySelectorAll("input")[1].value;
+    const noidung = document.querySelector("textarea").value;
+    const loaihoso = document.querySelector("select").value;
+
+    const data = {
+        tennguoi,
+        cccd,
+        noidung,
+        loaihoso,
+        danhmuc: "Chưa phân loại"
+    };
+
+    fetch("/hoso",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        // 🔥 reset form
+        document.querySelector("form").reset();
+
+        // 🔥 debug
+        console.log("Đã gửi:", data);
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Lỗi gửi hồ sơ");
+    });
+}
+</script>
+
+</body>
+</html>

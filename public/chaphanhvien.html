@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Chấp hành viên</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.sidebar {
+    height: 100vh;
+    background: #343a40;
+}
+.sidebar a {
+    color: white !important;
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+}
+.sidebar a:hover {
+    background: #dc3545;
+}
+
+.content-section {
+    display: none;
+}
+.active-section {
+    display: block;
+}
+
+/* Drag & Drop */
+#dropZone {
+    cursor: pointer;
+    transition: 0.3s;
+}
+#dropZone:hover {
+    background: #f8f9fa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container-fluid">
+<div class="row">
+
+<!-- SIDEBAR -->
+<div class="col-md-2 sidebar">
+    <h5 class="text-white text-center mt-3">CHẤP HÀNH VIÊN</h5>
+    <a onclick="showSection('hoso')">Hồ sơ được phân công</a>
+    <a onclick="showSection('tiendo')">Cập nhật tiến độ</a>
+    <a onclick="showSection('xacminh')">Xác minh</a>
+    <a onclick="showSection('thongbao')">Thông báo <span id="badgeThongBao" class="badge bg-warning text-dark">0</span></a>
+    <a href="giaodien.html">Đăng xuất</a>
+</div>
+
+    <!-- CONTENT -->
+    <div class="col-md-10">
+
+        <!-- HEADER -->
+        <div class="bg-danger text-white p-3">
+            <h4>Quản lý hồ sơ thi hành án</h4>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="p-4">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Tổng hồ sơ</h5>
+                            <h3>120</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Đang xử lý</h5>
+                            <h3>45</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Hoàn thành</h5>
+                            <h3>60</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5>Quá hạn</h5>
+                            <h3>15</h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+<!-- ================= HỒ SƠ ================= -->
+<div id="hoso" class="content-section active-section">
+<div class="card mb-4">
+<div class="card-header bg-danger text-white">Hồ sơ được phân công</div>
+
+<div class="card-body">
+
+<input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableHoso')">
+
+<table class="table table-bordered" id="tableHoso">
+<thead>
+<tr>
+<th>Mã hồ sơ</th>
+<th>Người dân</th>
+<th>Trạng thái</th>
+<th>Thao tác</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>309</td>
+<td>Nguyễn Đinh Thắng</td>
+<td>Đang xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+
+<tr>
+<td>3567</td>
+<td>Trần Quang Mạnh</td>
+<td>Chưa xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+
+<tr>
+<td>984</td>
+<td>Đào Thị Hồng Nhung</td>
+<td>Đang xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+
+<tr>
+<td>1202</td>
+<td>Trần thị Thơm</td>
+<td>Đang xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+
+<tr>
+<td>864</td>
+<td>Nguyễn Công Trạng</td>
+<td>Trì hoãn xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+
+<tr>
+<td>892</td>
+<td>Mạnh Ngọc Cường</td>
+<td>Chưa xử lý</td>
+<td>
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#hosoModal">
+Cập nhật nội dung hồ sơ
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+
+<!-- ================= TIẾN ĐỘ ================= -->
+<div id="tiendo" class="content-section">
+<div class="card">
+<div class="card-header bg-primary text-white">Cập nhật tiến độ</div>
+
+<div class="card-body">
+
+<input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableTiendo')">
+
+<table class="table table-bordered" id="tableTiendo">
+<tr><th>Mã</th><th>Người dân</th><th></th></tr>
+
+<tr>
+<td>309</td>
+<td>Nguyễn Đinh Thắng</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+<tr>
+<td>3567</td>
+<td>Trần Quang Mạnh</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+<tr>
+<td>984</td>
+<td>Đào Thị Hồng Nhung</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+<tr>
+<td>1202</td>
+<td>Trần thị Thơm</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+<tr>
+<td>864</td>
+<td>Nguyễn Công Trạng</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+<tr>
+<td>892</td>
+<td>Mạnh Ngọc Cường</td>
+<td>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tiendoModal">
+Cập nhật
+</button>
+</td>
+</tr>
+
+</table>
+
+</div>
+</div>
+</div>
+
+<!-- ================= XÁC MINH ================= -->
+<div id="xacminh" class="content-section">
+<div class="card">
+<div class="card-header bg-warning">Xác minh điều kiện</div>
+
+<div class="card-body">
+
+<input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableXacminh')">
+
+<table class="table table-bordered" id="tableXacminh">
+<tr><th>Mã</th><th>Người dân</th><th></th></tr>
+
+<tr>
+<td>4561</td>
+<td>Nguyễn Văn Thịnh</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+
+<tr>
+<td>2478</td>
+<td>Trần Văn An</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+
+<tr>
+<td>2467</td>
+<td>Nguyễn Hoàng Vũ</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+
+<tr>
+<td>4178</td>
+<td>Đinh Hải Long</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+
+<tr>
+<td>3209</td>
+<td>Trần Đức Bễ</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+
+<tr>
+<td>089</td>
+<td>Cường Giang Bảy</td>
+<td>
+<button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#xacminhModal">
+Xác minh
+</button>
+</td>
+</tr>
+</table>
+
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<!-- ================= THÔNG BÁO ================= -->
+<div id="thongbao" class="content-section">
+<div class="card">
+<div class="card-header bg-info text-white">Thông báo</div>
+
+<div class="card-body">
+
+<ul class="list-group" id="listThongBao">
+<li class="list-group-item">Chưa có thông báo</li>
+</ul>
+
+</div>
+</div>
+</div>
+
+<!-- ================= MODAL ================= -->
+
+<!-- HỒ SƠ -->
+<div class="modal fade" id="hosoModal">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+
+<div class="modal-header bg-success text-white">
+<h5>Cập nhật nội dung hồ sơ</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<form>
+
+<label>Nội dung hồ sơ</label>
+<textarea class="form-control mb-3"></textarea>
+
+<label>Trạng thái</label>
+<select class="form-control mb-3">
+<option>Đang xử lý</option>
+<option>Hoàn thành</option>
+<option>Tạm dừng</option>
+</select>
+
+<label>File đính kèm</label>
+<div id="dropZone" class="border border-2 border-dashed p-4 text-center mb-3">
+<p>Kéo & thả file hoặc click</p>
+<input type="file" id="fileInput" hidden>
+<button type="button" class="btn btn-outline-primary" onclick="fileInput.click()">Chọn file</button>
+</div>
+
+<div id="fileName" class="text-success"></div>
+
+<button class="btn btn-success w-100 mt-3">Lưu hồ sơ</button>
+
+</form>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- TIẾN ĐỘ -->
+<div class="modal fade" id="tiendoModal">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+<h5>Cập nhật tiến độ</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<textarea class="form-control mb-2"></textarea>
+<button class="btn btn-primary w-100">Lưu</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- XÁC MINH -->
+<div class="modal fade" id="xacminhModal">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-warning">
+<h5>Xác minh</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<textarea class="form-control mb-2"></textarea>
+<button class="btn btn-warning w-100">Lưu</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+<div id="liveToast" class="toast align-items-center text-bg-success border-0">
+<div class="d-flex">
+<div class="toast-body" id="toastContent">
+Thông báo mới
+</div>
+<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+</div>
+</div>
+</div>
+
+<!-- SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// chuyển tab
+function showSection(id) {
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active-section'));
+    document.getElementById(id).classList.add('active-section');
+}
+
+// tìm kiếm
+function searchTable(input, tableId) {
+    let value = input.value.toLowerCase();
+    let rows = document.querySelectorAll("#" + tableId + " tr");
+
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(value) ? "" : "none";
+    });
+}
+
+// Drag & Drop
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
+
+dropZone.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", function() {
+    if (this.files.length > 0) {
+        fileName.innerText = "Đã chọn: " + this.files[0].name;
+    }
+});
+
+dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.style.background = "#f8f9fa";
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.style.background = "";
+});
+
+dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    fileName.innerText = "Đã chọn: " + e.dataTransfer.files[0].name;
+});
+</script>
+
+</body>
+</html>

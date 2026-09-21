@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Công Chức</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.sidebar {
+    height: 100vh;
+    background: #343a40;
+    color: white;
+}
+.sidebar a {
+    color: white;
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+}
+.sidebar a:hover {
+    background: #dc3545;
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid">
+<div class="row">
+
+    <!-- SIDEBAR -->
+    <div class="col-md-2 sidebar">
+        <h5 class="text-center mt-3">MENU</h5>
+        <a href="#" onclick="showSection('hoso')">Quản lý hồ sơ</a>
+        <a href="#" onclick="showSection('phancong')">Phân công xử lý</a>
+        <a href="#" onclick="showSection('xacnhan')">Xác nhận hồ sơ</a>
+        <a href="#" onclick="showSection('baocao')">Báo cáo</a>
+        <a href="giaodien.html">Đăng xuất</a>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="col-md-10">
+
+        <div class="bg-danger text-white p-3">
+            <h4>Hệ thống quản lý thi hành án dân sự</h4>
+        </div>
+
+        <div class="p-4">
+
+            <!-- TRA CỨU -->
+            <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Tra cứu hồ sơ...">
+            </div>
+
+            <!-- QUẢN LÝ HỒ SƠ -->
+            <div id="hoso" class="section">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">Quản lý hồ sơ</div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Mã</th>
+                                <th>Người dân</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                            <tr>
+                                <td>224</td>
+                                <td>Nguyễn Văn Đinh</td>
+                                <td>Đang xử lý</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>5656</td>
+                                <td>Nguyễn Quang Thắng</td>
+                                <td>Đang xử lý</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
+                                </td>
+                            </tr>
+                              <tr>
+                                <td>3247</td>
+                                <td>Nguyễn Quang Thắng</td>
+                                <td>Đang xử lý</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
+                                </td>
+                            </tr>
+                             </tr>
+                              <tr>
+                                <td>3849</td>
+                                <td>Trần Trọng Thái </td>
+                                <td>Đang xử lý</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHÂN CÔNG -->
+            <div id="phancong" class="section" style="display:none">
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">Danh sách hồ sơ</div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Chọn</th>
+                                <th>Mã</th>
+                                <th>Tên hồ sơ</th>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>224</td>
+                                <td>Tranh chấp đất</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>5656</td>
+                                <td>Thi hành án dân sự</td>
+                            </tr>
+                             <tr>
+                                <td><input type="checkbox"></td>
+                                <td>3247</td>
+                                <td>Ly hôn</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>3849</td>
+                                <td>Trốn Thuế</td>
+                            </tr>
+                        </table>
+
+                        <button class="btn btn-primary" onclick="showAssign()">Phân công</button>
+                    </div>
+                </div>
+
+                <!-- KHU VỰC PHÂN CÔNG RIÊNG -->
+                <div id="assignBox" style="display:none">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">Chọn chấp hành viên</div>
+                        <div class="card-body">
+
+                            <div class="mb-3">
+                                <label>Chấp hành viên</label>
+                                <select class="form-select" onchange="showOfficerInfo(this)">
+                                    <option value="">-- Chọn --</option>
+                                    <option value="A">Trần Thị Hương</option>
+                                    <option value="B">Trần Văn Toàn</option>
+                                    <option value="C">Đỗ Văn Thịnh</option>
+                                    <option value="D">Trịnh Duy Hưng</option>
+                                </select>
+                            </div>
+
+                            <!-- THÔNG TIN CHẤP HÀNH VIÊN -->
+                            <div id="officerInfo" class="border p-3" style="display:none">
+                                <p><strong>Tên:</strong> <span id="name"></span></p>
+                                <p><strong>SĐT:</strong> <span id="phone"></span></p>
+                                <p><strong>Chức vụ:</strong> Chấp hành viên</p>
+                            </div>
+
+                            <button class="btn btn-success mt-3">Xác nhận phân công</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XÁC NHẬN -->
+            <div id="xacnhan" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">Xác nhận hồ sơ</div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Mã</th>
+                                <th>Hồ sơ</th>
+                                <th>Hành động</th>
+                            </tr>
+                            <tr>
+                                <td>224</td>
+                                <td>Thi hành án dân sự</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm">Xác nhận</button>
+                                    <button class="btn btn-danger btn-sm">Hủy</button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>3678</td>
+                                <td>Thi hành án dân sự</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm">Xác nhận</button>
+                                    <button class="btn btn-danger btn-sm">Hủy</button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>4236</td>
+                                <td>Thi hành án dân sự</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm">Xác nhận</button>
+                                    <button class="btn btn-danger btn-sm">Hủy</button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>2983</td>
+                                <td>Thi hành án dân sự</td>
+                                <td>
+                                    <button class="btn btn-success btn-sm">Xác nhận</button>
+                                    <button class="btn btn-danger btn-sm">Hủy</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BÁO CÁO -->
+            <div id="baocao" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">Báo cáo</div>
+                    <div class="card-body">
+                        <p>Chức năng báo cáo...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+</div>
+
+<script>
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+}
+
+function showAssign() {
+    document.getElementById('assignBox').style.display = 'block';
+}
+
+function showOfficerInfo(select) {
+    const infoBox = document.getElementById('officerInfo');
+    const name = document.getElementById('name');
+    const phone = document.getElementById('phone');
+
+    if (select.value === 'A') {
+        name.innerText = 'Nguyễn Văn C';
+        phone.innerText = '0912345678';
+        infoBox.style.display = 'block';
+    } else if (select.value === 'B') {
+        name.innerText = 'Trần Văn D';
+        phone.innerText = '0987654321';
+        infoBox.style.display = 'block';
+    } else {
+        infoBox.style.display = 'none';
+    }
+}
+
+</script>
+
+</body>
+</html>
