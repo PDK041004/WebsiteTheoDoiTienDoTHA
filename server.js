@@ -1,16 +1,30 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const db = require("./db");
-
+const express = require('express');
 const app = express();
+const path = require('path');
+const cors = require('cors');
+const database = require('./database');
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static("public"));
+/* ================== Middlewares ================== */
+const whitelist = ['*', 'http://www.google.com', 'http://localhost:3000'];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
+}
+app.use(cors(corsOptions));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.use(express.static(path.join(__dirname, 'public', 'views')));
 
 /* ================== ĐĂNG KÝ ================== */
-app.post("/register", (req, res) => {
+app.post('/register', (req, res) => {
     const { username, password, fullname } = req.body;
 
     const sql = `
@@ -18,18 +32,18 @@ app.post("/register", (req, res) => {
         VALUES (?, ?, ?, 'Người dân')
     `;
 
-    db.query(sql, [username, password, fullname], (err) => {
-        if (err) return res.send("Lỗi");
-        res.send("Đăng ký thành công");
+    database.query(sql, [username, password, fullname], (err) => {
+        if (err) return res.send('Lỗi');
+        res.send('Đăng ký thành công');
     });
 });
 
-/* ================== ĐĂNG NHẬP ================== */
-app.post("/login", (req, res) => {
+/* ================== Log-In ================== */
+app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    const sql = "SELECT * FROM users WHERE username=? AND password=?";
-    db.query(sql, [username, password], (err, result) => {
+    const sql = 'SELECT * FROM users WHERE username=? AND password=?';
+    database.query(sql, [username, password], (err, result) => {
 
         if (result.length > 0) {
             res.json({
@@ -45,18 +59,9 @@ app.post("/login", (req, res) => {
 
 /* ================== LẤY HỒ SƠ ================== */
 app.get("/hoso", (req, res) => {
-    db.query("SELECT * FROM hoso", (err, result) => {
+    database.query("SELECT * FROM hoso", (err, result) => {
         res.json(result);
     });
-});
-
-/* ================== CHẠY SERVER ================== */
-app.listen(3000, () => {
-    console.log("Server chạy tại http://localhost:3000");
-});
-
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/public/giaodien.html");
 });
 
 /* ==================Thêm tài khoản================== */
@@ -64,7 +69,7 @@ app.post("/users", (req, res) => {
     const { username, password, fullname, role } = req.body;
 
     const sql = "INSERT INTO users(username,password,fullname,role) VALUES (?,?,?,?)";
-    db.query(sql, [username, password, fullname, role], (err) => {
+    database.query(sql, [username, password, fullname, role], (err) => {
         if (err) return res.send("Lỗi thêm");
         res.send("Thêm thành công");
     });
@@ -72,7 +77,7 @@ app.post("/users", (req, res) => {
 
 /* ================== danh sách tk ================== */
 app.get("/users", (req, res) => {
-    db.query("SELECT * FROM users", (err, result) => {
+    database.query("SELECT * FROM users", (err, result) => {
         res.json(result);
     });
 });
@@ -82,7 +87,7 @@ app.put("/users/:id", (req, res) => {
     const { fullname, role } = req.body;
 
     const sql = "UPDATE users SET fullname=?, role=? WHERE id=?";
-    db.query(sql, [fullname, role, req.params.id], (err) => {
+    database.query(sql, [fullname, role, req.params.id], (err) => {
         if (err) return res.send("Lỗi sửa");
         res.send("Đã cập nhật");
     });
@@ -90,16 +95,16 @@ app.put("/users/:id", (req, res) => {
 
 /* ================== Xóa tk ================== */
 app.delete("/users/:id", (req, res) => {
-    db.query("DELETE FROM users WHERE id=?", [req.params.id], (err) => {
+    database.query("DELETE FROM users WHERE id=?", [req.params.id], (err) => {
         if (err) return res.send("Lỗi xóa");
         res.send("Đã xóa");
     });
 });
 
 /* ================== gửi hs ================== */
-app.post("/hoso", (req, res) => {
+app.post('/hoso', (req, res) => {
 
-    console.log("DATA NHẬN:", req.body); // 🔥 thêm dòng này
+    console.log('DATA NHẬN:', req.body); // 🔥 thêm dòng này
 
     const { tennguoi, cccd, noidung, loaihoso, danhmuc } = req.body;
 
@@ -108,8 +113,8 @@ app.post("/hoso", (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, 'Chưa xử lý')
     `;
 
-    db.query(sql, [
-        "HS" + Date.now(),
+    database.query(sql, [
+        'HS' + Date.now(),
         tennguoi,
         cccd,
         noidung,
@@ -117,16 +122,16 @@ app.post("/hoso", (req, res) => {
         danhmuc
     ], (err) => {
         if(err){
-            console.log("SQL ERROR:", err); // 🔥 bắt lỗi thật
-            return res.send("Lỗi");
+            console.log('SQL ERROR:', err); // 🔥 bắt lỗi thật
+            return res.send('Lỗi');
         }
-        res.send("Gửi hồ sơ thành công");
+        res.send('Gửi hồ sơ thành công');
     });
 });
 
 /* ================== nhận hs ================== */
 app.get("/hoso-chuaxuly", (req, res) => {
-    db.query(
+    database.query(
         "SELECT * FROM hoso WHERE assigned_to IS NULL",
         (err, result) => res.json(result)
     );
@@ -136,7 +141,7 @@ app.get("/hoso-chuaxuly", (req, res) => {
 app.put("/hoso/update/:id", (req, res) => {
     const { loaihoso, danhmuc } = req.body;
 
-    db.query(
+    database.query(
         "UPDATE hoso SET loaihoso=?, danhmuc=? WHERE id=?",
         [loaihoso, danhmuc, req.params.id],
         (err) => res.send("Đã cập nhật")
@@ -147,7 +152,7 @@ app.put("/hoso/update/:id", (req, res) => {
 app.put("/phancong", (req, res) => {
     const { hosoIds, officerId } = req.body;
 
-    db.query(
+    database.query(
         "UPDATE hoso SET assigned_to=?, status='Đã phân công' WHERE id IN (?)",
         [officerId, hosoIds],
         (err) => res.send("Đã phân công")
@@ -156,7 +161,7 @@ app.put("/phancong", (req, res) => {
 
 /* ================== chapHV nhận hs ================== */
 app.get("/hoso-cua-toi/:id", (req, res) => {
-    db.query(
+    database.query(
         "SELECT * FROM hoso WHERE assigned_to=?",
         [req.params.id],
         (err, result) => res.json(result)
@@ -167,9 +172,23 @@ app.get("/hoso-cua-toi/:id", (req, res) => {
 app.put("/hoso/status/:id", (req, res) => {
     const { status } = req.body;
 
-    db.query(
+    database.query(
         "UPDATE hoso SET status=? WHERE id=?",
         [status, req.params.id],
         (err) => res.send("Đã cập nhật")
     );
+});
+
+/* ================== Routers ================== */
+app.use('/', require('./routers/root'));
+app.all('{*any}', (req, res) => {
+    res.status(404);
+    if(req.accepts('html')) {
+        res.sendFile(path.join(__dirname, 'public', 'views', '404.html'));
+    }
+});
+
+/* ================== Start-Up ================== */
+app.listen(3000, () => {
+    console.log('Server chạy tại http://localhost:3000');
 });
