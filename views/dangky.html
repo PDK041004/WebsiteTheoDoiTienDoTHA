@@ -63,7 +63,7 @@
                         <button class="btn btn-danger w-100 mt-3">Đăng ký</button>
 
                         <div class="text-center mt-3">
-                            <a href="giaodien.html">← Quay lại trang chủ</a>
+                            <a href="/homepage">← Quay lại trang chủ</a>
                         </div>
 
                     </form>
@@ -81,19 +81,20 @@ function register(e){
 
     const data = {
         username: document.querySelector("input[type='email']").value,
-        password: document.querySelector("input[type='password']").value,
-        fullname: document.querySelector("input[type='text']").value
+        password: document.querySelector("input[type='password']").value
     };
 
-    fetch("/register",{
+    fetch("/accounts/register",{
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type": "application/json"},
         body:JSON.stringify(data)
     })
-    .then(res=>res.text())
-    .then(msg=>{
-        alert(msg);
-        location = "giaodien.html";
+    .then(res=>res.json())
+    .then(obj=>{
+        alert(obj.message);
+        if(obj.code === 201){
+            location = "/homepage";
+        }
     });
 }
 </script>

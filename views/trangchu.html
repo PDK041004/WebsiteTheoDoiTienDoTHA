@@ -19,7 +19,7 @@
 
     <div class="ms-auto">
       <button class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
-      <a class="btn btn-outline-light" id="dangkyBtn" href="dangky.html">Đăng ký</a>
+      <a href="/accounts/register" class="btn btn-outline-light">Đăng ký</a>
     </div>
     </div>
 </nav>
@@ -28,7 +28,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container">
         <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link active" href="/homepage">Trang chủ</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Tra cứu hồ sơ</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
@@ -148,7 +148,7 @@
           <!-- LINK ĐĂNG KÝ -->
           <div class="text-center mt-3">
             <span>Chưa có tài khoản? </span>
-            <a href="dangky.html" class="text-danger">Đăng ký ngay</a>
+            <a href="/accounts/register" class="text-danger">Đăng ký ngay</a>
           </div>
         </form>
       </div>
@@ -190,45 +190,27 @@ function login(e){
     const username = document.getElementById("user").value;
     const password = document.getElementById("pass").value;
 
-    fetch("/login",{
+    fetch('/accounts/',{
         method:"POST",
         headers:{
             "Content-Type":"application/json"
         },
         body: JSON.stringify({ username, password })
     })
-    .then(res => res.json())
-    .then(data => {
-
-        console.log("DATA:", data); // 🔥 kiểm tra ở console
-
-        if(!data.role){
-            alert("Sai tài khoản hoặc mật khẩu");
-            return;
+    .then(res=>res.json())
+    .then(obj=>{
+        alert(obj.message);
+        if(obj.role === 3) {
+            location = "taikhoan.html";
         }
-
-        // 🔥 CHUẨN HÓA ROLE (fix mọi lỗi dấu + viết hoa + khoảng trắng)
-        const role = data.role
-            .toLowerCase()
-            .trim()
-            .normalize("NFD") // bỏ dấu tiếng Việt
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/\s/g, ""); // bỏ khoảng trắng
-
-        console.log("ROLE:", role); // debug
-
-        // 🔥 PHÂN QUYỀN
-        if(role === "admin"){
-            window.location.href = "taikhoan.html";
+        else if(obj.role === 2) {
+            location = "congchuc.html";
         }
-        else if(role === "congchuc"){
-            window.location.href = "congchuc.html";
+        else if(obj.role === 1) {
+            location = "chaphanhvien.html";
         }
-        else if(role === "chaphanhvien"){
-            window.location.href = "chaphanhvien.html";
-        }
-        else{
-            window.location.href = "nguoidan.html";
+        else {
+            location = "nguoidan.html";
         }
     })
     .catch(err => {

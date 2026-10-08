@@ -1,71 +1,43 @@
-const express = require('express');
+require("dotenv").config();
+const express = require("express");
 const app = express();
-const path = require('path');
-const cors = require('cors');
-const database = require('./database');
+const cors = require("cors");
+const path = require("path")
+// const database = require('./database');
+const mongoose = require("mongoose");
+const connection = require("./configs/database");
+const port = 3000
 
-/* ================== Middlewares ================== */
-const whitelist = ['*', 'http://www.google.com', 'http://localhost:3000'];
+/* ================== Database connection ================== */
+connection(); // Kết nối MongoDB
+
+/* ================== Middleware ================== */
+const whitelist = ["*", "http://www.google.com", `http://localhost:${port}`];
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
+    origin: (origin, callback) => {
+        if (!origin ||whitelist.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error("Not allowed by CORS"));
         }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    exposedHeaders: ['Content-Type', 'Authorization'],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 }
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
-app.use(express.static(path.join(__dirname, 'public', 'views')));
-
-/* ================== ĐĂNG KÝ ================== */
-app.post('/register', (req, res) => {
-    const { username, password, fullname } = req.body;
-
-    const sql = `
-        INSERT INTO users(username, password, fullname, role)
-        VALUES (?, ?, ?, 'Người dân')
-    `;
-
-    database.query(sql, [username, password, fullname], (err) => {
-        if (err) return res.send('Lỗi');
-        res.send('Đăng ký thành công');
-    });
-});
-
-/* ================== Log-In ================== */
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-
-    const sql = 'SELECT * FROM users WHERE username=? AND password=?';
-    database.query(sql, [username, password], (err, result) => {
-
-        if (result.length > 0) {
-            res.json({
-                role: result[0].role
-            });
-        } else {
-            res.json({
-                role: null
-            });
-        }
-    });
-});
+app.use("/", express.static(path.join(__dirname, "views")));
 
 /* ================== LẤY HỒ SƠ ================== */
-app.get("/hoso", (req, res) => {
+app.get('/hoso', (req, res) => {
     database.query("SELECT * FROM hoso", (err, result) => {
         res.json(result);
     });
 });
 
 /* ==================Thêm tài khoản================== */
-app.post("/users", (req, res) => {
+app.post('/users', (req, res) => {
     const { username, password, fullname, role } = req.body;
 
     const sql = "INSERT INTO users(username,password,fullname,role) VALUES (?,?,?,?)";
@@ -102,9 +74,9 @@ app.delete("/users/:id", (req, res) => {
 });
 
 /* ================== gửi hs ================== */
-app.post('/hoso', (req, res) => {
+app.post("/hoso", (req, res) => {
 
-    console.log('DATA NHẬN:', req.body); // 🔥 thêm dòng này
+    console.log("DATA NHẬN:", req.body); // 🔥 thêm dòng này
 
     const { tennguoi, cccd, noidung, loaihoso, danhmuc } = req.body;
 
@@ -114,7 +86,7 @@ app.post('/hoso', (req, res) => {
     `;
 
     database.query(sql, [
-        'HS' + Date.now(),
+        "HS" + Date.now(),
         tennguoi,
         cccd,
         noidung,
@@ -122,10 +94,10 @@ app.post('/hoso', (req, res) => {
         danhmuc
     ], (err) => {
         if(err){
-            console.log('SQL ERROR:', err); // 🔥 bắt lỗi thật
-            return res.send('Lỗi');
+            console.log("SQL ERROR:", err); // 🔥 bắt lỗi thật
+            return res.send("Lỗi");
         }
-        res.send('Gửi hồ sơ thành công');
+        res.send("Gửi hồ sơ thành công");
     });
 });
 
@@ -179,16 +151,24 @@ app.put("/hoso/status/:id", (req, res) => {
     );
 });
 
-/* ================== Routers ================== */
-app.use('/', require('./routers/root'));
-app.all('{*any}', (req, res) => {
+/* ================== Routes ================== */
+app.use("/", require("./routes/root")); //Homepage
+
+/* ================== APIs ================== */
+app.use("/accounts", require("./routes/api/accounts"));//Account
+
+app.all("{*any}", (req, res) => {
     res.status(404);
-    if(req.accepts('html')) {
-        res.sendFile(path.join(__dirname, 'public', 'views', '404.html'));
+    if(req.accepts("html")){
+        res.sendFile(path.join(__dirname, "views", "phanhoi404.html"));
     }
 });
 
 /* ================== Start-Up ================== */
-app.listen(3000, () => {
-    console.log('Server chạy tại http://localhost:3000');
+mongoose.connection.once("open", () => {
+    console.log("Kết nối MongoDB thành công");
+    app.listen(port, () => {
+        console.log(`Server chạy tại http://localhost:${port}/homepage`);
+    });
 });
+
