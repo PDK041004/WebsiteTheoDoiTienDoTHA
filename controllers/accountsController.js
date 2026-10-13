@@ -19,7 +19,7 @@ const registerAccount = async (req, res) => {
 
    const duplicateAccount = await Account.findOne({ username: username }).exec();
    if (duplicateAccount) {
-      res.status(409).json({
+      return res.status(409).json({
          code: 409,
          message: "This account already exist"});
    }

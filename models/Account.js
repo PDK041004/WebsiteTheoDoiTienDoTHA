@@ -11,6 +11,10 @@ const accountSchema = new Schema({
       type: String,
       required: true
    },
+   fullname: {
+      type: String,
+      default: ""
+   },
    role: {
       type: Number,
       default: 0

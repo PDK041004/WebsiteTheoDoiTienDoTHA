@@ -32,7 +32,7 @@
     <table class="table table-bordered">
         <thead class="table-danger">
             <tr>
-                <th>ID</th>
+                <th>STT</th>
                 <th>Tên đăng nhập</th>
                 <th>Họ tên</th>
                 <th>Vai trò</th>
@@ -131,29 +131,29 @@
     <div class="modal-body">
         <form onsubmit="updateUser(event)">
 
-            <div class="mb-2">
-                <label>Tên đăng nhập</label>
-                <input type="text" class="form-control" value="user01">
-            </div>
+    <div class="mb-2">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="editUsername" class="form-control" readonly>
+    </div>
 
-            <div class="mb-2">
-                <label>Họ tên</label>
-                <input type="text" class="form-control" value="Nguyễn Văn A">
-            </div>
+    <div class="mb-2">
+        <label>Họ tên</label>
+        <input type="text" id="editFullname" class="form-control">
+    </div>
 
-            <div class="mb-2">
-                <label>Vai trò</label>
-                <select class="form-control">
-                    <option>Admin</option>
-                    <option selected>Người dân</option>
-                    <option>Công chức</option>
-                    <option>Chấp hành viên</option>
-                </select>
-            </div>
+    <div class="mb-2">
+        <label>Vai trò</label>
+        <select id="editRole" class="form-control">
+            <option>Admin</option>
+            <option>Công chức</option>
+            <option>Chấp hành viên</option>
+            <option>Người dân</option>
+        </select>
+    </div>
 
-            <button class="btn btn-warning w-100">Cập nhật</button>
+    <button class="btn btn-warning w-100">Cập nhật</button>
 
-        </form>
+</form>
     </div>
 
 </div>
@@ -163,22 +163,25 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+let usersList = [];
+
 function loadUsers(){
     fetch("/users")
     .then(res=>res.json())
     .then(data=>{
+        usersList = data;
         let html = "";
 
-        data.forEach(u=>{
+        data.forEach((u, i)=>{
             html += `
             <tr>
-                <td>${u.id}</td>
+                <td>${i + 1}</td>
                 <td>${u.username}</td>
                 <td>${u.fullname}</td>
                 <td>${u.role}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editUser(${u.id}, '${u.fullname}', '${u.role}')">Sửa</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Xóa</button>
+                    <button class="btn btn-warning btn-sm" onclick="editUser(${i})">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">Xóa</button>
                 </td>
             </tr>
             `;
@@ -211,6 +214,8 @@ function addUser(e){
     .then(msg=>{
         alert(msg);
         loadUsers();
+        bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+        document.querySelector("#addModal form").reset();
     });
 }
 </script>
@@ -218,11 +223,13 @@ function addUser(e){
 <script>
 let currentId = null;
 
-function editUser(id, fullname, role){
-    currentId = id;
+function editUser(index){
+    const u = usersList[index];
+    currentId = u.id;
 
-    document.querySelector("#editModal input[type='text']").value = fullname;
-    document.querySelector("#editModal select").value = role;
+    document.getElementById("editUsername").value = u.username;
+    document.getElementById("editFullname").value = u.fullname;
+    document.getElementById("editRole").value = u.role;
 
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
@@ -231,8 +238,8 @@ function updateUser(e){
     e.preventDefault();
 
     const data = {
-        fullname: document.querySelector("#editModal input[type='text']").value,
-        role: document.querySelector("#editModal select").value
+        fullname: document.getElementById("editFullname").value,
+        role: document.getElementById("editRole").value
     };
 
     fetch("/users/" + currentId,{
@@ -244,14 +251,16 @@ function updateUser(e){
     .then(msg=>{
         alert(msg);
         loadUsers();
+        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
     });
 }
 </script>
 
 <script>
-function deleteUser(id){
-    if(confirm("Xóa tài khoản này?")){
-        fetch("/users/" + id,{
+function deleteUser(index){
+    const u = usersList[index];
+    if(confirm("Xóa tài khoản " + u.username + "?")){
+        fetch("/users/" + u.id,{
             method:"DELETE"
         })
         .then(res=>res.text())
