@@ -17,9 +17,9 @@ const registerAccount = async (req, res) => {
       });
    }
 
-   const duplicateAccount = await Account.findOne({ username: username }).exec();
+   const duplicateAccount = await Account.findOne({ userName: username }).exec();
    if (duplicateAccount) {
-      res.status(409).json({
+      return res.status(409).json({
          code: 409,
          message: "This account already exist"});
    }
@@ -28,7 +28,7 @@ const registerAccount = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10)
 
       const newAccount = await Account.create({
-         "username": username,
+         "userName": username,
          "password": hashedPassword
       });
 
@@ -60,7 +60,7 @@ const login = async (req, res) => {
 
    try {
       // Find the account by username
-      const account = await Account.findOne({ username: username }).exec();
+      const account = await Account.findOne({ userName: username }).exec();
       if (!account) {
          return res.status(404).json({ message: "Account not found" });
       }
@@ -71,7 +71,16 @@ const login = async (req, res) => {
          return res.status(401).json({ message: "Invalid password" });
       }
 
-      res.status(200).json({ message: "Login successful", role: account.role });
+      res.status(200).json({
+         message: "Login successful",
+         role: account.role,
+         account: {
+            _id: account._id,
+            userName: account.userName,
+            fullname: account.fullname || account.userName,
+            role: account.role
+         }
+      });
    } catch (error) {
       res.status(500).json({ message: error.message });
    }

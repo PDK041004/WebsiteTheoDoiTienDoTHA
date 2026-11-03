@@ -30,11 +30,11 @@
     <!-- SIDEBAR -->
     <div class="col-md-2 sidebar">
         <h5 class="text-center mt-3">MENU</h5>
-        <a href="#" onclick="showSection('hoso')">Quản lý hồ sơ</a>
+        <a href="#" onclick="showSection('phongban')">Quản lý phòng ban</a>
         <a href="#" onclick="showSection('phancong')">Phân công xử lý</a>
         <a href="#" onclick="showSection('xacnhan')">Xác nhận hồ sơ</a>
         <a href="#" onclick="showSection('baocao')">Báo cáo</a>
-        <a href="trang-chu.html">Đăng xuất</a>
+        <a href="/homepage">Đăng xuất</a>
     </div>
 
     <!-- CONTENT -->
@@ -46,56 +46,26 @@
 
         <div class="p-4">
 
-            <!-- TRA CỨU -->
-            <div class="mb-3">
-                <input type="text" class="form-control" placeholder="Tra cứu hồ sơ...">
-            </div>
-
-            <!-- QUẢN LÝ HỒ SƠ -->
-            <div id="hoso" class="section">
+            <!-- QUẢN LÝ PHÒNG BAN -->
+            <div id="phongban" class="section">
                 <div class="card">
-                    <div class="card-header bg-danger text-white">Quản lý hồ sơ</div>
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Quản lý phòng ban</span>
+                        <button class="btn btn-light btn-sm" onclick="openPhongBanForm()">+ Thêm phòng ban</button>
+                    </div>
                     <div class="card-body">
                         <table class="table table-bordered">
-                            <tr>
-                                <th>Mã</th>
-                                <th>Người dân</th>
-                                <th>Trạng thái</th>
-                                <th>Hành động</th>
-                            </tr>
-                            <tr>
-                                <td>224</td>
-                                <td>Nguyễn Văn Đinh</td>
-                                <td>Đang xử lý</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
-                                </td>
-                            </tr>
-                             <tr>
-                                <td>5656</td>
-                                <td>Nguyễn Quang Thắng</td>
-                                <td>Đang xử lý</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
-                                </td>
-                            </tr>
-                              <tr>
-                                <td>3247</td>
-                                <td>Nguyễn Quang Thắng</td>
-                                <td>Đang xử lý</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
-                                </td>
-                            </tr>
-                             </tr>
-                              <tr>
-                                <td>3849</td>
-                                <td>Trần Trọng Thái </td>
-                                <td>Đang xử lý</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm">Cập nhật</button>
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Tên phòng ban</th>
+                                    <th>Trưởng phòng</th>
+                                    <th>Mô tả</th>
+                                    <th>Nhân viên</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="phongbanTable"></tbody>
                         </table>
                     </div>
                 </div>
@@ -104,36 +74,25 @@
             <!-- PHÂN CÔNG -->
             <div id="phancong" class="section" style="display:none">
                 <div class="card mb-3">
-                    <div class="card-header bg-danger text-white">Danh sách hồ sơ</div>
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Hồ sơ đã xác nhận, chờ phân công</span>
+                        <button class="btn btn-light btn-sm" onclick="loadPhanCong()">Tải lại</button>
+                    </div>
                     <div class="card-body">
                         <table class="table">
-                            <tr>
-                                <th>Chọn</th>
-                                <th>Mã</th>
-                                <th>Tên hồ sơ</th>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>224</td>
-                                <td>Tranh chấp đất</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>5656</td>
-                                <td>Thi hành án dân sự</td>
-                            </tr>
-                             <tr>
-                                <td><input type="checkbox"></td>
-                                <td>3247</td>
-                                <td>Ly hôn</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox"></td>
-                                <td>3849</td>
-                                <td>Trốn Thuế</td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                                    <th>Mã</th>
+                                    <th>Người dân</th>
+                                    <th>Loại hồ sơ</th>
+                                    <th>Ngày gửi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hosoTable"></tbody>
                         </table>
 
+                        <p>Đã chọn: <strong id="selectedCount">0</strong> hồ sơ</p>
                         <button class="btn btn-primary" onclick="showAssign()">Phân công</button>
                     </div>
                 </div>
@@ -144,15 +103,19 @@
                         <div class="card-header bg-success text-white">Chọn chấp hành viên</div>
                         <div class="card-body">
 
-                            <div class="mb-3">
-                                <label>Chấp hành viên</label>
-                                <select class="form-select" onchange="showOfficerInfo(this)">
-                                    <option value="">-- Chọn --</option>
-                                    <option value="A">Trần Thị Hương</option>
-                                    <option value="B">Trần Văn Toàn</option>
-                                    <option value="C">Đỗ Văn Thịnh</option>
-                                    <option value="D">Trịnh Duy Hưng</option>
-                                </select>
+                            <div class="row">
+                                <div class="col-md-5 mb-3">
+                                    <label for="phongbanFilter">Phòng ban</label>
+                                    <select id="phongbanFilter" class="form-select" onchange="renderOfficerOptions()">
+                                        <option value="">-- Tất cả phòng ban --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-7 mb-3">
+                                    <label for="officerSelect">Chấp hành viên</label>
+                                    <select id="officerSelect" class="form-select" onchange="showOfficerInfo(this)">
+                                        <option value="">-- Chọn --</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- THÔNG TIN CHẤP HÀNH VIÊN -->
@@ -160,9 +123,15 @@
                                 <p><strong>Tên:</strong> <span id="name"></span></p>
                                 <p><strong>SĐT:</strong> <span id="phone"></span></p>
                                 <p><strong>Chức vụ:</strong> Chấp hành viên</p>
+                                <p><strong>Phòng ban:</strong> <span id="officerPhongBan"></span></p>
+                                <p class="mb-1"><strong>Đang xử lý:</strong> <span id="workload"></span></p>
+                                <div class="progress mb-2">
+                                    <div id="workloadBar" class="progress-bar" style="width:0%"></div>
+                                </div>
+                                <p id="workloadWarning" class="text-danger mb-0" style="display:none"></p>
                             </div>
 
-                            <button class="btn btn-success mt-3">Xác nhận phân công</button>
+                            <button id="assignBtn" class="btn btn-success mt-3" onclick="assignHoSo()">Xác nhận phân công</button>
 
                         </div>
                     </div>
@@ -172,46 +141,23 @@
             <!-- XÁC NHẬN -->
             <div id="xacnhan" class="section" style="display:none">
                 <div class="card">
-                    <div class="card-header bg-danger text-white">Xác nhận hồ sơ</div>
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Hồ sơ chờ xác nhận</span>
+                        <button class="btn btn-light btn-sm" onclick="loadPendingHoSo()">Tải lại</button>
+                    </div>
                     <div class="card-body">
                         <table class="table">
-                            <tr>
-                                <th>Mã</th>
-                                <th>Hồ sơ</th>
-                                <th>Hành động</th>
-                            </tr>
-                            <tr>
-                                <td>224</td>
-                                <td>Thi hành án dân sự</td>
-                                <td>
-                                    <button class="btn btn-success btn-sm">Xác nhận</button>
-                                    <button class="btn btn-danger btn-sm">Hủy</button>
-                                </td>
-                            </tr>
-                             <tr>
-                                <td>3678</td>
-                                <td>Thi hành án dân sự</td>
-                                <td>
-                                    <button class="btn btn-success btn-sm">Xác nhận</button>
-                                    <button class="btn btn-danger btn-sm">Hủy</button>
-                                </td>
-                            </tr>
-                             <tr>
-                                <td>4236</td>
-                                <td>Thi hành án dân sự</td>
-                                <td>
-                                    <button class="btn btn-success btn-sm">Xác nhận</button>
-                                    <button class="btn btn-danger btn-sm">Hủy</button>
-                                </td>
-                            </tr>
-                             <tr>
-                                <td>2983</td>
-                                <td>Thi hành án dân sự</td>
-                                <td>
-                                    <button class="btn btn-success btn-sm">Xác nhận</button>
-                                    <button class="btn btn-danger btn-sm">Hủy</button>
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Người dân</th>
+                                    <th>Loại hồ sơ</th>
+                                    <th>Bản án</th>
+                                    <th>Ngày gửi / bổ sung</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTable"></tbody>
                         </table>
                     </div>
                 </div>
@@ -233,33 +179,597 @@
 </div>
 </div>
 
+
+<!-- MODAL XEM HỒ SƠ / BẢN ÁN -->
+<div class="modal fade" id="hosoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Hồ sơ <span id="mMahoso"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <p><strong>Người yêu cầu:</strong> <span id="mTennguoi"></span></p>
+                        <p><strong>CCCD:</strong> <span id="mCccd"></span></p>
+                        <p><strong>Loại hồ sơ:</strong> <span id="mLoaihoso"></span></p>
+                        <p><strong>Nội dung yêu cầu:</strong></p>
+                        <p id="mNoidung" class="border rounded p-2 bg-light" style="white-space:pre-wrap"></p>
+
+                        <p class="mb-1"><strong>Bản án đã gửi:</strong></p>
+                        <ul id="mFiles" class="list-group mb-3"></ul>
+
+                        <p class="mb-1"><strong>Lịch sử:</strong></p>
+                        <ul id="mLichsu" class="list-group list-group-flush small"></ul>
+                    </div>
+                    <div class="col-md-7">
+                        <div id="mPreview" class="border rounded bg-light d-flex align-items-center justify-content-center text-muted"
+                             style="height:60vh">Chọn một file bản án để xem</div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label for="mPhanhoi"><strong>Nội dung bản án còn thiếu</strong> (bắt buộc khi yêu cầu bổ sung)</label>
+                    <textarea id="mPhanhoi" class="form-control" rows="3"
+                              placeholder="VD: Thiếu trang 3 của bản án; thiếu dấu xác nhận bản án có hiệu lực pháp luật..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button id="btnBoSung" class="btn btn-warning" onclick="requestSupplement()">Yêu cầu bổ sung</button>
+                <button id="btnXacNhan" class="btn btn-success" onclick="confirmHoSo()">Xác nhận đủ điều kiện</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL THÊM / SỬA PHÒNG BAN -->
+<div class="modal fade" id="phongbanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" onsubmit="savePhongBan(event)">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="pbModalTitle">Thêm phòng ban</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label for="pbMaphong">Mã phòng ban</label>
+                    <input type="text" id="pbMaphong" class="form-control" required placeholder="VD: PNV">
+                </div>
+                <div class="mb-2">
+                    <label for="pbTenphong">Tên phòng ban</label>
+                    <input type="text" id="pbTenphong" class="form-control" required placeholder="VD: Phòng Nghiệp vụ">
+                </div>
+                <div class="mb-2">
+                    <label for="pbMota">Mô tả</label>
+                    <textarea id="pbMota" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-danger">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL NHÂN VIÊN PHÒNG BAN -->
+<div class="modal fade" id="memberModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Nhân viên - <span id="mbTenphong"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <select id="mbStaffSelect" class="form-select"></select>
+                    <button class="btn btn-success" onclick="addMember()">Thêm vào phòng</button>
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Họ tên</th>
+                            <th>Tài khoản</th>
+                            <th>Chức vụ</th>
+                            <th>SĐT</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+const MAX_HOSO = 200; // Giới hạn hồ sơ mỗi chấp hành viên (server cũng kiểm tra)
+let enforcers = [];
+
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
     document.getElementById(id).style.display = 'block';
+    if (id === 'phancong') loadPhanCong();
+    if (id === 'xacnhan') loadPendingHoSo();
+    if (id === 'phongban') loadPhongBan();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text ?? '';
+    return div.innerHTML;
+}
+
+/* ================== Tải dữ liệu phân công ================== */
+function loadPhanCong() {
+    loadUnassignedHoSo();
+    loadEnforcers();
+}
+
+function loadUnassignedHoSo() {
+    fetch('/hoso/chua-phan-cong')
+        .then(res => res.json())
+        .then(list => {
+            const tbody = document.getElementById('hosoTable');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không có hồ sơ nào chờ phân công</td></tr>';
+            } else {
+                tbody.innerHTML = list.map(hs => `
+                    <tr>
+                        <td><input type="checkbox" class="hoso-check" value="${hs._id}" onchange="updateSelectedCount()"></td>
+                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${escapeHtml(hs.tennguoi)}</td>
+                        <td>${escapeHtml(hs.loaihoso)}</td>
+                        <td>${new Date(hs.createdAt).toLocaleDateString('vi-VN')}</td>
+                    </tr>`).join('');
+            }
+            document.getElementById('checkAll').checked = false;
+            updateSelectedCount();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được danh sách hồ sơ');
+        });
+}
+
+const NO_PHONGBAN = 'none';
+
+function loadEnforcers() {
+    fetch('/enforcers')
+        .then(res => res.json())
+        .then(list => {
+            enforcers = list;
+
+            // Bộ lọc gồm các phòng ban đang có chấp hành viên
+            const filter = document.getElementById('phongbanFilter');
+            const selectedPhong = filter.value;
+            const phongs = new Map(list.filter(e => e.phongban).map(e => [e.phongban._id, e.phongban.tenphong]));
+            filter.innerHTML = '<option value="">-- Tất cả phòng ban --</option>'
+                + [...phongs].sort((a, b) => a[1].localeCompare(b[1], 'vi'))
+                    .map(([id, ten]) => `<option value="${id}">${escapeHtml(ten)}</option>`).join('')
+                + (list.some(e => !e.phongban) ? `<option value="${NO_PHONGBAN}">Chưa có phòng ban</option>` : '');
+            filter.value = [...filter.options].some(o => o.value === selectedPhong) ? selectedPhong : '';
+
+            renderOfficerOptions();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được danh sách chấp hành viên');
+        });
+}
+
+function renderOfficerOptions() {
+    const phong = document.getElementById('phongbanFilter').value;
+    const visible = enforcers.filter(e => !phong
+        || (phong === NO_PHONGBAN ? !e.phongban : e.phongban && e.phongban._id === phong));
+
+    const select = document.getElementById('officerSelect');
+    const selected = select.value;
+    select.innerHTML = `<option value="">-- Chọn (${visible.length} chấp hành viên) --</option>` + visible.map(e => {
+        const full = e.assignedCount >= e.limit;
+        const tenphong = !phong && e.phongban ? ` - ${escapeHtml(e.phongban.tenphong)}` : '';
+        return `<option value="${e._id}" ${full ? 'disabled' : ''}>`
+            + `${escapeHtml(e.fullname)}${tenphong} (${e.assignedCount}/${e.limit})${full ? ' - đã đủ' : ''}</option>`;
+    }).join('');
+    select.value = visible.some(e => e._id === selected) ? selected : '';
+    showOfficerInfo(select);
+}
+
+/* ================== Chọn hồ sơ ================== */
+function getSelectedIds() {
+    return [...document.querySelectorAll('.hoso-check:checked')].map(c => c.value);
+}
+
+function toggleAll(box) {
+    document.querySelectorAll('.hoso-check').forEach(c => c.checked = box.checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    document.getElementById('selectedCount').innerText = getSelectedIds().length;
+    showOfficerInfo(document.getElementById('officerSelect'));
 }
 
 function showAssign() {
+    if (getSelectedIds().length === 0) {
+        alert('Vui lòng chọn ít nhất một hồ sơ');
+        return;
+    }
     document.getElementById('assignBox').style.display = 'block';
 }
 
+/* ================== Thông tin chấp hành viên ================== */
 function showOfficerInfo(select) {
     const infoBox = document.getElementById('officerInfo');
-    const name = document.getElementById('name');
-    const phone = document.getElementById('phone');
-
-    if (select.value === 'A') {
-        name.innerText = 'Nguyễn Văn C';
-        phone.innerText = '0912345678';
-        infoBox.style.display = 'block';
-    } else if (select.value === 'B') {
-        name.innerText = 'Trần Văn D';
-        phone.innerText = '0987654321';
-        infoBox.style.display = 'block';
-    } else {
+    const officer = enforcers.find(e => e._id === select.value);
+    if (!officer) {
         infoBox.style.display = 'none';
+        return;
     }
+
+    const selectedCount = getSelectedIds().length;
+    const remaining = officer.limit - officer.assignedCount;
+    const percent = Math.min(100, officer.assignedCount / officer.limit * 100);
+    const bar = document.getElementById('workloadBar');
+    const warning = document.getElementById('workloadWarning');
+
+    document.getElementById('name').innerText = officer.fullname;
+    document.getElementById('phone').innerText = officer.phone || 'Chưa cập nhật';
+    document.getElementById('officerPhongBan').innerText = officer.phongban ? officer.phongban.tenphong : 'Chưa có phòng ban';
+    document.getElementById('workload').innerText =
+        `${officer.assignedCount}/${officer.limit} hồ sơ (còn nhận được ${Math.max(remaining, 0)})`;
+    bar.style.width = percent + '%';
+    bar.className = 'progress-bar ' + (percent >= 90 ? 'bg-danger' : percent >= 70 ? 'bg-warning' : 'bg-success');
+
+    if (selectedCount > remaining) {
+        warning.innerText = `Bạn đang chọn ${selectedCount} hồ sơ, vượt quá số hồ sơ chấp hành viên này còn nhận được.`;
+        warning.style.display = 'block';
+    } else {
+        warning.style.display = 'none';
+    }
+    infoBox.style.display = 'block';
 }
+
+/* ================== Phân công ================== */
+function assignHoSo() {
+    const hosoIds = getSelectedIds();
+    const officerId = document.getElementById('officerSelect').value;
+    const officer = enforcers.find(e => e._id === officerId);
+
+    if (hosoIds.length === 0) return alert('Vui lòng chọn ít nhất một hồ sơ');
+    if (!officer) return alert('Vui lòng chọn chấp hành viên');
+    if (officer.assignedCount + hosoIds.length > MAX_HOSO) {
+        return alert(`Chấp hành viên chỉ được xử lý tối đa ${MAX_HOSO} hồ sơ. `
+            + `Hiện còn nhận được ${Math.max(MAX_HOSO - officer.assignedCount, 0)} hồ sơ.`);
+    }
+
+    const btn = document.getElementById('assignBtn');
+    btn.disabled = true;
+
+    fetch('/hoso/phan-cong', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hosoIds, officerId })
+    })
+        .then(res => res.json())
+        .then(obj => {
+            alert(obj.message);
+            if (obj.code === 200) {
+                document.getElementById('assignBox').style.display = 'none';
+            }
+            loadPhanCong();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        })
+        .finally(() => btn.disabled = false);
+}
+
+/* ================== Xác nhận hồ sơ ================== */
+let pendingList = [];
+let currentHoSo = null;
+
+function formatDate(value) {
+    return new Date(value).toLocaleString('vi-VN');
+}
+
+function loadPendingHoSo() {
+    fetch('/hoso/cho-xac-nhan')
+        .then(res => res.json())
+        .then(list => {
+            pendingList = list;
+            const tbody = document.getElementById('pendingTable');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không có hồ sơ nào chờ xác nhận</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(hs => {
+                const daBoSung = hs.lichsu.some(l => l.ghichu.startsWith('Người dân đã bổ sung'));
+                return `
+                    <tr>
+                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${escapeHtml(hs.tennguoi)}</td>
+                        <td>${escapeHtml(hs.loaihoso)}</td>
+                        <td>${hs.files.length} file</td>
+                        <td>${formatDate(hs.updatedAt)} ${daBoSung ? '<span class="badge bg-info">Đã bổ sung</span>' : ''}</td>
+                        <td><button class="btn btn-primary btn-sm" onclick="openHoSo('${hs._id}')">Xem bản án</button></td>
+                    </tr>`;
+            }).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được danh sách hồ sơ chờ xác nhận');
+        });
+}
+
+function openHoSo(id) {
+    currentHoSo = pendingList.find(hs => hs._id === id);
+    if (!currentHoSo) return;
+
+    document.getElementById('mMahoso').innerText = currentHoSo.mahoso;
+    document.getElementById('mTennguoi').innerText = currentHoSo.tennguoi;
+    document.getElementById('mCccd').innerText = currentHoSo.cccd;
+    document.getElementById('mLoaihoso').innerText = currentHoSo.loaihoso;
+    document.getElementById('mNoidung').innerText = currentHoSo.noidung || '(Không có)';
+    document.getElementById('mPhanhoi').value = '';
+
+    document.getElementById('mFiles').innerHTML = currentHoSo.files.length === 0
+        ? '<li class="list-group-item text-muted">Không có file</li>'
+        : currentHoSo.files.map((f, i) => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${escapeHtml(f.originalname)} <small class="text-muted">(${formatDate(f.uploadedAt)})</small></span>
+                <span>
+                    <button class="btn btn-outline-primary btn-sm" onclick="previewFile(${i})">Xem</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="/uploads/banan/${encodeURIComponent(f.filename)}" target="_blank">Mở tab mới</a>
+                </span>
+            </li>`).join('');
+
+    document.getElementById('mLichsu').innerHTML = currentHoSo.lichsu.map(l => `
+        <li class="list-group-item px-0">
+            <strong>${formatDate(l.thoigian)}</strong> - ${escapeHtml(l.trangthai)}
+            ${l.ghichu ? `<br><span class="text-muted">${escapeHtml(l.ghichu)}</span>` : ''}
+        </li>`).join('');
+
+    const preview = document.getElementById('mPreview');
+    preview.innerHTML = 'Chọn một file bản án để xem';
+    if (currentHoSo.files.length > 0) previewFile(0);
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('hosoModal')).show();
+}
+
+function previewFile(index) {
+    const file = currentHoSo.files[index];
+    const url = '/uploads/banan/' + encodeURIComponent(file.filename);
+    const preview = document.getElementById('mPreview');
+    preview.innerHTML = file.mimetype === 'application/pdf'
+        ? `<iframe src="${url}" class="w-100 h-100 border-0"></iframe>`
+        : `<img src="${url}" class="mw-100 mh-100" alt="Bản án">`;
+}
+
+function closeHoSoModal(message) {
+    alert(message);
+    bootstrap.Modal.getInstance(document.getElementById('hosoModal')).hide();
+    loadPendingHoSo();
+}
+
+function confirmHoSo() {
+    if (!currentHoSo) return;
+
+    fetch(`/hoso/${currentHoSo._id}/xac-nhan`, { method: 'PUT' })
+        .then(res => res.json())
+        .then(obj => closeHoSoModal(obj.message))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function requestSupplement() {
+    if (!currentHoSo) return;
+    const phanhoi = document.getElementById('mPhanhoi').value.trim();
+    if (!phanhoi) {
+        alert('Vui lòng nhập nội dung bản án còn thiếu để gửi cho người dân');
+        document.getElementById('mPhanhoi').focus();
+        return;
+    }
+
+    fetch(`/hoso/${currentHoSo._id}/yeu-cau-bo-sung`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phanhoi })
+    })
+        .then(res => res.json())
+        .then(obj => closeHoSoModal(obj.message))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+/* ================== Quản lý phòng ban ================== */
+const ROLE_NAMES = { 1: 'Chấp hành viên', 2: 'Công chức' };
+let phongbanList = [];
+let editingPhongBanId = null;
+let currentPhongBanId = null;
+
+function handleResult(obj, onSuccess) {
+    alert(obj.message);
+    if (obj.code >= 200 && obj.code < 300 && onSuccess) onSuccess();
+}
+
+function loadPhongBan() {
+    return fetch('/phongban')
+        .then(res => res.json())
+        .then(list => {
+            phongbanList = list;
+            const tbody = document.getElementById('phongbanTable');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Chưa có phòng ban nào</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(pb => `
+                <tr>
+                    <td>${escapeHtml(pb.maphong)}</td>
+                    <td>${escapeHtml(pb.tenphong)}</td>
+                    <td>${getTruongPhong(pb) ? escapeHtml(getTruongPhong(pb).fullname) : '<span class="text-muted">Chưa có</span>'}</td>
+                    <td style="white-space:pre-wrap">${escapeHtml(pb.mota)}</td>
+                    <td>${pb.members.length}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="openMembers('${pb._id}')">Nhân viên</button>
+                        <button class="btn btn-warning btn-sm" onclick="openPhongBanForm('${pb._id}')">Sửa</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePhongBan('${pb._id}')">Xóa</button>
+                    </td>
+                </tr>`).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được danh sách phòng ban');
+        });
+}
+
+function openPhongBanForm(id) {
+    const pb = phongbanList.find(p => p._id === id);
+    editingPhongBanId = pb ? pb._id : null;
+    document.getElementById('pbModalTitle').innerText = pb ? 'Sửa phòng ban' : 'Thêm phòng ban';
+    document.getElementById('pbMaphong').value = pb ? pb.maphong : '';
+    document.getElementById('pbTenphong').value = pb ? pb.tenphong : '';
+    document.getElementById('pbMota').value = pb ? pb.mota : '';
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('phongbanModal')).show();
+}
+
+function savePhongBan(e) {
+    e.preventDefault();
+    const data = {
+        maphong: document.getElementById('pbMaphong').value.trim(),
+        tenphong: document.getElementById('pbTenphong').value.trim(),
+        mota: document.getElementById('pbMota').value.trim()
+    };
+
+    fetch(editingPhongBanId ? `/phongban/${editingPhongBanId}` : '/phongban', {
+        method: editingPhongBanId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => {
+            bootstrap.Modal.getInstance(document.getElementById('phongbanModal')).hide();
+            loadPhongBan();
+        }))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function deletePhongBan(id) {
+    const pb = phongbanList.find(p => p._id === id);
+    if (!pb || !confirm(`Xóa phòng ban "${pb.tenphong}"?`)) return;
+
+    fetch(`/phongban/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, loadPhongBan))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+/* ================== Nhân viên phòng ban ================== */
+function getTruongPhong(pb) {
+    return pb.members.find(m => m._id === pb.truongphong);
+}
+
+function setTruongPhong(accountId) {
+    fetch(`/phongban/${currentPhongBanId}/truong-phong`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId })
+    })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => loadPhongBan().then(renderMembers)))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function openMembers(id) {
+    currentPhongBanId = id;
+    renderMembers();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('memberModal')).show();
+}
+
+function renderMembers() {
+    const pb = phongbanList.find(p => p._id === currentPhongBanId);
+    if (!pb) return;
+
+    document.getElementById('mbTenphong').innerText = pb.tenphong;
+    document.getElementById('memberTable').innerHTML = pb.members.length === 0
+        ? '<tr><td colspan="5" class="text-center text-muted">Phòng ban chưa có nhân viên</td></tr>'
+        : pb.members.map(m => {
+            const isTruongPhong = m._id === pb.truongphong;
+            return `
+            <tr>
+                <td>${escapeHtml(m.fullname)} ${isTruongPhong ? '<span class="badge bg-danger">Trưởng phòng</span>' : ''}</td>
+                <td>${escapeHtml(m.username)}</td>
+                <td>${ROLE_NAMES[m.role] || ''}</td>
+                <td>${escapeHtml(m.phone)}</td>
+                <td class="text-nowrap">
+                    ${isTruongPhong
+                        ? `<button class="btn btn-outline-secondary btn-sm" onclick="setTruongPhong(null)">Bỏ trưởng phòng</button>`
+                        : `<button class="btn btn-outline-primary btn-sm" onclick="setTruongPhong('${m._id}')">Làm trưởng phòng</button>`}
+                    <button class="btn btn-outline-danger btn-sm" onclick="removeMember('${m._id}')">Gỡ</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+    fetch('/phongban/nhan-vien')
+        .then(res => res.json())
+        .then(staff => {
+            const others = staff.filter(s => !s.phongban || s.phongban._id !== pb._id);
+            document.getElementById('mbStaffSelect').innerHTML = '<option value="">-- Chọn chấp hành viên / công chức --</option>'
+                + others.map(s => `<option value="${s._id}">${escapeHtml(s.fullname)} - ${ROLE_NAMES[s.role] || ''}`
+                    + `${s.phongban ? ` (đang ở ${escapeHtml(s.phongban.tenphong)})` : ''}</option>`).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được danh sách nhân viên');
+        });
+}
+
+function addMember() {
+    const accountId = document.getElementById('mbStaffSelect').value;
+    if (!accountId) return alert('Vui lòng chọn nhân viên');
+
+    fetch(`/phongban/${currentPhongBanId}/nhan-vien`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId })
+    })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => loadPhongBan().then(renderMembers)))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function removeMember(accountId) {
+    fetch(`/phongban/${currentPhongBanId}/nhan-vien/${accountId}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => loadPhongBan().then(renderMembers)))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+loadPhongBan();
 
 </script>
 

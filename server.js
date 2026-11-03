@@ -28,13 +28,7 @@ app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use("/", express.static(path.join(__dirname, "views")));
-
-/* ================== LẤY HỒ SƠ ================== */
-app.get('/hoso', (req, res) => {
-    database.query("SELECT * FROM hoso", (err, result) => {
-        res.json(result);
-    });
-});
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // File bản án người dân gửi
 
 /* ==================Thêm tài khoản================== */
 app.post('/users', (req, res) => {
@@ -73,89 +67,15 @@ app.delete("/users/:id", (req, res) => {
     });
 });
 
-/* ================== gửi hs ================== */
-app.post("/hoso", (req, res) => {
-
-    console.log("DATA NHẬN:", req.body); // 🔥 thêm dòng này
-
-    const { tennguoi, cccd, noidung, loaihoso, danhmuc } = req.body;
-
-    const sql = `
-        INSERT INTO hoso(mahoso, tennguoi, cccd, noidung, loaihoso, danhmuc, trangthai)
-        VALUES (?, ?, ?, ?, ?, ?, 'Chưa xử lý')
-    `;
-
-    database.query(sql, [
-        "HS" + Date.now(),
-        tennguoi,
-        cccd,
-        noidung,
-        loaihoso,
-        danhmuc
-    ], (err) => {
-        if(err){
-            console.log("SQL ERROR:", err); // 🔥 bắt lỗi thật
-            return res.send("Lỗi");
-        }
-        res.send("Gửi hồ sơ thành công");
-    });
-});
-
-/* ================== nhận hs ================== */
-app.get("/hoso-chuaxuly", (req, res) => {
-    database.query(
-        "SELECT * FROM hoso WHERE assigned_to IS NULL",
-        (err, result) => res.json(result)
-    );
-});
-
-/* ================== cập nhật hs ================== */
-app.put("/hoso/update/:id", (req, res) => {
-    const { loaihoso, danhmuc } = req.body;
-
-    database.query(
-        "UPDATE hoso SET loaihoso=?, danhmuc=? WHERE id=?",
-        [loaihoso, danhmuc, req.params.id],
-        (err) => res.send("Đã cập nhật")
-    );
-});
-
-/* ================== phân công hs ================== */
-app.put("/phancong", (req, res) => {
-    const { hosoIds, officerId } = req.body;
-
-    database.query(
-        "UPDATE hoso SET assigned_to=?, status='Đã phân công' WHERE id IN (?)",
-        [officerId, hosoIds],
-        (err) => res.send("Đã phân công")
-    );
-});
-
-/* ================== chapHV nhận hs ================== */
-app.get("/hoso-cua-toi/:id", (req, res) => {
-    database.query(
-        "SELECT * FROM hoso WHERE assigned_to=?",
-        [req.params.id],
-        (err, result) => res.json(result)
-    );
-});
-
-/* ================== trạng thái hs ================== */
-app.put("/hoso/status/:id", (req, res) => {
-    const { status } = req.body;
-
-    database.query(
-        "UPDATE hoso SET status=? WHERE id=?",
-        [status, req.params.id],
-        (err) => res.send("Đã cập nhật")
-    );
-});
-
 /* ================== Routes ================== */
 app.use("/", require("./routes/root")); //Homepage
 
 /* ================== APIs ================== */
 app.use("/accounts", require("./routes/api/accounts"));//Account
+app.use("/hoso", require("./routes/api/hoso"));//Hồ sơ
+app.use("/enforcers", require("./routes/api/enforcers"));//Chấp hành viên
+app.use("/phongban", require("./routes/api/phongban"));//Phòng ban
+app.use("/thongbao", require("./routes/api/thongbao"));//Thông báo
 
 app.all("{*any}", (req, res) => {
     res.status(404);

@@ -200,6 +200,11 @@ function login(e){
     .then(res=>res.json())
     .then(obj=>{
         alert(obj.message);
+        if(!obj.account) return; // Đăng nhập thất bại thì ở lại trang
+
+        // Lưu tài khoản đang đăng nhập để các trang khác biết là ai
+        localStorage.setItem("account", JSON.stringify(obj.account));
+
         if(obj.role === 3) {
             location = "taikhoan.html";
         }

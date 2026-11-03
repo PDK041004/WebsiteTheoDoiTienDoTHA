@@ -50,25 +50,26 @@
                 </div>
                 <div class="card-body">
 
-                    <form onsubmit="sendHoSo(event)">
+                    <form id="hosoForm" onsubmit="sendHoSo(event)">
                         <div class="mb-2">
-                            <label>Tên người yêu cầu</label>
-                            <input type="text" class="form-control">
+                            <label for="tennguoi">Tên người yêu cầu</label>
+                            <input type="text" id="tennguoi" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
-                            <label>CCCD</label>
-                            <input type="text" class="form-control">
+                            <label for="cccd">CCCD</label>
+                            <input type="text" id="cccd" class="form-control" required
+                                   pattern="\d{12}" maxlength="12" title="CCCD gồm 12 chữ số">
                         </div>
 
                         <div class="mb-2">
-                            <label>Nội dung yêu cầu</label>
-                            <textarea class="form-control"></textarea>
+                            <label for="noidung">Nội dung yêu cầu</label>
+                            <textarea id="noidung" class="form-control"></textarea>
                         </div>
 
                         <div class="mb-2">
-                            <label>Loại hồ sơ</label>
-                            <select class="form-control">
+                            <label for="loaihoso">Loại hồ sơ</label>
+                            <select id="loaihoso" class="form-control">
                                 <option>Dân sự</option>
                                 <option>Kinh doanh thương mại</option>
                                 <option>Hình sự</option>
@@ -82,7 +83,13 @@
                             </select>
                         </div>
 
-                        <button class="btn btn-danger">Gửi hồ sơ</button>
+                        <div class="mb-3">
+                            <label for="banan">Bản án (PDF, JPG, PNG; tối đa 5 file, mỗi file không quá 10MB)</label>
+                            <input type="file" id="banan" class="form-control" multiple required
+                                   accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <button id="btnGui" class="btn btn-danger">Gửi hồ sơ</button>
                     </form>
 
                 </div>
@@ -97,83 +104,25 @@
                 </div>
                 <div class="card-body">
 
-                   <input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableHoso')">
+                    <form class="input-group mb-3" onsubmit="searchHoSo(event)">
+                        <input type="text" id="cccdTraCuu" class="form-control" placeholder="Nhập CCCD đã dùng khi gửi hồ sơ"
+                               required pattern="\d{12}" maxlength="12" title="CCCD gồm 12 chữ số">
+                        <button class="btn btn-danger">Tra cứu</button>
+                    </form>
 
-                   <table class="table table-bordered" id="tableHoso">
-                   <thead>
-                   <tr>
-                   <th>Mã hồ sơ</th>
-                   <th>Người dân</th>
-                   <th>Trạng thái</th>
-                   </tr>
-                   </thead>
-
-                    <tbody>
-                   <tr>
-                                <td>224</td>
-                                <td>Nguyễn Văn Đinh</td>
-                                <td>Đang xử lý</td>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Mã hồ sơ</th>
+                                <th>Loại hồ sơ</th>
+                                <th>Ngày gửi</th>
+                                <th>Trạng thái</th>
+                                <th>Phản hồi từ cơ quan THA</th>
                             </tr>
-                             <tr>
-                                <td>5656</td>
-                                <td>Nguyễn Quang Thắng</td>
-                                <td>Đang xử lý</td>                                
-                            </tr>
-                              <tr>
-                                <td>3247</td>
-                                <td>Nguyễn Quang Long</td>
-                                <td>Chờ xử lý</td>                           
-                            </tr>
-                             </tr>
-                              <tr>
-                                <td>3849</td>
-                                <td>Trần Trọng Thái </td>
-                                <td>Đang xử lý</td>                    
-                            </tr>
-                             <tr>
-                                <td>2903</td>
-                                <td>Ngọc Văn Thịnh</td>
-                                <td>Chờ xử lý</td>
-                            </tr>
-                             <tr>
-                                <td>4801</td>
-                                <td>Nguyễn Thanh Nhàn</td>
-                                <td>Trì hoãn xử lý</td>                                
-                            </tr>
-                              <tr>
-                                <td>3097</td>
-                                <td>Phạm Hà Phương</td>
-                                <td>Trì hoãn xử lý</td>                           
-                            </tr>
-                             </tr>
-                              <tr>
-                                <td>109</td>
-                                <td>Trần Kim Phú </td>
-                                <td>Đang xử lý</td>                    
-                            </tr>
-                             <tr>
-                                <td>689</td>
-                                <td>Nguyễn Giang Nam</td>
-                                <td>Đang xử lý</td>
-                            </tr>
-                             <tr>
-                                <td>793</td>
-                                <td>Nguyễn Ngọc Đặng</td>
-                                <td>Đang xử lý</td>                                
-                            </tr>
-                              <tr>
-                                <td>327</td>
-                                <td>Nguyễn Minh Đức</td>
-                                <td>Đang xử lý</td>                           
-                            </tr>
-                             </tr>
-                              <tr>
-                                <td>4802</td>
-                                <td>Trần Thanh Loan </td>
-                                <td>Đang xử lý</td>                    
-                            </tr>
-                            
-                    </tbody>
+                        </thead>
+                        <tbody id="tableHoso">
+                            <tr><td colspan="5" class="text-center text-muted">Nhập CCCD để tra cứu hồ sơ</td></tr>
+                        </tbody>
                     </table>
 
                 </div>
@@ -205,46 +154,179 @@
 
 </div>
 
+<!-- MODAL BỔ SUNG BẢN ÁN -->
+<div class="modal fade" id="boSungModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" onsubmit="sendBoSung(event)">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Bổ sung hồ sơ <span id="bsMahoso"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1"><strong>Nội dung cần bổ sung:</strong></p>
+                <p id="bsPhanhoi" class="border rounded p-2 bg-light" style="white-space:pre-wrap"></p>
+
+                <div class="mb-2">
+                    <label for="bsFiles">File bản án bổ sung (PDF, JPG, PNG)</label>
+                    <input type="file" id="bsFiles" class="form-control" multiple accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="mb-2">
+                    <label for="bsGhichu">Ghi chú</label>
+                    <textarea id="bsGhichu" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button id="btnBoSung" class="btn btn-warning">Gửi bổ sung</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-function sendHoso(e){
+const STATUS_COLORS = {
+    'Chờ xác nhận': 'secondary',
+    'Cần bổ sung': 'warning',
+    'Đã xác nhận': 'primary',
+    'Đã phân công': 'info',
+    'Hoàn thành': 'success'
+};
+let hosoList = [];
+let currentHoSo = null;
+let searchedCccd = "";
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text ?? '';
+    return div.innerHTML;
+}
+
+/* ================== Gửi hồ sơ ================== */
+function sendHoSo(e){
     e.preventDefault();
 
-    const tennguoi = document.querySelector("input[type='text']").value;
-    const cccd = document.querySelectorAll("input")[1].value;
-    const noidung = document.querySelector("textarea").value;
-    const loaihoso = document.querySelector("select").value;
+    const data = new FormData();
+    data.append("tennguoi", document.getElementById("tennguoi").value.trim());
+    data.append("cccd", document.getElementById("cccd").value.trim());
+    data.append("noidung", document.getElementById("noidung").value);
+    data.append("loaihoso", document.getElementById("loaihoso").value);
+    data.append("danhmuc", "Chưa phân loại");
+    for (const file of document.getElementById("banan").files) {
+        data.append("banan", file);
+    }
 
-    const data = {
-        tennguoi,
-        cccd,
-        noidung,
-        loaihoso,
-        danhmuc: "Chưa phân loại"
-    };
+    const btn = document.getElementById("btnGui");
+    btn.disabled = true;
 
     fetch("/hoso",{
         method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body: JSON.stringify(data)
+        body: data
     })
-    .then(res => res.text())
-    .then(msg => {
-        alert(msg);
-
-        // 🔥 reset form
-        document.querySelector("form").reset();
-
-        // 🔥 debug
-        console.log("Đã gửi:", data);
+    .then(res => res.json())
+    .then(obj => {
+        alert(obj.message);
+        if (obj.code === 201) {
+            document.getElementById("hosoForm").reset();
+        }
     })
     .catch(err => {
         console.error(err);
         alert("Lỗi gửi hồ sơ");
+    })
+    .finally(() => btn.disabled = false);
+}
+
+/* ================== Tra cứu hồ sơ ================== */
+function searchHoSo(e){
+    if (e) e.preventDefault();
+    const cccd = e ? document.getElementById("cccdTraCuu").value.trim() : searchedCccd;
+    searchedCccd = cccd;
+
+    fetch("/hoso/tra-cuu?cccd=" + encodeURIComponent(cccd))
+    .then(res => res.json())
+    .then(result => {
+        const tbody = document.getElementById("tableHoso");
+        if (!Array.isArray(result)) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${escapeHtml(result.message)}</td></tr>`;
+            return;
+        }
+        hosoList = result;
+        if (result.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không tìm thấy hồ sơ nào với CCCD này</td></tr>';
+            return;
+        }
+        tbody.innerHTML = result.map(hs => `
+            <tr>
+                <td>${escapeHtml(hs.mahoso)}</td>
+                <td>${escapeHtml(hs.loaihoso)}</td>
+                <td>${new Date(hs.createdAt).toLocaleDateString('vi-VN')}</td>
+                <td><span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span></td>
+                <td>
+                    ${hs.trangthai === 'Cần bổ sung'
+                        ? `<div class="text-danger mb-2" style="white-space:pre-wrap">${escapeHtml(hs.phanhoi)}</div>
+                           <button class="btn btn-warning btn-sm" onclick="openBoSung('${hs._id}')">Bổ sung</button>`
+                        : '<span class="text-muted">-</span>'}
+                </td>
+            </tr>`).join('');
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Không kết nối được server");
     });
+}
+
+/* ================== Bổ sung bản án ================== */
+function openBoSung(id){
+    currentHoSo = hosoList.find(hs => hs._id === id);
+    if (!currentHoSo) return;
+
+    document.getElementById("bsMahoso").innerText = currentHoSo.mahoso;
+    document.getElementById("bsPhanhoi").innerText = currentHoSo.phanhoi;
+    document.getElementById("bsFiles").value = "";
+    document.getElementById("bsGhichu").value = "";
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("boSungModal")).show();
+}
+
+function sendBoSung(e){
+    e.preventDefault();
+    if (!currentHoSo) return;
+
+    const files = document.getElementById("bsFiles").files;
+    const ghichu = document.getElementById("bsGhichu").value.trim();
+    if (files.length === 0 && !ghichu) {
+        alert("Vui lòng đính kèm file hoặc nhập nội dung bổ sung");
+        return;
+    }
+
+    const data = new FormData();
+    data.append("cccd", searchedCccd);
+    data.append("ghichu", ghichu);
+    for (const file of files) {
+        data.append("banan", file);
+    }
+
+    const btn = document.getElementById("btnBoSung");
+    btn.disabled = true;
+
+    fetch(`/hoso/${currentHoSo._id}/bo-sung`, {
+        method: "PUT",
+        body: data
+    })
+    .then(res => res.json())
+    .then(obj => {
+        alert(obj.message);
+        if (obj.code === 200) {
+            bootstrap.Modal.getInstance(document.getElementById("boSungModal")).hide();
+            searchHoSo();
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Không kết nối được server");
+    })
+    .finally(() => btn.disabled = false);
 }
 </script>
 
