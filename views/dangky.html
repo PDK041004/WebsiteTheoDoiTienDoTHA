@@ -84,15 +84,15 @@ function register(e){
         password: document.querySelector("input[type='password']").value
     };
 
-    fetch("/accounts/register",{
-        method:"POST",
-        headers:{"Content-Type": "application/json"},
-        body:JSON.stringify(data)
+    fetch("/accounts/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
     })
-    .then(res=>res.json())
-    .then(obj=>{
+    .then(res => res.json())
+    .then(obj => {
         alert(obj.message);
-        if(obj.code === 201){
+        if(obj.code === 201) {
             location = "/homepage";
         }
     });

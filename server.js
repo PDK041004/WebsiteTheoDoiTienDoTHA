@@ -6,7 +6,7 @@ const path = require("path")
 // const database = require('./database');
 const mongoose = require("mongoose");
 const connection = require("./configs/database");
-const port = 3000
+const port = 3500
 
 /* ================== Database connection ================== */
 connection(); // Kết nối MongoDB
@@ -166,7 +166,6 @@ app.all("{*any}", (req, res) => {
 
 /* ================== Start-Up ================== */
 mongoose.connection.once("open", () => {
-    console.log("Kết nối MongoDB thành công");
     app.listen(port, () => {
         console.log(`Server chạy tại http://localhost:${port}/homepage`);
     });

@@ -6,7 +6,7 @@ const connection = async () => {
          dbName: "CSDL-THA"
       });
       console.log("<===============<Kết nối MongoDB thành công!>===============>");
-   } catch (error) {
+   } catch(error) {
       console.error("Error connecting to MongoDB:", error);
    }
 }
