@@ -47,7 +47,6 @@ app.all("{*any}", (req, res) => {
 
 /* ================== Khởi động server ================== */
 mongoose.connection.once("open", () => {
-    console.log("Kết nối MongoDB thành công");
     app.listen(port, () => {
         console.log(`Server chạy tại http://localhost:${port}/trang-chu`);
     });
