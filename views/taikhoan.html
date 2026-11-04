@@ -14,7 +14,7 @@
     <div class="container">
         <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
         <div class="ms-auto">
-          <a href="/homepage" class="btn btn-outline-light">Đăng xuất</a>
+          <a href="/trang-chu" class="btn btn-outline-light">Đăng xuất</a>
     </div>
     </div>
 </nav>
@@ -86,7 +86,12 @@
 
             <div class="mb-2">
                 <label>Tên đăng nhập</label>
-                <input type="text" class="form-control">
+                <input type="user-name" class="form-control">
+            </div>
+
+            <div class="mb-2">
+                <label>Số điện thoại</label>
+                <input type="phone-number" maxlength="10" class="form-control">
             </div>
 
             <div class="mb-2">
@@ -94,18 +99,18 @@
                 <input type="password" class="form-control">
             </div>
 
-            <div class="mb-2">
+            <!-- <div class="mb-2">
                 <label>Họ tên</label>
                 <input type="text" class="form-control">
-            </div>
+            </div> -->
 
             <div class="mb-2">
                 <label>Vai trò</label>
                 <select class="form-control">
-                    <option>Admin</option>
-                    <option>Công chức</option>
-                    <option>Chấp hành viên</option>
-                    <option>Người dân</option>
+                    <option value="0">Người dân</option>
+                    <option value="1">Chấp hành viên</option>
+                    <option value="2">Công chức</option>
+                    <option value="3">Admin</option>
                 </select>
             </div>
 
@@ -164,7 +169,9 @@
 
 <script>
 function loadUsers(){
-    fetch("/users")
+    fetch("/tai-khoan/api", {
+        method:"GET",
+    })
     .then(res=>res.json())
     .then(data=>{
         let html = "";
@@ -196,20 +203,21 @@ function addUser(e){
     e.preventDefault();
 
     const data = {
-        username: document.querySelector("#addModal input[type='text']").value,
+        userName: document.querySelector("#addModal input[type='user-name']").value,
+        phoneNumber: document.querySelector("#addModal input[type='phone-number'][maxlength='10']").value,
         password: document.querySelector("#addModal input[type='password']").value,
-        fullname: document.querySelectorAll("#addModal input[type='text']")[1].value,
         role: document.querySelector("#addModal select").value
     };
 
-    fetch("/users",{
+    fetch("/tai-khoan/api",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(data)
     })
-    .then(res=>res.text())
-    .then(msg=>{
-        alert(msg);
+    .then(res=>res.json())
+    .then(obj=>{
+        alert(obj.message);
+        alert(role);
         loadUsers();
     });
 }
@@ -251,7 +259,7 @@ function updateUser(e){
 <script>
 function deleteUser(id){
     if(confirm("Xóa tài khoản này?")){
-        fetch("/users/" + id,{
+        fetch("/tai-khoan/dang-ky" + id,{
             method:"DELETE"
         })
         .then(res=>res.text())

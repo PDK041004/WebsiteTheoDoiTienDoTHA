@@ -14,7 +14,7 @@
     <div class="container">
         <span class="navbar-brand">CỔNG DỊCH VỤ NGƯỜI DÂN</span>
         <div class="ms-auto">
-          <a href="/homepage" class="btn btn-outline-light">Đăng xuất</a>
+          <a href="/trang-chu" class="btn btn-outline-light">Đăng xuất</a>
         </div>
     </div>
 </nav>
@@ -224,7 +224,7 @@ function sendHoso(e){
         danhmuc: "Chưa phân loại"
     };
 
-    fetch("/hoso",{
+    fetch("/ban-an/api",{
         method:"POST",
         headers:{
             "Content-Type":"application/json"

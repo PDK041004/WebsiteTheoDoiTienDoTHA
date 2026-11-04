@@ -2,10 +2,16 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const accountSchema = new Schema({
-   username: {
+   userName: {
       type: String,
-      required: true,
-      unique: true
+      unique: true,
+      required: true
+   },
+   phoneNumber: {
+      type: String,
+      maxlength: 10,
+      unique: true,
+      required: true
    },
    password: {
       type: String,
@@ -13,6 +19,7 @@ const accountSchema = new Schema({
    },
    role: {
       type: Number,
+      required: false,
       default: 0
    },
    refreshToken: {

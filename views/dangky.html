@@ -22,17 +22,17 @@
 
                         <div class="mb-2">
                             <label>Họ và tên</label>
-                            <input type="text" class="form-control" required>
+                            <input type="name" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
                             <label>Số điện thoại</label>
-                            <input type="text" class="form-control" required>
+                            <input type="phone" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
                             <label>CCCD</label>
-                            <input type="text" class="form-control" required>
+                            <input type="citizenid" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
@@ -42,7 +42,7 @@
 
                         <div class="mb-2">
                             <label>Địa chỉ</label>
-                            <input type="text" class="form-control" required>
+                            <input type="address" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
@@ -63,7 +63,7 @@
                         <button class="btn btn-danger w-100 mt-3">Đăng ký</button>
 
                         <div class="text-center mt-3">
-                            <a href="/homepage">← Quay lại trang chủ</a>
+                            <a href="/trang-chu">← Quay lại trang chủ</a>
                         </div>
 
                     </form>
@@ -80,11 +80,12 @@ function register(e){
     e.preventDefault();
 
     const data = {
-        username: document.querySelector("input[type='email']").value,
+        userName: document.querySelector("input[type='name']").value,
+        phoneNumber: document.querySelector("input[type='phone']").value,
         password: document.querySelector("input[type='password']").value
     };
 
-    fetch("/accounts/register",{
+    fetch("/tai-khoan/api",{
         method:"POST",
         headers:{"Content-Type": "application/json"},
         body:JSON.stringify(data)
@@ -92,8 +93,8 @@ function register(e){
     .then(res=>res.json())
     .then(obj=>{
         alert(obj.message);
-        if(obj.code === 201){
-            location = "/homepage";
+        if(obj.account){
+            location = "/ban-an";
         }
     });
 }

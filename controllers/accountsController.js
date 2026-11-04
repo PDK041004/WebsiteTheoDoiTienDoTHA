@@ -1,84 +1,69 @@
 const path = require("path")
-const Account = require(path.join(__dirname, "..", "models", "Account"));
 const bcrypt = require("bcrypt");
+const Account = require(path.join(__dirname, "..", "models", "Account"));
 
-/* ================== Show form ================== */
-const getRegisterForm = async (req, res) => {
-   await res.status(200).sendFile(path.join(__dirname, "..", "views", "dangky.html"));
+/* ================== Truy vấn tài khoản ================== */
+// Toàn bộ
+const getAllAccounts = async (req, res) => {
+   const accounts = await Account.find().exec();
+   if(!accounts) return res.status(200).json({ message: "No account was found."});
+   res.status(200).json({ accounts })
 }
 
-/* ================== Register ================== */
-const registerAccount = async (req, res) => {
-   const { username, password } = req.body;
-   if (!username || !password) {
-      return res.status(400).json({
-         code: 400,
-         message: "Username and password are required"
-      });
+// Một
+const getAccount = async (req, res) => {
+   const { userName } = req.body;
+
+   const match = await Account.findOne({ userName }).exec();
+   if(match) { res.status(200).json({ match }); }
+}
+
+/* ================== Tạo tài khoản ================== */
+const createAccount = async (req, res) => {
+   const { userName, phoneNumber, password, role } = req.body;
+   if(!userName || !phoneNumber || !password) {
+      return res.status(400).json({ message: "Username, phone number, and password are required." });
    }
 
-   const duplicateAccount = await Account.findOne({ username: username }).exec();
-   if (duplicateAccount) {
-      res.status(409).json({
-         code: 409,
-         message: "This account already exist"});
-   }
+   const duplicate = await Account.findOne({ userName }).exec();
+   if(duplicate) { res.status(409).json({ message: "This account already exist." }); }
 
    try {
       const hashedPassword = await bcrypt.hash(password, 10)
 
       const newAccount = await Account.create({
-         "username": username,
-         "password": hashedPassword
+         "userName": userName,
+         "phoneNumber": phoneNumber,
+         "password": hashedPassword,
+         "role": role
       });
 
       console.log(newAccount);
       
       res.status(201).json({
-         code: 201,
-         message: `Account ${username} register successfully!`
+         message: `Account ${userName} registered successfully!`,
+         account: newAccount
       });
-   } catch (err) {
-      res.status(500).json({
-         code: 500,
-         message: err.message
-      });
+   } catch(err) {
+      if(phoneNumber.length > 10) {
+         return res.status(400).json({ message: "Phone number must be 10 digits or less." });
+      }
+
+      else {
+         res.status(500).json({
+            message: err.message
+         });
+      }
    }
 };
 
-
-/* ================== Login ================== */
-const login = async (req, res) => {
-   // Validate request body
-   const { username, password } = req.body;
-   if (!username || !password) {
-      return res.status(400).json({
-         code: 400,
-         message: "Username and password are required"
-      });
-   }
-
-   try {
-      // Find the account by username
-      const account = await Account.findOne({ username: username }).exec();
-      if (!account) {
-         return res.status(404).json({ message: "Account not found" });
-      }
-
-      // Compare the provided password with the hashed password
-      const isMatch = await bcrypt.compare(password, account.password);
-      if (!isMatch) {
-         return res.status(401).json({ message: "Invalid password" });
-      }
-
-      res.status(200).json({ message: "Login successful", role: account.role });
-   } catch (error) {
-      res.status(500).json({ message: error.message });
-   }
+/* ================== Cập nhật tài khoản ================== */
+const updateAccount = async (req, res) => {
+   const { userName, newUserName, newPhoneNumber, newPassword, newRole } = req.body;
 };
 
 module.exports = {
-   getRegisterForm,
-   registerAccount,
-   login
+   getAllAccounts,
+   getAccount,
+   createAccount
 };
