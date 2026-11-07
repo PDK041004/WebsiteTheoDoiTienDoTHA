@@ -10,12 +10,12 @@ const handleRefreshToken = async (req, res) => {
    const account = await Account.findOne({ refreshToken }).exec();
    if(!account) return res.status(403).json({ message: "Forbidden" });
 
-   //Evaluate JSON web token
+   //Kiểm tra refreshToken có hợp lệ không
    jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN,
       (err, decoded) => {
-         if(err || account.userName !== decoded.userName) return res.status(403).json({ message: "Forbidden 2" });
+         if(err || account.userName !== decoded.userName) return res.status(403).json({ message: "Forbidden" });
          const role = Object.values(account.role);
          const accessToken = jwt.sign(
             {

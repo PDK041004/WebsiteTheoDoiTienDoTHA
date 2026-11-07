@@ -2,9 +2,10 @@ require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const app = express();
+const credentials = require(path.join(__dirname, "middlewares", "credentials"));
 const cors = require("cors");
 const corsOptions = require(path.join(__dirname, "configs", "corsOptions"));
-const verifyJWT = require("./verifyJWT.js");
+const verifyJWT = require(path.join(__dirname, "middlewares", "verifyJWT.js"));
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const connection = require(path.join(__dirname, "configs", "database"));
@@ -14,6 +15,7 @@ const port = 3000;
 connection(); // Kết nối MongoDB
 
 /* ================== Middleware ================== */
+app.use(credentials);
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

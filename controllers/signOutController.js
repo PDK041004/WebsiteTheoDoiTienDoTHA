@@ -12,14 +12,16 @@ const handleSignOut = async (req, res) => {
    const account = await Account.findOne({ refreshToken }).exec();
    if(!account) {
          res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-         return res.status(204).json({ message: "No token to clear" });
+         return res.status(200).json({ message: "No token to clear" });
       }
    
-      account.refeshToken = null;
+      account.refreshToken = null;
       await account.save();
 
+      console.log(`User "${account.userName}" has signed out successfully!`);
+
       res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-      return res.status(204).json({ message: "Logged out successfully" });
+      return res.status(200).json({ message: "Sign-out successful!" });
 };
 
 module.exports = { handleSignOut };
