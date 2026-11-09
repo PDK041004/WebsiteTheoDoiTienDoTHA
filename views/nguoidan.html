@@ -103,7 +103,7 @@
                    <thead>
                    <tr>
                    <th>Mã hồ sơ</th>
-                   <th>Người dân</th>
+                   <th>Loại hồ sơ</th>
                    <th>Trạng thái</th>
                    </tr>
                    </thead>
@@ -225,7 +225,40 @@ async function signOut() {
     }
 }
 
-async function sendHoso(e){
+async function loadJudgements() {
+    try {
+        const res = await fetch("/ban-an/api", {
+            method: "GET",
+            credentials: "include",
+            headers:{ "Content-Type":"application/json" }
+        })
+        const data = await res.json();
+        alert(data.judgements.length + " judgements found.");
+
+        let html = "";
+
+        data.judgements.forEach(judgement => {
+            html += `
+            <tr>
+                <td>${judgement.designation}</td>
+                <td>${judgement.classification}</td>
+                <td>${judgement.documents}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editUser(${judgement.id}, '${judgement.fullname}', '${judgement.role}')">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${judgement.id})">Xóa</button>
+                </td>
+            </tr>
+            `;
+        });
+
+        document.querySelector("tbody").innerHTML = html;
+    } catch (error) {
+        console.error(error);
+        alert("Error finding judgements");
+    }
+}
+
+async function sendJudgement(e){
     e.preventDefault();
 
     const tennguoi = document.querySelector("input[type='text']").value;
@@ -262,6 +295,10 @@ async function sendHoso(e){
         alert("Error sending judgment request");
     }
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadJudgements();
+});
 </script>
 
 </body>

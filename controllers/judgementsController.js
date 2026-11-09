@@ -4,9 +4,9 @@ const Judgement = require(path.join(__dirname, "..", "models", "Judgement"));
 /* ================== Truy vấn bản án ================== */
 //Toàn bộ
 const getAllJudgements = async (req, res) => {
-   const judgementList = await Judgement.find().exec();
-   if(!judgementList) res.status(200).json({ message: "No judgement was found."});
-   res.status(200).json({ judgementList });
+   const judgements = await Judgement.find().exec();
+   if(!judgements) res.status(200).json({ message: "No judgement was found."});
+   res.status(200).json({ judgements });
 }
 
 const getJudgement = async (req, res) => {

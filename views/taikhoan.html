@@ -41,31 +41,6 @@
         </thead>
 
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>admin</td>
-                <td>Quản trị</td>
-                <td>
-                    <span class="badge bg-danger">Admin</span>
-                </td>
-                <td>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Sửa</button>
-                    <button class="btn btn-danger btn-sm">Xóa</button>
-                </td>
-            </tr>
-
-            <tr>
-                <td>2</td>
-                <td>user01</td>
-                <td>Nguyễn Văn A</td>
-                <td>
-                    <span class="badge bg-primary">Người dân</span>
-                </td>
-                <td>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Sửa</button>
-                    <button class="btn btn-danger btn-sm">Xóa</button>
-                </td>
-            </tr>
         </tbody>
     </table>
 
@@ -168,41 +143,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-async function loadAccounts() {
-    try {
-        const res = await fetch("/tai-khoan/api", {
-            method: "GET",
-            credentials: "include",
-            headers:{ "Content-Type":"application/json" }
-        })
-        const data = await res.json();
-        data.forEach(u => console.log(u));
 
-        let html = "";
 
-        data.forEach(u => {
-            html += `
-            <tr>
-                <td>${u._id}</td>
-                <td>${u.userName}</td>
-                <td></td>
-                <td>${u.role}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="editUser(${u.id}, '${u.fullname}', '${u.role}')">Sửa</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Xóa</button>
-                </td>
-            </tr>
-            `;
-        });
 
-        document.querySelector("tbody").innerHTML = html;
-    } catch (error) {
-        console.error(error);
-        alert("Error finding accounts");
-    }
-}
-
-window.onload = loadAccounts();
 </script>
 
 <script>
@@ -220,6 +163,44 @@ async function signOut() {
     } catch (error) {
         console.error(error);
         alert("Error signing out");
+    }
+}
+
+async function loadAccounts() {
+    try {
+        const res = await fetch("/tai-khoan/api", {
+            method: "GET",
+            credentials: "include",
+            headers:{ "Content-Type":"application/json" }
+        })
+        const data = await res.json();
+        alert(data.accounts.length + " accounts found.");
+
+        let html = "";
+
+        data.accounts.forEach(account => {
+            if(account.role === 0) { account.role = "Người dân"; }
+            else if(account.role === 1) { account.role = "Chấp hành viên"; }
+            else if(account.role === 2) { account.role = "Công chức"; }
+            else if(account.role === 3) { account.role = "Admin"; }
+            html += `
+            <tr>
+                <td>${account._id}</td>
+                <td>${account.userName}</td>
+                <td></td>
+                <td>${account.role}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editUser(${account.id}, '${account.fullname}', '${account.role}')">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${account.id})">Xóa</button>
+                </td>
+            </tr>
+            `;
+        });
+
+        document.querySelector("tbody").innerHTML = html;
+    } catch (error) {
+        console.error(error);
+        alert("Error finding accounts");
     }
 }
 
@@ -243,6 +224,8 @@ async function addUser(e){
         alert(obj.message);
         loadAccounts();
 }
+
+window.onload = loadAccounts();
 </script>
 
 <script>
