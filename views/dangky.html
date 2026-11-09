@@ -21,13 +21,13 @@
                     <form onsubmit="register(event)">
 
                         <div class="mb-2">
-                            <label>Họ và tên</label>
-                            <input type="text" class="form-control" required>
-                        </div>
+    <label>Họ và tên</label>
+    <input type="text" id="fullname" class="form-control" required>
+</div>
 
                         <div class="mb-2">
                             <label>Số điện thoại</label>
-                            <input type="text" class="form-control" required>
+                            <input type="text" id="phone" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
@@ -36,9 +36,9 @@
                         </div>
 
                         <div class="mb-2">
-                            <label>Email</label>
-                            <input type="email" class="form-control" required>
-                        </div>
+    <label>Tên đăng nhập</label>
+    <input type="text" id="username" class="form-control" required>
+</div>
 
                         <div class="mb-2">
                             <label>Địa chỉ</label>
@@ -51,14 +51,14 @@
                         </div>
 
                         <div class="mb-2">
-                            <label>Mật khẩu</label>
-                            <input type="password" class="form-control" required>
-                        </div>
+    <label>Mật khẩu</label>
+    <input type="password" id="password" class="form-control" required>
+</div>
 
-                        <div class="mb-2">
-                            <label>Nhập lại mật khẩu</label>
-                            <input type="password" class="form-control" required>
-                        </div>
+<div class="mb-2">
+    <label>Nhập lại mật khẩu</label>
+    <input type="password" id="password2" class="form-control" required>
+</div>
 
                         <button class="btn btn-danger w-100 mt-3">Đăng ký</button>
 
@@ -79,9 +79,17 @@
 function register(e){
     e.preventDefault();
 
+    const password = document.getElementById("password").value;
+    if (password !== document.getElementById("password2").value) {
+        alert("Mật khẩu nhập lại không khớp");
+        return;
+    }
+
     const data = {
-        username: document.querySelector("input[type='email']").value,
-        password: document.querySelector("input[type='password']").value
+        username: document.getElementById("username").value,
+        password: password,
+        fullname: document.getElementById("fullname").value,
+        phone: document.getElementById("phone").value
     };
 
     fetch("/accounts/register",{

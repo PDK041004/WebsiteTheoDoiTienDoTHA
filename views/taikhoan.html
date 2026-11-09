@@ -35,6 +35,7 @@
                 <th>STT</th>
                 <th>Tên đăng nhập</th>
                 <th>Họ tên</th>
+                <th>Số điện thoại</th>
                 <th>Vai trò</th>
                 <th>Thao tác</th>
             </tr>
@@ -98,7 +99,10 @@
                 <label>Họ tên</label>
                 <input type="text" class="form-control">
             </div>
-
+            <div class="mb-2">
+                <label>Số điện thoại</label>
+                <input type="text" id="addPhone" class="form-control">
+            </div>
             <div class="mb-2">
                 <label>Vai trò</label>
                 <select class="form-control">
@@ -140,7 +144,10 @@
         <label>Họ tên</label>
         <input type="text" id="editFullname" class="form-control">
     </div>
-
+    <div class="mb-2">
+        <label>Số điện thoại</label>
+        <input type="text" id="editPhone" class="form-control">
+    </div>
     <div class="mb-2">
         <label>Vai trò</label>
         <select id="editRole" class="form-control">
@@ -178,6 +185,7 @@ function loadUsers(){
                 <td>${i + 1}</td>
                 <td>${u.username}</td>
                 <td>${u.fullname}</td>
+                <td>${u.phone}</td>
                 <td>${u.role}</td>
                 <td>
                     <button class="btn btn-warning btn-sm" onclick="editUser(${i})">Sửa</button>
@@ -202,6 +210,7 @@ function addUser(e){
         username: document.querySelector("#addModal input[type='text']").value,
         password: document.querySelector("#addModal input[type='password']").value,
         fullname: document.querySelectorAll("#addModal input[type='text']")[1].value,
+        phone: document.getElementById("addPhone").value,
         role: document.querySelector("#addModal select").value
     };
 
@@ -229,6 +238,7 @@ function editUser(index){
 
     document.getElementById("editUsername").value = u.username;
     document.getElementById("editFullname").value = u.fullname;
+    document.getElementById("editPhone").value = u.phone;
     document.getElementById("editRole").value = u.role;
 
     new bootstrap.Modal(document.getElementById('editModal')).show();
@@ -238,9 +248,10 @@ function updateUser(e){
     e.preventDefault();
 
     const data = {
-        fullname: document.getElementById("editFullname").value,
-        role: document.getElementById("editRole").value
-    };
+    fullname: document.getElementById("editFullname").value,
+    phone: document.getElementById("editPhone").value,
+    role: document.getElementById("editRole").value
+};
 
     fetch("/users/" + currentId,{
         method:"PUT",

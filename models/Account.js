@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const accountSchema = new Schema({
-   username: {
+   userName: {
       type: String,
       required: true,
       unique: true
@@ -14,6 +14,22 @@ const accountSchema = new Schema({
    fullname: {
       type: String,
       default: ""
+   },
+   otp: { 
+      type: String, 
+      default: null 
+   },
+   otpExpires: { 
+      type: Date, 
+      default: null 
+   },
+   otpAttempts: { 
+      type: Number, 
+      default: 0 
+   },
+   phone: {
+   type: String,
+   default: ""
    },
    role: {
       type: Number,

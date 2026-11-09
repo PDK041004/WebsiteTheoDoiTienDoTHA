@@ -11,5 +11,5 @@ router.route("/register")
 // Đăng nhập
 router.route("/")
    .post(accountsController.login);
-
+router.post("/verify-otp", accountsController.verifyOtp);
 module.exports = router;

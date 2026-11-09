@@ -16,8 +16,9 @@ const getAllAccounts = async (req, res) => {
       const accounts = await Account.find().select("-password").exec();
       const result = accounts.map(a => ({
          id: a._id,
-         username: a.username,
+         username: a.userName,
          fullname: a.fullname,
+         phone: a.phone,
          role: numberToRole[a.role] ?? "Người dân"
       }));
       res.status(200).json(result);
@@ -28,12 +29,12 @@ const getAllAccounts = async (req, res) => {
 
 /* ================== Thêm tài khoản ================== */
 const addAccount = async (req, res) => {
-   const { username, password, fullname, role } = req.body;
+   const { username, password, fullname, phone, role } = req.body;
    if (!username || !password) {
       return res.status(400).json({ message: "Thiếu tên đăng nhập hoặc mật khẩu" });
    }
 
-   const duplicate = await Account.findOne({ username }).exec();
+   const duplicate = await Account.findOne({ userName:username }).exec();
    if (duplicate) {
       return res.status(409).json({ message: "Tên đăng nhập đã tồn tại" });
    }
@@ -41,11 +42,12 @@ const addAccount = async (req, res) => {
    try {
       const hashedPassword = await bcrypt.hash(password, 10);
       await Account.create({
-         username,
-         password: hashedPassword,
-         fullname,
-         role: roleToNumber[role] ?? 0
-      });
+   userName: username,
+   password: hashedPassword,
+   fullname,
+   phone,
+   role: roleToNumber[role] ?? 0
+});
       res.status(201).send("Thêm thành công");
    } catch (error) {
       res.status(500).json({ message: error.message });
@@ -54,12 +56,13 @@ const addAccount = async (req, res) => {
 
 /* ================== Sửa tài khoản ================== */
 const updateAccount = async (req, res) => {
-   const { fullname, role } = req.body;
-   try {
-      await Account.findByIdAndUpdate(req.params.id, {
-         fullname,
-         role: roleToNumber[role] ?? 0
-      }).exec();
+   const { fullname, phone, role } = req.body;
+try {
+   await Account.findByIdAndUpdate(req.params.id, {
+      fullname,
+      phone,
+      role: roleToNumber[role] ?? 0
+   }).exec();
       res.send("Đã cập nhật");
    } catch (error) {
       res.status(500).json({ message: error.message });
