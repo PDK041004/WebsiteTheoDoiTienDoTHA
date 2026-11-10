@@ -191,6 +191,8 @@ const STATUS_COLORS = {
     'Cần bổ sung': 'warning',
     'Đã xác nhận': 'primary',
     'Đã phân công': 'info',
+    'Đang xử lý': 'primary',
+    'Tạm dừng': 'warning',
     'Hoàn thành': 'success'
 };
 let hosoList = [];
@@ -262,7 +264,10 @@ function searchHoSo(e){
                 <td>${escapeHtml(hs.mahoso)}</td>
                 <td>${escapeHtml(hs.loaihoso)}</td>
                 <td>${new Date(hs.createdAt).toLocaleDateString('vi-VN')}</td>
-                <td><span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span></td>
+                <td>
+                    <span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span>
+                    ${['Đang xử lý', 'Tạm dừng'].includes(hs.trangthai) ? `<br><small>Giai đoạn: ${escapeHtml(hs.giaidoan || 'Khởi động')}</small>` : ''}
+                </td>
                 <td>
                     ${hs.trangthai === 'Cần bổ sung'
                         ? `<div class="text-danger mb-2" style="white-space:pre-wrap">${escapeHtml(hs.phanhoi)}</div>

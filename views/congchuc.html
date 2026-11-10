@@ -34,6 +34,7 @@
         <a href="#" onclick="showSection('phancong')">Phân công xử lý</a>
         <a href="#" onclick="showSection('xacnhan')">Xác nhận hồ sơ</a>
         <a href="#" onclick="showSection('baocao')">Báo cáo</a>
+        <a href="#" onclick="showSection('thongke')">Thống kê</a>
         <a href="/homepage">Đăng xuất</a>
     </div>
 
@@ -166,9 +167,105 @@
             <!-- BÁO CÁO -->
             <div id="baocao" class="section" style="display:none">
                 <div class="card">
-                    <div class="card-header bg-danger text-white">Báo cáo</div>
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Báo cáo tiến độ hồ sơ đã phân công</span>
+                        <button class="btn btn-light btn-sm" onclick="loadBaoCao()">Tải lại</button>
+                    </div>
                     <div class="card-body">
-                        <p>Chức năng báo cáo...</p>
+                        <form class="row g-2 mb-3" onsubmit="event.preventDefault(); loadBaoCao()">
+                            <div class="col-md-3">
+                                <label for="bcPhongban">Phòng ban</label>
+                                <select id="bcPhongban" class="form-select">
+                                    <option value="">-- Tất cả phòng ban --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="bcChv">Tên chấp hành viên</label>
+                                <input type="text" id="bcChv" class="form-control" placeholder="Nhập họ tên hoặc tài khoản">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="bcTrangthai">Trạng thái</label>
+                                <select id="bcTrangthai" class="form-select">
+                                    <option value="">-- Tất cả --</option>
+                                    <option>Đã phân công</option>
+                                    <option>Đang xử lý</option>
+                                    <option>Tạm dừng</option>
+                                    <option>Hoàn thành</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-danger w-100">Tra cứu</button>
+                            </div>
+                        </form>
+
+                        <div class="row g-2 mb-3 text-center" id="bcThongke"></div>
+
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Người dân</th>
+                                    <th>Loại hồ sơ</th>
+                                    <th>Chấp hành viên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Trạng thái</th>
+                                    <th>Giai đoạn</th>
+                                    <th>Ngày phân công</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bcTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THỐNG KÊ -->
+            <div id="thongke" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Thống kê bản án theo tháng</span>
+                        <form class="d-flex gap-2" onsubmit="event.preventDefault(); loadThongKe()">
+                            <input type="month" id="tkThang" class="form-control form-control-sm" required>
+                            <button class="btn btn-light btn-sm text-nowrap">Xem</button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-4 text-center" id="tkTong"></div>
+
+                        <h6>Bản án hoàn thành trong tháng và giá trị thành tiền</h6>
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Người dân</th>
+                                    <th>Loại hồ sơ</th>
+                                    <th>Chấp hành viên</th>
+                                    <th>Ngày hoàn thành</th>
+                                    <th>Phiếu thu</th>
+                                    <th class="text-end">Giá trị thi hành</th>
+                                    <th class="text-end">Phí thi hành án</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tkHoanThanh"></tbody>
+                            <tfoot id="tkHoanThanhTong" class="fw-bold"></tfoot>
+                        </table>
+
+                        <h6 class="mt-4">Bản án treo (chưa hoàn thành tính đến cuối tháng)</h6>
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Người dân</th>
+                                    <th>Chấp hành viên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Ngày phân công</th>
+                                    <th>Số ngày treo</th>
+                                    <th>Trạng thái hiện tại</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tkTreo"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -284,6 +381,98 @@
     </div>
 </div>
 
+<!-- MODAL CHI TIẾT HỒ SƠ (BÁO CÁO) -->
+<div class="modal fade" id="bcModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Hồ sơ <span id="bcMahoso"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bcStepper" class="d-flex flex-wrap gap-2 mb-3"></div>
+                <div class="row">
+                    <div class="col-md-5">
+                        <p><strong>Người yêu cầu:</strong> <span id="bcTennguoi"></span></p>
+                        <p><strong>CCCD:</strong> <span id="bcCccd"></span></p>
+                        <p><strong>Loại hồ sơ:</strong> <span id="bcLoaihoso"></span></p>
+                        <p><strong>Chấp hành viên:</strong> <span id="bcOfficer"></span></p>
+                        <p><strong>Nội dung yêu cầu:</strong></p>
+                        <p id="bcNoidung" class="border rounded p-2 bg-light" style="white-space:pre-wrap"></p>
+                        <p class="mb-1"><strong>Nội dung xử lý của chấp hành viên:</strong></p>
+                        <p id="bcNoidungxuly" class="border rounded p-2 bg-light" style="white-space:pre-wrap"></p>
+                        <div id="bcCuongChe" class="alert alert-danger" style="display:none"></div>
+
+                        <p class="mb-1"><strong>Bản án:</strong></p>
+                        <ul id="bcFiles" class="list-group mb-3"></ul>
+
+                        <p class="mb-1"><strong>Lịch sử tiến độ:</strong></p>
+                        <ul id="bcLichsu" class="list-group list-group-flush small"></ul>
+                    </div>
+                    <div class="col-md-7">
+                        <div id="bcPreview" class="border rounded bg-light d-flex align-items-center justify-content-center text-muted"
+                             style="height:60vh">Chọn một file bản án để xem</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LẬP PHIẾU THU -->
+<div class="modal fade" id="ptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" onsubmit="savePhieuThu(event)">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Lập phiếu thu - <span id="ptMahoso"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label for="ptNguoinop">Người nộp</label>
+                    <input type="text" id="ptNguoinop" class="form-control" required>
+                </div>
+                <div class="mb-2">
+                    <label for="ptSotien">Số tiền / giá trị tài sản thực nhận (VNĐ)</label>
+                    <input type="number" id="ptSotien" class="form-control" required min="1" step="1" oninput="previewPhi()">
+                </div>
+                <div class="mb-2">
+                    <label for="ptHinhthuc">Hình thức thu</label>
+                    <select id="ptHinhthuc" class="form-select">
+                        <option>Tiền mặt</option>
+                        <option>Chuyển khoản</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label for="ptNoidung">Nội dung thu</label>
+                    <input type="text" id="ptNoidung" class="form-control">
+                </div>
+                <div class="border rounded p-2 bg-light">
+                    <p class="mb-1"><strong>Phí thi hành án:</strong> <span id="ptPhi" class="text-danger fs-5">0 đ</span></p>
+                    <div id="ptChitiet" class="small text-muted"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button id="btnPhieuThu" class="btn btn-success">Lập phiếu thu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL XEM / IN PHIẾU THU -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="receiptContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-primary" onclick="printReceipt()">In phiếu thu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -296,6 +485,8 @@ function showSection(id) {
     if (id === 'phancong') loadPhanCong();
     if (id === 'xacnhan') loadPendingHoSo();
     if (id === 'phongban') loadPhongBan();
+    if (id === 'baocao') openBaoCao();
+    if (id === 'thongke') loadThongKe();
 }
 
 function escapeHtml(text) {
@@ -766,6 +957,416 @@ function removeMember(accountId) {
         .catch(err => {
             console.error(err);
             alert('Không kết nối được server');
+        });
+}
+
+/* ================== Báo cáo tiến độ ================== */
+const STATUS_COLORS = { 'Đã phân công': 'info', 'Đang xử lý': 'primary', 'Tạm dừng': 'warning', 'Hoàn thành': 'success' };
+const THU_TU_GIAI_DOAN = ['Khởi động', 'Xác nhận điều kiện', 'Tự nguyện', 'Cưỡng chế', 'Kết thúc'];
+let baocaoList = [];
+let bieuPhi = [];
+let currentBaoCao = null;
+
+function getCurrentAccount() {
+    try {
+        return JSON.parse(localStorage.getItem('account')) || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString('vi-VN') + ' đ';
+}
+
+function openBaoCao() {
+    loadPhongBan().then(() => {
+        const select = document.getElementById('bcPhongban');
+        const selected = select.value;
+        select.innerHTML = '<option value="">-- Tất cả phòng ban --</option>'
+            + phongbanList.map(pb => `<option value="${pb._id}">${escapeHtml(pb.tenphong)}</option>`).join('')
+            + `<option value="${NO_PHONGBAN}">Chưa có phòng ban</option>`;
+        select.value = [...select.options].some(o => o.value === selected) ? selected : '';
+        loadBaoCao();
+    });
+    if (bieuPhi.length === 0) {
+        fetch('/baocao/bieu-phi').then(res => res.json()).then(list => bieuPhi = list).catch(console.error);
+    }
+}
+
+function loadBaoCao() {
+    const params = new URLSearchParams();
+    const phongban = document.getElementById('bcPhongban').value;
+    const chv = document.getElementById('bcChv').value.trim();
+    const trangthai = document.getElementById('bcTrangthai').value;
+    if (phongban) params.set('phongban', phongban);
+    if (chv) params.set('chv', chv);
+    if (trangthai) params.set('trangthai', trangthai);
+
+    fetch('/baocao?' + params)
+        .then(res => res.json())
+        .then(list => {
+            const tbody = document.getElementById('bcTable');
+            if (!Array.isArray(list)) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">${escapeHtml(list.message)}</td></tr>`;
+                return;
+            }
+            baocaoList = list;
+            renderThongKe(list);
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Không có hồ sơ nào phù hợp</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(hs => {
+                const officer = hs.assignedTo;
+                const daKetThuc = hs.trangthai === 'Hoàn thành' && hs.giaidoan === 'Kết thúc';
+                let action = `<button class="btn btn-outline-primary btn-sm" onclick="openBaoCaoHoSo('${hs._id}')">Xem</button>`;
+                if (hs.phieuthu) {
+                    action += ` <button class="btn btn-outline-success btn-sm" onclick="showReceipt('${hs._id}')">Phiếu thu</button>`;
+                } else if (daKetThuc) {
+                    action += ` <button class="btn btn-success btn-sm" onclick="openPhieuThu('${hs._id}')">Lập phiếu thu</button>`;
+                }
+                return `
+                    <tr>
+                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${escapeHtml(hs.tennguoi)}</td>
+                        <td>${escapeHtml(hs.loaihoso)}</td>
+                        <td>${officer ? escapeHtml(officer.fullname || officer.userName) : '-'}</td>
+                        <td>${officer && officer.phongban ? escapeHtml(officer.phongban.tenphong) : '<span class="text-muted">Chưa có</span>'}</td>
+                        <td><span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span></td>
+                        <td>${hs.trangthai === 'Đã phân công' ? '<span class="text-muted">Chờ nhận</span>' : escapeHtml(hs.giaidoan || 'Khởi động')}</td>
+                        <td>${hs.assignedAt ? new Date(hs.assignedAt).toLocaleDateString('vi-VN') : '-'}</td>
+                        <td class="text-nowrap">${action}</td>
+                    </tr>`;
+            }).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được báo cáo');
+        });
+}
+
+function renderThongKe(list) {
+    const count = (fn) => list.filter(fn).length;
+    const items = [
+        ['Tổng hồ sơ', list.length, 'secondary'],
+        ['Chờ CHV nhận', count(hs => hs.trangthai === 'Đã phân công'), 'info'],
+        ['Đang xử lý', count(hs => hs.trangthai === 'Đang xử lý'), 'primary'],
+        ['Tạm dừng', count(hs => hs.trangthai === 'Tạm dừng'), 'warning'],
+        ['Hoàn thành', count(hs => hs.trangthai === 'Hoàn thành'), 'success'],
+        ['Đã lập phiếu thu', count(hs => hs.phieuthu), 'dark']
+    ];
+    document.getElementById('bcThongke').innerHTML = items.map(([ten, so, mau]) => `
+        <div class="col-md-2 col-6">
+            <div class="border border-${mau} rounded p-2">
+                <div class="fs-4 fw-bold text-${mau}">${so}</div>
+                <small>${ten}</small>
+            </div>
+        </div>`).join('');
+}
+
+/* ================== Chi tiết hồ sơ trong báo cáo ================== */
+function openBaoCaoHoSo(id) {
+    currentBaoCao = baocaoList.find(hs => hs._id === id);
+    if (!currentBaoCao) return;
+    const hs = currentBaoCao;
+    const officer = hs.assignedTo;
+
+    document.getElementById('bcMahoso').innerText = hs.mahoso;
+    document.getElementById('bcTennguoi').innerText = hs.tennguoi;
+    document.getElementById('bcCccd').innerText = hs.cccd;
+    document.getElementById('bcLoaihoso').innerText = hs.loaihoso;
+    document.getElementById('bcOfficer').innerText = officer
+        ? (officer.fullname || officer.userName) + (officer.phongban ? ` - ${officer.phongban.tenphong}` : '')
+        : '-';
+    document.getElementById('bcNoidung').innerText = hs.noidung || '(Không có)';
+    document.getElementById('bcNoidungxuly').innerText = hs.noidungxuly || '(Chưa cập nhật)';
+
+    const cc = hs.cuongche;
+    const ccBox = document.getElementById('bcCuongChe');
+    ccBox.style.display = cc && cc.cancu && cc.cancu.length ? 'block' : 'none';
+    if (cc && cc.cancu) {
+        ccBox.innerHTML = `<strong>Điều kiện cưỡng chế</strong> (${formatDate(cc.thoigian)})`
+            + `<ul class="mb-1">${cc.cancu.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>`
+            + `<span style="white-space:pre-wrap">${escapeHtml(cc.noidung)}</span>`;
+    }
+
+    // Thanh giai đoạn: đã qua (xanh lá), hiện tại (xanh dương), Cưỡng chế bị bỏ qua (gạch ngang)
+    const current = hs.trangthai === 'Đã phân công' ? null : (hs.giaidoan || 'Khởi động');
+    const visited = new Set(hs.lichsu.map(l => l.giaidoan).filter(Boolean));
+    if (current) visited.add(current);
+    document.getElementById('bcStepper').innerHTML = THU_TU_GIAI_DOAN.map((gd, i) => {
+        let cls = 'bg-light text-muted border';
+        if (gd === current) cls = current === 'Kết thúc' ? 'bg-success' : 'bg-primary';
+        else if (visited.has(gd)) cls = 'bg-success';
+        else if (gd === 'Cưỡng chế' && current === 'Kết thúc') cls = 'bg-light text-muted border text-decoration-line-through';
+        return `<span class="badge fs-6 ${cls}">${i + 1}. ${gd}</span>`;
+    }).join('');
+
+    // Bản án người dân gửi và tài liệu chấp hành viên đính kèm
+    hs.allFiles = [...hs.files, ...(hs.tailieu || []).map(f => ({ ...f, originalname: '[Tài liệu CHV] ' + f.originalname }))];
+    document.getElementById('bcFiles').innerHTML = hs.allFiles.length === 0
+        ? '<li class="list-group-item text-muted">Không có file</li>'
+        : hs.allFiles.map((f, i) => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${escapeHtml(f.originalname)}</span>
+                <span>
+                    <button class="btn btn-outline-primary btn-sm" onclick="previewBaoCaoFile(${i})">Xem</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="/uploads/banan/${encodeURIComponent(f.filename)}" target="_blank">Mở tab mới</a>
+                </span>
+            </li>`).join('');
+
+    document.getElementById('bcLichsu').innerHTML = [...hs.lichsu].reverse().map(l => `
+        <li class="list-group-item px-0">
+            <strong>${formatDate(l.thoigian)}</strong> - ${escapeHtml(l.trangthai)}
+            ${l.giaidoan ? `<span class="badge bg-secondary">${escapeHtml(l.giaidoan)}</span>` : ''}
+            ${l.ghichu ? `<br><span class="text-muted">${escapeHtml(l.ghichu)}</span>` : ''}
+        </li>`).join('');
+
+    document.getElementById('bcPreview').innerHTML = 'Chọn một file bản án để xem';
+    if (hs.allFiles.length > 0) previewBaoCaoFile(0);
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('bcModal')).show();
+}
+
+function previewBaoCaoFile(index) {
+    const file = currentBaoCao.allFiles[index];
+    const url = '/uploads/banan/' + encodeURIComponent(file.filename);
+    document.getElementById('bcPreview').innerHTML = file.mimetype === 'application/pdf'
+        ? `<iframe src="${url}" class="w-100 h-100 border-0"></iframe>`
+        : `<img src="${url}" class="mw-100 mh-100" alt="Bản án">`;
+}
+
+/* ================== Phiếu thu ================== */
+// Phí tính lũy tiến từng phần theo biểu phí lấy từ server
+function tinhPhi(sotien) {
+    const chitiet = [];
+    const phi = bieuPhi.reduce((tong, bac) => {
+        if (sotien <= bac.tu) return tong;
+        const den = bac.den === null ? sotien : Math.min(sotien, bac.den);
+        const tien = (den - bac.tu) * bac.tyle;
+        chitiet.push(`${formatMoney(bac.tu)} - ${formatMoney(den)}: ${(bac.tyle * 100).toLocaleString('vi-VN')}% = ${formatMoney(Math.round(tien))}`);
+        return tong + tien;
+    }, 0);
+    return { phi: Math.round(phi), chitiet };
+}
+
+function previewPhi() {
+    const sotien = Number(document.getElementById('ptSotien').value) || 0;
+    const { phi, chitiet } = tinhPhi(sotien);
+    document.getElementById('ptPhi').innerText = formatMoney(phi);
+    document.getElementById('ptChitiet').innerHTML = chitiet.map(escapeHtml).join('<br>');
+}
+
+function openPhieuThu(id) {
+    currentBaoCao = baocaoList.find(hs => hs._id === id);
+    if (!currentBaoCao) return;
+
+    document.getElementById('ptMahoso').innerText = currentBaoCao.mahoso;
+    document.getElementById('ptNguoinop').value = currentBaoCao.tennguoi;
+    document.getElementById('ptSotien').value = '';
+    document.getElementById('ptHinhthuc').value = 'Tiền mặt';
+    document.getElementById('ptNoidung').value = `Thu phí thi hành án hồ sơ ${currentBaoCao.mahoso}`;
+    previewPhi();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('ptModal')).show();
+}
+
+function savePhieuThu(e) {
+    e.preventDefault();
+    if (!currentBaoCao) return;
+    const sotien = Number(document.getElementById('ptSotien').value);
+    if (!confirm(`Lập phiếu thu phí ${formatMoney(tinhPhi(sotien).phi)} cho hồ sơ ${currentBaoCao.mahoso}?`)) return;
+
+    const account = getCurrentAccount();
+    const btn = document.getElementById('btnPhieuThu');
+    btn.disabled = true;
+
+    fetch(`/baocao/${currentBaoCao._id}/phieu-thu`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            nguoinop: document.getElementById('ptNguoinop').value.trim(),
+            sotienthucnhan: sotien,
+            hinhthuc: document.getElementById('ptHinhthuc').value,
+            noidung: document.getElementById('ptNoidung').value.trim(),
+            accountId: account ? account._id : null
+        })
+    })
+        .then(res => res.json())
+        .then(obj => {
+            alert(obj.message);
+            if (obj.code === 201) {
+                bootstrap.Modal.getInstance(document.getElementById('ptModal')).hide();
+                loadBaoCao();
+                showReceipt(currentBaoCao._id);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        })
+        .finally(() => btn.disabled = false);
+}
+
+// Đọc số tiền bằng chữ
+const CHU_SO = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+const DON_VI = ['', ' nghìn', ' triệu', ' tỷ', ' nghìn tỷ', ' triệu tỷ'];
+
+function docBaSo(so, docDu) {
+    const tram = Math.floor(so / 100), chuc = Math.floor(so % 100 / 10), dv = so % 10;
+    const parts = [];
+    if (docDu || tram > 0) parts.push(CHU_SO[tram] + ' trăm');
+    if (chuc > 1) parts.push(CHU_SO[chuc] + ' mươi');
+    else if (chuc === 1) parts.push('mười');
+    else if (dv > 0 && parts.length > 0) parts.push('lẻ');
+    if (dv === 1 && chuc > 1) parts.push('mốt');
+    else if (dv === 5 && chuc > 0) parts.push('lăm');
+    else if (dv > 0) parts.push(CHU_SO[dv]);
+    return parts.join(' ');
+}
+
+function docSoTien(soTien) {
+    let n = Math.round(soTien);
+    if (n === 0) return 'Không đồng';
+    const nhom = [];
+    while (n > 0) {
+        nhom.push(n % 1000);
+        n = Math.floor(n / 1000);
+    }
+    const parts = [];
+    for (let i = nhom.length - 1; i >= 0; i--) {
+        if (nhom[i] === 0) continue;
+        parts.push(docBaSo(nhom[i], parts.length > 0) + DON_VI[i]);
+    }
+    const text = parts.join(' ');
+    return text.charAt(0).toUpperCase() + text.slice(1) + ' đồng';
+}
+
+function showReceipt(hosoId) {
+    fetch(`/baocao/${hosoId}/phieu-thu`)
+        .then(res => res.json())
+        .then(pt => {
+            if (!pt.sophieu) return alert(pt.message);
+            const ngay = new Date(pt.createdAt);
+            document.getElementById('receiptContent').innerHTML = `
+                <div id="receiptPrint" style="font-family:'Times New Roman',serif">
+                    <div style="display:flex;justify-content:space-between">
+                        <div style="text-align:center"><strong>CƠ QUAN THI HÀNH ÁN DÂN SỰ</strong></div>
+                        <div style="text-align:center">
+                            <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>
+                            <em>Độc lập - Tự do - Hạnh phúc</em>
+                        </div>
+                    </div>
+                    <h4 style="text-align:center;margin:24px 0 4px">BIÊN LAI THU PHÍ THI HÀNH ÁN</h4>
+                    <p style="text-align:center;margin:0">Số: ${escapeHtml(pt.sophieu)}</p>
+                    <p style="text-align:center"><em>Ngày ${ngay.getDate()} tháng ${ngay.getMonth() + 1} năm ${ngay.getFullYear()}</em></p>
+                    <p>Họ tên người nộp: <strong>${escapeHtml(pt.nguoinop)}</strong></p>
+                    <p>Số CCCD: ${escapeHtml(pt.cccd)}</p>
+                    <p>Hồ sơ thi hành án: ${escapeHtml(pt.hoso ? pt.hoso.mahoso : '')}${pt.hoso && pt.hoso.loaihoso ? ` (${escapeHtml(pt.hoso.loaihoso)})` : ''}</p>
+                    <p>Nội dung thu: ${escapeHtml(pt.noidung)}</p>
+                    <p>Số tiền / giá trị tài sản thực nhận: ${formatMoney(pt.sotienthucnhan)}</p>
+                    <p>Số tiền phí phải nộp: <strong>${formatMoney(pt.phithihanhan)}</strong></p>
+                    <p>Bằng chữ: <em>${docSoTien(pt.phithihanhan)}</em></p>
+                    <p>Hình thức thu: ${escapeHtml(pt.hinhthuc)}</p>
+                    <div style="display:flex;justify-content:space-around;text-align:center;margin-top:32px">
+                        <div><strong>Người nộp tiền</strong><br><em>(Ký, ghi rõ họ tên)</em><br><br><br><br>${escapeHtml(pt.nguoinop)}</div>
+                        <div><strong>Người thu tiền</strong><br><em>(Ký, ghi rõ họ tên)</em><br><br><br><br>${escapeHtml(pt.tennguoilap)}</div>
+                    </div>
+                </div>`;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal')).show();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được phiếu thu');
+        });
+}
+
+function printReceipt() {
+    const win = window.open('', '_blank');
+    if (!win) return alert('Trình duyệt đã chặn cửa sổ in, vui lòng cho phép pop-up');
+    win.document.write(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Biên lai thu phí</title></head>`
+        + `<body style="padding:24px">${document.getElementById('receiptPrint').outerHTML}</body></html>`);
+    win.document.close();
+    win.focus();
+    win.print();
+}
+
+/* ================== Thống kê theo tháng ================== */
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function loadThongKe() {
+    const input = document.getElementById('tkThang');
+    if (!input.value) {
+        const now = new Date();
+        input.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    fetch('/baocao/thong-ke?thang=' + encodeURIComponent(input.value))
+        .then(res => res.json())
+        .then(data => {
+            if (!data.tong) return alert(data.message);
+            const [nam, thang] = data.thang.split('-').map(Number);
+            const tenThang = `tháng ${thang}/${nam}`;
+            const tong = data.tong;
+
+            const cards = [
+                [`Hoàn thành ${tenThang}`, tong.hoanthanh, 'success'],
+                ['Bản án treo', tong.treo, 'danger'],
+                ['Trong đó tạm dừng', tong.tamdung, 'warning'],
+                ['Tổng giá trị thi hành', formatMoney(tong.giatri), 'primary'],
+                ['Tổng phí thi hành án', formatMoney(tong.phi), 'dark']
+            ];
+            document.getElementById('tkTong').innerHTML = cards.map(([ten, so, mau]) => `
+                <div class="col">
+                    <div class="border border-${mau} rounded p-2 h-100">
+                        <div class="fs-5 fw-bold text-${mau}">${so}</div>
+                        <small>${ten}</small>
+                    </div>
+                </div>`).join('');
+
+            const officerName = (o) => o ? escapeHtml(o.fullname || o.userName) : '-';
+
+            document.getElementById('tkHoanThanh').innerHTML = data.hoanthanh.length === 0
+                ? `<tr><td colspan="8" class="text-center text-muted">Không có bản án nào hoàn thành trong ${tenThang}</td></tr>`
+                : data.hoanthanh.map(hs => `
+                    <tr>
+                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${escapeHtml(hs.tennguoi)}</td>
+                        <td>${escapeHtml(hs.loaihoso)}</td>
+                        <td>${officerName(hs.assignedTo)}</td>
+                        <td>${new Date(hs.hoanthanhAt).toLocaleDateString('vi-VN')}</td>
+                        <td>${hs.phieuthu ? escapeHtml(hs.phieuthu.sophieu) : '<span class="badge bg-warning text-dark">Chưa lập</span>'}</td>
+                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.sotienthucnhan) : '-'}</td>
+                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.phithihanhan) : '-'}</td>
+                    </tr>`).join('');
+            document.getElementById('tkHoanThanhTong').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-end">Tổng ${tenThang}${tong.chuaLapPhieu ? ` (${tong.chuaLapPhieu} bản án chưa lập phiếu thu, chưa tính)` : ''}</td>
+                    <td class="text-end">${formatMoney(tong.giatri)}</td>
+                    <td class="text-end">${formatMoney(tong.phi)}</td>
+                </tr>`;
+
+            // Số ngày treo tính tới cuối tháng (hoặc hôm nay nếu là tháng hiện tại)
+            const mocTinh = Math.min(Date.now(), new Date(nam, thang, 1).getTime());
+            document.getElementById('tkTreo').innerHTML = data.treo.length === 0
+                ? `<tr><td colspan="7" class="text-center text-muted">Không có bản án treo</td></tr>`
+                : data.treo.map(hs => `
+                    <tr>
+                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${escapeHtml(hs.tennguoi)}</td>
+                        <td>${officerName(hs.assignedTo)}</td>
+                        <td>${hs.assignedTo && hs.assignedTo.phongban ? escapeHtml(hs.assignedTo.phongban.tenphong) : '<span class="text-muted">Chưa có</span>'}</td>
+                        <td>${new Date(hs.assignedAt).toLocaleDateString('vi-VN')}</td>
+                        <td>${Math.max(0, Math.floor((mocTinh - new Date(hs.assignedAt)) / MS_PER_DAY))}</td>
+                        <td>
+                            <span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span>
+                            ${hs.giaidoan ? `<small class="text-muted">(${escapeHtml(hs.giaidoan)})</small>` : ''}
+                        </td>
+                    </tr>`).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được thống kê');
         });
 }
 

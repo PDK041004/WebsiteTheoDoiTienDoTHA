@@ -31,6 +31,15 @@ router.put("/:id/yeu-cau-bo-sung", hosoController.requestSupplement);
 // Chấp hành viên xác minh đã nhận hồ sơ
 router.put("/:id/nhan-ho-so", hosoController.receiveHoSo);
 
+// Căn cứ được chọn khi chuyển sang giai đoạn Cưỡng chế
+router.get("/can-cu-cuong-che", hosoController.getCanCuCuongChe);
+
+// Chấp hành viên cập nhật tiến độ / chuyển giai đoạn thi hành án
+router.put("/:id/tien-do", hosoController.updateTienDo);
+
+// Chấp hành viên cập nhật nội dung, trạng thái, tài liệu hồ sơ
+router.put("/:id/cap-nhat", uploadBanAn, hosoController.updateHoSo);
+
 // Người dân gửi bổ sung bản án
 router.put("/:id/bo-sung", uploadBanAn, hosoController.supplementHoSo);
 

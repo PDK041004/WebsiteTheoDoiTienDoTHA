@@ -76,6 +76,7 @@ app.use("/hoso", require("./routes/api/hoso"));//Hồ sơ
 app.use("/enforcers", require("./routes/api/enforcers"));//Chấp hành viên
 app.use("/phongban", require("./routes/api/phongban"));//Phòng ban
 app.use("/thongbao", require("./routes/api/thongbao"));//Thông báo
+app.use("/baocao", require("./routes/api/baocao"));//Báo cáo, phiếu thu
 
 app.all("{*any}", (req, res) => {
     res.status(404);

@@ -11,7 +11,7 @@ const {
    countActiveHoSo
 } = require(path.join(__dirname, "enforcersController"));
 
-const { TRANG_THAI } = HoSo;
+const { TRANG_THAI, GIAI_DOAN, GIAI_DOAN_TIEP_THEO, CAN_CU_CUONG_CHE } = HoSo;
 const CCCD_REGEX = /^\d{12}$/;
 
 // Xóa file vừa upload khi yêu cầu không hợp lệ
@@ -65,7 +65,7 @@ const searchByCccd = async (req, res) => {
 
    try {
       const hoso = await HoSo.find({ cccd })
-         .select("mahoso tennguoi loaihoso trangthai phanhoi lichsu files createdAt updatedAt")
+         .select("mahoso tennguoi loaihoso trangthai giaidoan phanhoi lichsu files createdAt updatedAt")
          .sort({ createdAt: -1 })
          .lean();
       res.status(200).json(hoso);
@@ -291,10 +291,11 @@ const receiveHoSo = async (req, res) => {
       const hoso = await HoSo.findOneAndUpdate(
          { _id: req.params.id, assignedTo: officerId, trangthai: TRANG_THAI.DA_PHAN_CONG },
          {
-            $set: { trangthai: TRANG_THAI.DANG_XU_LY },
+            $set: { trangthai: TRANG_THAI.DANG_XU_LY, giaidoan: GIAI_DOAN.KHOI_DONG },
             $push: {
                lichsu: {
                   trangthai: TRANG_THAI.DANG_XU_LY,
+                  giaidoan: GIAI_DOAN.KHOI_DONG,
                   ghichu: "Chấp hành viên đã nhận hồ sơ" + (ghichu ? ": " + ghichu : "")
                }
             }
@@ -314,6 +315,174 @@ const receiveHoSo = async (req, res) => {
    }
 };
 
+/* ================== CHV cập nhật tiến độ thi hành án ================== */
+// Chỉ đổi giai đoạn, không đổi trạng thái hồ sơ (trạng thái đổi ở "Cập nhật hồ sơ")
+// Không gửi giaidoan: ghi nhận tiến độ trong giai đoạn hiện tại
+// Có giaidoan: chuyển sang giai đoạn đó (phải đúng thứ tự trong GIAI_DOAN_TIEP_THEO)
+// Sang Cưỡng chế: bắt buộc gửi cancu (danh sách căn cứ) và ghichu (nội dung điều kiện)
+const updateTienDo = async (req, res) => {
+   const { officerId, giaidoan } = req.body;
+   const ghichu = (req.body.ghichu || "").trim();
+   const cancu = Array.isArray(req.body.cancu) ? [...new Set(req.body.cancu)] : [];
+   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(officerId)) {
+      return res.status(400).json({ code: 400, message: "Mã hồ sơ hoặc chấp hành viên không hợp lệ" });
+   }
+   if (!giaidoan && !ghichu) {
+      return res.status(400).json({ code: 400, message: "Vui lòng nhập nội dung tiến độ" });
+   }
+   if (giaidoan === GIAI_DOAN.CUONG_CHE) {
+      if (cancu.length === 0 || !cancu.every(c => CAN_CU_CUONG_CHE.includes(c))) {
+         return res.status(400).json({ code: 400, message: "Vui lòng chọn căn cứ cưỡng chế" });
+      }
+      if (!ghichu) {
+         return res.status(400).json({ code: 400, message: "Vui lòng nhập nội dung điều kiện dẫn tới phải cưỡng chế" });
+      }
+   }
+
+   try {
+      const hoso = await HoSo.findOne({ _id: req.params.id, assignedTo: officerId }).lean();
+      if (!hoso) {
+         return res.status(404).json({ code: 404, message: "Hồ sơ không thuộc về bạn" });
+      }
+      if (hoso.trangthai !== TRANG_THAI.DANG_XU_LY) {
+         return res.status(409).json({
+            code: 409,
+            message: `Hồ sơ đang ở trạng thái "${hoso.trangthai}", chỉ cập nhật tiến độ khi hồ sơ "Đang xử lý"`
+         });
+      }
+
+      // Hồ sơ nhận trước khi có chức năng tiến độ được coi là đang Khởi động
+      const current = hoso.giaidoan || GIAI_DOAN.KHOI_DONG;
+      if (giaidoan && !GIAI_DOAN_TIEP_THEO[current].includes(giaidoan)) {
+         return res.status(409).json({
+            code: 409,
+            message: `Không thể chuyển từ "${current}" sang "${giaidoan}"`
+         });
+      }
+
+      const newGiaiDoan = giaidoan || current;
+      let noiDung = ghichu;
+      if (giaidoan === GIAI_DOAN.CUONG_CHE) {
+         noiDung = `Chuyển sang giai đoạn Cưỡng chế. Căn cứ: ${cancu.join("; ")}. Điều kiện: ${ghichu}`;
+      } else if (giaidoan) {
+         noiDung = `Chuyển sang giai đoạn ${giaidoan}` + (ghichu ? ": " + ghichu : "");
+      }
+
+      const set = { giaidoan: newGiaiDoan };
+      if (giaidoan === GIAI_DOAN.CUONG_CHE) {
+         set.cuongche = { cancu, noidung: ghichu, thoigian: new Date() };
+      }
+
+      // Lọc theo giai đoạn hiện tại để 2 lần cập nhật cùng lúc không chuyển sai bước
+      const updated = await HoSo.findOneAndUpdate(
+         {
+            _id: hoso._id,
+            assignedTo: officerId,
+            trangthai: TRANG_THAI.DANG_XU_LY,
+            giaidoan: hoso.giaidoan
+         },
+         {
+            $set: set,
+            $push: { lichsu: { trangthai: hoso.trangthai, giaidoan: newGiaiDoan, ghichu: noiDung } }
+         },
+         { returnDocument: "after" }
+      );
+      if (!updated) {
+         return res.status(409).json({ code: 409, message: "Hồ sơ vừa được cập nhật ở nơi khác, vui lòng tải lại" });
+      }
+
+      res.status(200).json({
+         code: 200,
+         message: giaidoan
+            ? `Hồ sơ ${updated.mahoso} đã chuyển sang giai đoạn ${giaidoan}`
+               + (giaidoan === GIAI_DOAN.KET_THUC ? `. Vào "Cập nhật hồ sơ" để chuyển trạng thái Hoàn thành` : "")
+            : `Đã ghi nhận tiến độ hồ sơ ${updated.mahoso}`
+      });
+   } catch (error) {
+      res.status(500).json({ code: 500, message: error.message });
+   }
+};
+
+/* ================== CHV cập nhật nội dung và trạng thái hồ sơ ================== */
+// multipart: officerId, trangthai, noidungxuly, ghichu, file tài liệu (field "banan")
+// Đang xử lý <-> Tạm dừng (bắt buộc lý do); Hoàn thành chỉ khi giai đoạn đã Kết thúc
+const TRANG_THAI_CAP_NHAT = [TRANG_THAI.DANG_XU_LY, TRANG_THAI.TAM_DUNG, TRANG_THAI.HOAN_THANH];
+
+const updateHoSo = async (req, res) => {
+   const { officerId, trangthai } = req.body;
+   const ghichu = (req.body.ghichu || "").trim();
+   const noidungxuly = (req.body.noidungxuly || "").trim();
+   const files = req.files || [];
+
+   const fail = (status, message) => {
+      removeUploadedFiles(files);
+      return res.status(status).json({ code: status, message });
+   };
+
+   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(officerId)) {
+      return fail(400, "Mã hồ sơ hoặc chấp hành viên không hợp lệ");
+   }
+   if (!TRANG_THAI_CAP_NHAT.includes(trangthai)) {
+      return fail(400, "Trạng thái không hợp lệ");
+   }
+
+   try {
+      const hoso = await HoSo.findOne({ _id: req.params.id, assignedTo: officerId }).lean();
+      if (!hoso) {
+         return fail(404, "Hồ sơ không thuộc về bạn");
+      }
+      if (![TRANG_THAI.DANG_XU_LY, TRANG_THAI.TAM_DUNG].includes(hoso.trangthai)) {
+         return fail(409, `Hồ sơ đang ở trạng thái "${hoso.trangthai}", không cập nhật được`);
+      }
+      if (trangthai === TRANG_THAI.HOAN_THANH && hoso.giaidoan !== GIAI_DOAN.KET_THUC) {
+         return fail(409, `Chỉ chuyển "Hoàn thành" khi tiến độ đã đến giai đoạn Kết thúc (hiện tại: ${hoso.giaidoan || GIAI_DOAN.KHOI_DONG})`);
+      }
+
+      const doiTrangThai = trangthai !== hoso.trangthai;
+      if (doiTrangThai && trangthai === TRANG_THAI.TAM_DUNG && !ghichu) {
+         return fail(400, "Vui lòng nhập lý do tạm dừng");
+      }
+      if (!doiTrangThai && noidungxuly === (hoso.noidungxuly || "") && files.length === 0 && !ghichu) {
+         return fail(400, "Không có thay đổi nào để lưu");
+      }
+
+      const update = { $set: { trangthai, noidungxuly } };
+      if (files.length > 0) update.$push = { tailieu: { $each: files.map(toFileInfo) } };
+
+      const noiDung = [
+         doiTrangThai ? `Chuyển trạng thái từ "${hoso.trangthai}" sang "${trangthai}"` : "Cập nhật nội dung hồ sơ",
+         files.length > 0 ? `đính kèm ${files.length} tài liệu` : "",
+         ghichu
+      ].filter(Boolean).join(". ");
+      update.$push = { ...update.$push, lichsu: { trangthai, ghichu: noiDung } };
+
+      // Lọc theo trạng thái cũ để không ghi đè thay đổi cùng lúc ở nơi khác
+      const updated = await HoSo.findOneAndUpdate(
+         { _id: hoso._id, assignedTo: officerId, trangthai: hoso.trangthai, giaidoan: hoso.giaidoan },
+         update,
+         { returnDocument: "after" }
+      );
+      if (!updated) {
+         return fail(409, "Hồ sơ vừa được cập nhật ở nơi khác, vui lòng tải lại");
+      }
+
+      res.status(200).json({
+         code: 200,
+         message: doiTrangThai
+            ? `Hồ sơ ${updated.mahoso} đã chuyển sang trạng thái "${trangthai}"`
+            : `Đã lưu hồ sơ ${updated.mahoso}`
+      });
+   } catch (error) {
+      removeUploadedFiles(files);
+      res.status(500).json({ code: 500, message: error.message });
+   }
+};
+
+/* ================== Danh sách căn cứ cưỡng chế ================== */
+const getCanCuCuongChe = (req, res) => {
+   res.status(200).json(CAN_CU_CUONG_CHE);
+};
+
 module.exports = {
    getAllHoSo,
    getPendingHoSo,
@@ -325,5 +494,8 @@ module.exports = {
    supplementHoSo,
    assignHoSo,
    getMyHoSo,
-   receiveHoSo
+   receiveHoSo,
+   updateTienDo,
+   updateHoSo,
+   getCanCuCuongChe
 };

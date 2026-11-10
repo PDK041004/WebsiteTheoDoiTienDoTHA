@@ -29,6 +29,45 @@
     display: block;
 }
 
+/* Các bước tiến độ thi hành án */
+.stepper {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.step {
+    flex: 1 1 0;
+    min-width: 90px;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+.step.done {
+    border-color: #198754;
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.step.current {
+    border-color: #0d6efd;
+    background: #0d6efd;
+    color: white;
+    font-weight: 600;
+}
+.step.optional {
+    border-style: dashed;
+}
+.step.skipped {
+    border-style: dashed;
+    text-decoration: line-through;
+}
+.step small {
+    display: block;
+    font-weight: normal;
+}
+
 /* Thông báo chưa xem */
 .thongbao-item {
     cursor: pointer;
@@ -154,7 +193,7 @@
 
 <table class="table table-bordered" id="tableTiendo">
 <thead>
-<tr><th>Mã</th><th>Người dân</th><th>Cập nhật gần nhất</th><th></th></tr>
+<tr><th>Mã</th><th>Người dân</th><th>Giai đoạn</th><th>Cập nhật gần nhất</th><th></th></tr>
 </thead>
 <tbody></tbody>
 </table>
@@ -211,33 +250,44 @@
 <div class="modal-content">
 
 <div class="modal-header bg-success text-white">
-<h5>Cập nhật nội dung hồ sơ <span class="modal-mahoso"></span></h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
+<h5>Cập nhật hồ sơ <span id="hsMahoso"></span></h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
 
 <div class="modal-body">
-<form onsubmit="notReady(event)">
+<form id="hsForm" onsubmit="saveHoSo(event)">
 
-<label>Nội dung hồ sơ</label>
-<textarea class="form-control mb-3"></textarea>
+<p class="mb-1"><strong>Người dân:</strong> <span id="hsTennguoi"></span></p>
+<p class="mb-3"><strong>Giai đoạn hiện tại:</strong> <span id="hsGiaidoan" class="badge bg-primary"></span></p>
 
-<label>Trạng thái</label>
-<select class="form-control mb-3">
+<label for="hsNoidung">Nội dung xử lý hồ sơ</label>
+<textarea id="hsNoidung" class="form-control mb-3" rows="3"
+          placeholder="VD: Đã xác minh tài sản của người phải thi hành án..."></textarea>
+
+<label for="hsTrangthai">Trạng thái</label>
+<select id="hsTrangthai" class="form-select mb-1" onchange="onTrangThaiChange()">
 <option>Đang xử lý</option>
-<option>Hoàn thành</option>
 <option>Tạm dừng</option>
+<option>Hoàn thành</option>
 </select>
+<small id="hsTrangthaiHint" class="text-muted d-block mb-3"></small>
 
-<label>File đính kèm</label>
-<div id="dropZone" class="border border-2 border-dashed p-4 text-center mb-3">
-<p>Kéo & thả file hoặc click</p>
-<input type="file" id="fileInput" hidden>
-<button type="button" class="btn btn-outline-primary" onclick="fileInput.click()">Chọn file</button>
+<label for="hsGhichu" id="hsGhichuLabel">Ghi chú</label>
+<textarea id="hsGhichu" class="form-control mb-3" rows="2"></textarea>
+
+<label>Tài liệu đính kèm (PDF, JPG, PNG; tối đa 5 file, mỗi file không quá 10MB)</label>
+<div id="dropZone" class="border border-2 border-dashed p-4 text-center mb-2">
+<p class="mb-2">Kéo & thả file hoặc click</p>
+<input type="file" id="fileInput" hidden multiple accept=".pdf,.jpg,.jpeg,.png">
+<button type="button" class="btn btn-outline-primary">Chọn file</button>
 </div>
+<div id="fileName" class="text-success mb-2"></div>
 
-<div id="fileName" class="text-success"></div>
+<p class="mb-1"><strong>Tài liệu đã lưu:</strong></p>
+<ul id="hsTailieu" class="list-group mb-3"></ul>
 
-<button class="btn btn-success w-100 mt-3">Lưu hồ sơ</button>
+<button id="btnLuuHoSo" class="btn btn-success w-100">Lưu hồ sơ</button>
+<p id="hsDone" class="alert alert-success mt-3 mb-0" style="display:none">Hồ sơ đã hoàn thành, không cập nhật được nữa.</p>
 
 </form>
 </div>
@@ -248,17 +298,43 @@
 
 <!-- TIẾN ĐỘ -->
 <div class="modal fade" id="tiendoModal">
-<div class="modal-dialog">
+<div class="modal-dialog modal-lg modal-dialog-scrollable">
 <div class="modal-content">
 <div class="modal-header bg-primary text-white">
-<h5>Cập nhật tiến độ <span class="modal-mahoso"></span></h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
+<h5>Cập nhật tiến độ <span id="tdMahoso"></span></h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
 <div class="modal-body">
-<form onsubmit="notReady(event)">
-<textarea class="form-control mb-2"></textarea>
-<button class="btn btn-primary w-100">Lưu</button>
-</form>
+<p class="mb-2"><strong>Người dân:</strong> <span id="tdTennguoi"></span></p>
+
+<div id="tdStepper" class="stepper mb-3"></div>
+
+<div id="tdCuongCheInfo" class="alert alert-danger" style="display:none"></div>
+
+<div id="tdForm">
+<label for="tdGhichu">Nội dung tiến độ</label>
+<textarea id="tdGhichu" class="form-control mb-2" rows="3"
+          placeholder="VD: Đã gửi quyết định thi hành án cho người phải thi hành án..."></textarea>
+<div id="tdActions" class="d-flex flex-wrap gap-2"></div>
+
+<!-- Điều kiện chuyển sang Cưỡng chế -->
+<div id="tdCuongChe" class="border border-danger rounded p-3 mt-3" style="display:none">
+<h6 class="text-danger">Điều kiện chuyển sang giai đoạn Cưỡng chế</h6>
+<p class="mb-1">Căn cứ cưỡng chế (chọn ít nhất một):</p>
+<div id="tdCanCu" class="mb-2"></div>
+<label for="tdDieukien">Nội dung điều kiện (bắt buộc)</label>
+<textarea id="tdDieukien" class="form-control mb-2" rows="3"
+          placeholder="VD: Hết thời hạn 10 ngày tự nguyện, người phải thi hành án có tài sản là nhà đất tại ... nhưng không thi hành"></textarea>
+<div class="d-flex gap-2">
+<button class="btn btn-secondary" onclick="hideCuongChe()">Hủy</button>
+<button id="btnCuongChe" class="btn btn-danger" onclick="submitCuongChe()">Xác nhận chuyển sang Cưỡng chế</button>
+</div>
+</div>
+</div>
+<p id="tdDone" class="alert alert-success mb-0" style="display:none"></p>
+
+<p class="mt-3 mb-1"><strong>Lịch sử tiến độ:</strong></p>
+<ul id="tdLichsu" class="list-group list-group-flush small"></ul>
 </div>
 </div>
 </div>
@@ -375,11 +451,6 @@ function showToast(message) {
     bootstrap.Toast.getOrCreateInstance(document.getElementById("liveToast")).show();
 }
 
-function notReady(e) {
-    e.preventDefault();
-    alert("Chức năng lưu đang được phát triển");
-}
-
 /* ================== Hồ sơ của tôi ================== */
 function loadMyHoSo() {
     return fetch("/hoso/cua-toi?officerId=" + encodeURIComponent(account._id))
@@ -425,35 +496,313 @@ function renderHoSo() {
                 <td>${escapeHtml(hs.mahoso)}</td>
                 <td>${escapeHtml(hs.tennguoi)}</td>
                 <td>${escapeHtml(hs.loaihoso)}</td>
-                <td>${escapeHtml(hs.trangthai)}</td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="openModal('hosoModal', '${hs._id}')">
-                        Cập nhật nội dung hồ sơ
+                    <span class="badge bg-${STATUS_COLORS[hs.trangthai] || "secondary"}">${escapeHtml(hs.trangthai)}</span>
+                    <small class="text-muted">(${escapeHtml(getGiaiDoan(hs))})</small>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="openCapNhat('${hs._id}')">
+                        ${hs.trangthai === "Hoàn thành" ? "Xem hồ sơ" : "Cập nhật hồ sơ"}
                     </button>
                 </td>
             </tr>`).join("");
 
     document.querySelector("#tableTiendo tbody").innerHTML = daNhan.length === 0
-        ? empty(4, "Chưa có hồ sơ nào")
+        ? empty(5, "Chưa có hồ sơ nào")
         : daNhan.map(hs => {
             const last = hs.lichsu[hs.lichsu.length - 1];
+            const giaidoan = getGiaiDoan(hs);
             return `
             <tr>
                 <td>${escapeHtml(hs.mahoso)}</td>
                 <td>${escapeHtml(hs.tennguoi)}</td>
+                <td><span class="badge ${giaidoan === GIAI_DOAN.CUONG_CHE ? "bg-danger" : giaidoan === GIAI_DOAN.KET_THUC ? "bg-success" : "bg-primary"}">${escapeHtml(giaidoan)}</span></td>
                 <td>${last ? `${formatDate(last.thoigian)} - ${escapeHtml(last.ghichu || last.trangthai)}` : ""}</td>
                 <td>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('tiendoModal', '${hs._id}')">Cập nhật</button>
+                    <button class="btn btn-primary btn-sm" onclick="openTienDo('${hs._id}')">
+                        ${giaidoan === GIAI_DOAN.KET_THUC || hs.trangthai !== "Đang xử lý" ? "Xem" : "Cập nhật"}
+                    </button>
                 </td>
             </tr>`;
         }).join("");
 }
 
-function openModal(modalId, hosoId) {
-    const hs = myHoSo.find(h => h._id === hosoId);
-    const modal = document.getElementById(modalId);
-    modal.querySelector(".modal-mahoso").innerText = hs ? hs.mahoso : "";
-    bootstrap.Modal.getOrCreateInstance(modal).show();
+/* ================== Tiến độ thi hành án ================== */
+const GIAI_DOAN = {
+    KHOI_DONG: "Khởi động",
+    XAC_NHAN_DIEU_KIEN: "Xác nhận điều kiện",
+    TU_NGUYEN: "Tự nguyện",
+    CUONG_CHE: "Cưỡng chế",
+    KET_THUC: "Kết thúc"
+};
+const THU_TU_GIAI_DOAN = Object.values(GIAI_DOAN);
+
+// Các nút chuyển giai đoạn (server cũng kiểm tra thứ tự này)
+const HANH_DONG = {
+    [GIAI_DOAN.KHOI_DONG]: [
+        { den: GIAI_DOAN.XAC_NHAN_DIEU_KIEN, nhan: "Chuyển sang Xác nhận điều kiện", mau: "primary" }
+    ],
+    [GIAI_DOAN.XAC_NHAN_DIEU_KIEN]: [
+        { den: GIAI_DOAN.TU_NGUYEN, nhan: "Chuyển sang Tự nguyện", mau: "primary" }
+    ],
+    [GIAI_DOAN.TU_NGUYEN]: [
+        { den: GIAI_DOAN.KET_THUC, nhan: "Đã tự nguyện thi hành → Kết thúc", mau: "success" },
+        // Cưỡng chế mở khung nhập điều kiện trước khi chuyển
+        { den: GIAI_DOAN.CUONG_CHE, nhan: "Có vi phạm → Chuyển sang Cưỡng chế", mau: "danger", onclick: "showCuongChe()" }
+    ],
+    [GIAI_DOAN.CUONG_CHE]: [
+        { den: GIAI_DOAN.KET_THUC, nhan: "Cưỡng chế xong → Kết thúc", mau: "success" }
+    ],
+    [GIAI_DOAN.KET_THUC]: []
+};
+
+const STATUS_COLORS = { "Đang xử lý": "primary", "Tạm dừng": "warning", "Hoàn thành": "success" };
+let canCuCuongChe = [];
+let currentTienDo = null;
+
+fetch("/hoso/can-cu-cuong-che")
+    .then(res => res.json())
+    .then(list => canCuCuongChe = list)
+    .catch(console.error);
+
+// Hồ sơ nhận trước khi có chức năng tiến độ được coi là đang Khởi động
+function getGiaiDoan(hs) {
+    return hs.giaidoan || GIAI_DOAN.KHOI_DONG;
+}
+
+function openTienDo(hosoId) {
+    currentTienDo = myHoSo.find(hs => hs._id === hosoId);
+    if (!currentTienDo) return;
+
+    const current = getGiaiDoan(currentTienDo);
+    const quaCuongChe = currentTienDo.lichsu.some(l => l.giaidoan === GIAI_DOAN.CUONG_CHE);
+    const viTri = THU_TU_GIAI_DOAN.indexOf(current);
+
+    document.getElementById("tdMahoso").innerText = currentTienDo.mahoso;
+    document.getElementById("tdTennguoi").innerText = currentTienDo.tennguoi;
+    document.getElementById("tdGhichu").value = "";
+
+    document.getElementById("tdStepper").innerHTML = THU_TU_GIAI_DOAN.map((gd, i) => {
+        let cls = "";
+        let phu = "";
+        if (gd === current) {
+            cls = "current";
+        } else if (gd === GIAI_DOAN.CUONG_CHE) {
+            // Cưỡng chế chỉ xảy ra khi có vi phạm
+            if (quaCuongChe) cls = "done";
+            else if (current === GIAI_DOAN.KET_THUC) { cls = "skipped"; phu = "Không cần"; }
+            else { cls = "optional"; phu = "Nếu có vi phạm"; }
+        } else if (i < viTri) {
+            cls = "done";
+        }
+        return `<div class="step ${cls}">${i + 1}. ${gd}${phu ? `<small>${phu}</small>` : ""}</div>`;
+    }).join("");
+
+    // Chỉ cập nhật tiến độ khi hồ sơ Đang xử lý và chưa Kết thúc
+    const ketThuc = current === GIAI_DOAN.KET_THUC;
+    const dangXuLy = currentTienDo.trangthai === "Đang xử lý";
+    const done = document.getElementById("tdDone");
+    document.getElementById("tdForm").style.display = ketThuc || !dangXuLy ? "none" : "block";
+    done.style.display = ketThuc || !dangXuLy ? "block" : "none";
+    done.className = "alert mb-0 " + (ketThuc ? "alert-success" : "alert-warning");
+    done.innerText = ketThuc
+        ? (currentTienDo.trangthai === "Hoàn thành"
+            ? "Hồ sơ đã kết thúc thi hành án và đã hoàn thành."
+            : "Hồ sơ đã kết thúc thi hành án. Vào \"Cập nhật hồ sơ\" để chuyển trạng thái sang Hoàn thành.")
+        : `Hồ sơ đang "${currentTienDo.trangthai}". Vào "Cập nhật hồ sơ" chuyển về "Đang xử lý" để tiếp tục cập nhật tiến độ.`;
+
+    document.getElementById("tdActions").innerHTML =
+        `<button class="btn btn-outline-primary" onclick="submitTienDo(null)">Ghi nhận tiến độ</button>`
+        + HANH_DONG[current].map(a =>
+            `<button class="btn btn-${a.mau}" onclick="${a.onclick || `submitTienDo('${a.den}')`}">${a.nhan}</button>`).join("");
+    hideCuongChe();
+
+    // Điều kiện cưỡng chế đã ghi nhận
+    const cc = currentTienDo.cuongche;
+    const ccInfo = document.getElementById("tdCuongCheInfo");
+    ccInfo.style.display = cc && cc.cancu && cc.cancu.length ? "block" : "none";
+    if (cc && cc.cancu) {
+        ccInfo.innerHTML = `<strong>Điều kiện cưỡng chế</strong> (${formatDate(cc.thoigian)})`
+            + `<ul class="mb-1">${cc.cancu.map(c => `<li>${escapeHtml(c)}</li>`).join("")}</ul>`
+            + `<span style="white-space:pre-wrap">${escapeHtml(cc.noidung)}</span>`;
+    }
+
+    document.getElementById("tdLichsu").innerHTML = currentTienDo.lichsu
+        .filter(l => l.giaidoan)
+        .reverse()
+        .map(l => `
+            <li class="list-group-item px-0">
+                <strong>${formatDate(l.thoigian)}</strong>
+                <span class="badge bg-secondary">${escapeHtml(l.giaidoan)}</span>
+                <br><span class="text-muted">${escapeHtml(l.ghichu)}</span>
+            </li>`).join("") || '<li class="list-group-item px-0 text-muted">Chưa có cập nhật</li>';
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("tiendoModal")).show();
+}
+
+function submitTienDo(giaidoan) {
+    if (!currentTienDo) return;
+    const ghichu = document.getElementById("tdGhichu").value.trim();
+
+    if (!giaidoan && !ghichu) {
+        alert("Vui lòng nhập nội dung tiến độ");
+        return document.getElementById("tdGhichu").focus();
+    }
+    if (giaidoan === GIAI_DOAN.KET_THUC
+        && !confirm(`Kết thúc thi hành án hồ sơ ${currentTienDo.mahoso}? Sau khi kết thúc sẽ không cập nhật tiến độ được nữa.`)) {
+        return;
+    }
+    sendTienDo({ giaidoan, ghichu });
+}
+
+function showCuongChe() {
+    document.getElementById("tdCanCu").innerHTML = canCuCuongChe.map((c, i) => `
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="cancu${i}" value="${escapeHtml(c)}">
+            <label class="form-check-label" for="cancu${i}">${escapeHtml(c)}</label>
+        </div>`).join("");
+    document.getElementById("tdDieukien").value = document.getElementById("tdGhichu").value.trim();
+    document.getElementById("tdCuongChe").style.display = "block";
+    document.getElementById("tdDieukien").focus();
+}
+
+function hideCuongChe() {
+    document.getElementById("tdCuongChe").style.display = "none";
+}
+
+function submitCuongChe() {
+    const cancu = [...document.querySelectorAll("#tdCanCu input:checked")].map(c => c.value);
+    const ghichu = document.getElementById("tdDieukien").value.trim();
+    if (cancu.length === 0) return alert("Vui lòng chọn ít nhất một căn cứ cưỡng chế");
+    if (!ghichu) {
+        alert("Vui lòng nhập nội dung điều kiện dẫn tới phải cưỡng chế");
+        return document.getElementById("tdDieukien").focus();
+    }
+    if (!confirm(`Chuyển hồ sơ ${currentTienDo.mahoso} sang giai đoạn Cưỡng chế?`)) return;
+    sendTienDo({ giaidoan: GIAI_DOAN.CUONG_CHE, ghichu, cancu });
+}
+
+function sendTienDo(data) {
+    const buttons = document.querySelectorAll("#tdForm button");
+    buttons.forEach(b => b.disabled = true);
+
+    fetch(`/hoso/${currentTienDo._id}/tien-do`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ officerId: account._id, ...data })
+    })
+        .then(res => res.json())
+        .then(obj => {
+            alert(obj.message);
+            const id = currentTienDo._id;
+            loadMyHoSo().then(() => {
+                if (obj.code === 200) openTienDo(id);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Không kết nối được server");
+        })
+        .finally(() => buttons.forEach(b => b.disabled = false));
+}
+
+/* ================== Cập nhật hồ sơ (nội dung, trạng thái, tài liệu) ================== */
+let currentCapNhat = null;
+
+function openCapNhat(hosoId) {
+    currentCapNhat = myHoSo.find(hs => hs._id === hosoId);
+    if (!currentCapNhat) return;
+    const hs = currentCapNhat;
+    const hoanThanh = hs.trangthai === "Hoàn thành";
+
+    document.getElementById("hsMahoso").innerText = hs.mahoso;
+    document.getElementById("hsTennguoi").innerText = hs.tennguoi;
+    document.getElementById("hsGiaidoan").innerText = getGiaiDoan(hs);
+    document.getElementById("hsNoidung").value = hs.noidungxuly || "";
+    document.getElementById("hsGhichu").value = "";
+    fileInput.value = "";
+    fileName.innerText = "";
+
+    // Hoàn thành chỉ chọn được khi tiến độ đã Kết thúc (server cũng kiểm tra)
+    const select = document.getElementById("hsTrangthai");
+    [...select.options].find(o => o.value === "Hoàn thành").disabled =
+        !hoanThanh && getGiaiDoan(hs) !== GIAI_DOAN.KET_THUC;
+    select.value = hs.trangthai;
+    onTrangThaiChange();
+
+    document.getElementById("hsTailieu").innerHTML = (hs.tailieu || []).length === 0
+        ? '<li class="list-group-item text-muted">Chưa có tài liệu</li>'
+        : hs.tailieu.map(f => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${escapeHtml(f.originalname)} <small class="text-muted">(${formatDate(f.uploadedAt)})</small></span>
+                <a class="btn btn-outline-secondary btn-sm" href="/uploads/banan/${encodeURIComponent(f.filename)}" target="_blank">Mở</a>
+            </li>`).join("");
+
+    document.querySelectorAll("#hsForm textarea, #hsForm select, #hsForm button").forEach(el => el.disabled = hoanThanh);
+    dropZone.style.display = hoanThanh ? "none" : "block";
+    document.getElementById("btnLuuHoSo").style.display = hoanThanh ? "none" : "block";
+    document.getElementById("hsDone").style.display = hoanThanh ? "block" : "none";
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("hosoModal")).show();
+}
+
+function onTrangThaiChange() {
+    if (!currentCapNhat) return;
+    const trangthai = document.getElementById("hsTrangthai").value;
+    const tamDung = trangthai === "Tạm dừng" && currentCapNhat.trangthai !== "Tạm dừng";
+    document.getElementById("hsGhichuLabel").innerText = tamDung ? "Lý do tạm dừng (bắt buộc)" : "Ghi chú";
+
+    const hints = {
+        "Đang xử lý": "Hồ sơ đang được thi hành, cập nhật tiến độ ở mục \"Cập nhật tiến độ\".",
+        "Tạm dừng": "Tạm dừng thi hành: không cập nhật được tiến độ cho tới khi chuyển lại \"Đang xử lý\".",
+        "Hoàn thành": getGiaiDoan(currentCapNhat) === GIAI_DOAN.KET_THUC
+            ? "Hồ sơ sẽ hoàn thành và không cập nhật được nữa."
+            : "Chỉ chọn được khi tiến độ đã đến giai đoạn Kết thúc."
+    };
+    document.getElementById("hsTrangthaiHint").innerText = hints[trangthai] || "";
+}
+
+function saveHoSo(e) {
+    e.preventDefault();
+    if (!currentCapNhat) return;
+    const trangthai = document.getElementById("hsTrangthai").value;
+    const ghichu = document.getElementById("hsGhichu").value.trim();
+
+    if (trangthai === "Tạm dừng" && currentCapNhat.trangthai !== "Tạm dừng" && !ghichu) {
+        alert("Vui lòng nhập lý do tạm dừng");
+        return document.getElementById("hsGhichu").focus();
+    }
+    if (trangthai === "Hoàn thành"
+        && !confirm(`Chuyển hồ sơ ${currentCapNhat.mahoso} sang Hoàn thành? Sau đó sẽ không cập nhật được nữa.`)) {
+        return;
+    }
+
+    const data = new FormData();
+    data.append("officerId", account._id);
+    data.append("trangthai", trangthai);
+    data.append("noidungxuly", document.getElementById("hsNoidung").value.trim());
+    data.append("ghichu", ghichu);
+    for (const file of fileInput.files) {
+        data.append("banan", file);
+    }
+
+    const btn = document.getElementById("btnLuuHoSo");
+    btn.disabled = true;
+
+    fetch(`/hoso/${currentCapNhat._id}/cap-nhat`, { method: "PUT", body: data })
+        .then(res => res.json())
+        .then(obj => {
+            alert(obj.message);
+            if (obj.code === 200) {
+                bootstrap.Modal.getInstance(document.getElementById("hosoModal")).hide();
+                loadMyHoSo();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Không kết nối được server");
+        })
+        .finally(() => btn.disabled = false);
 }
 
 /* ================== Xác minh nhận hồ sơ ================== */
@@ -601,11 +950,13 @@ const fileName = document.getElementById("fileName");
 
 dropZone.addEventListener("click", () => fileInput.click());
 
-fileInput.addEventListener("change", function() {
-    if (this.files.length > 0) {
-        fileName.innerText = "Đã chọn: " + this.files[0].name;
-    }
-});
+function showChosenFiles() {
+    fileName.innerText = fileInput.files.length > 0
+        ? "Đã chọn: " + [...fileInput.files].map(f => f.name).join(", ")
+        : "";
+}
+
+fileInput.addEventListener("change", showChosenFiles);
 
 dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -618,8 +969,9 @@ dropZone.addEventListener("dragleave", () => {
 
 dropZone.addEventListener("drop", (e) => {
     e.preventDefault();
+    dropZone.style.background = "";
     fileInput.files = e.dataTransfer.files;
-    fileName.innerText = "Đã chọn: " + e.dataTransfer.files[0].name;
+    showChosenFiles();
 });
 </script>
 
