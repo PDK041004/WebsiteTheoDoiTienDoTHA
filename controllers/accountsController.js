@@ -1,6 +1,5 @@
-const path = require("path")
+const Account = require("../models/Account");
 const bcrypt = require("bcrypt");
-const Account = require(path.join(__dirname, "..", "models", "Account"));
 
 /* ================== Truy vấn tài khoản ================== */
 // Toàn bộ

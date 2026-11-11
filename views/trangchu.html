@@ -194,18 +194,18 @@ async function login(e){
 
     try {
         const res = await fetch("/dang-nhap", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // Gửi cookie cùng với yêu cầu
-        body: JSON.stringify(data)
-    });
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // Gửi cookie cùng với yêu cầu
+            body: JSON.stringify(data)
+        });
 
-    const obj = await res.json();
-    alert(obj.message);
-    if(obj.role === 3) { location = "/tai-khoan" }
-    else if(obj.role === 2) { location = "congchuc.html" }
-    else if(obj.role === 1) { location = "/thi-hanh-an" }
-    else { location = "/ban-an" }
+        const obj = await res.json();
+        alert(obj.message);
+        if(obj.role === 3) { location = "/tai-khoan" }
+        else if(obj.role === 2) { location = "congchuc.html" }
+        else if(obj.role === 1) { location = "/thi-hanh-an" }
+        else { location = "/ban-an" }
     } catch (err) {
         console.error("Lỗi:", err);
         alert(err.message);

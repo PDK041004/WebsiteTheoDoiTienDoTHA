@@ -1,5 +1,4 @@
-const path = require("path")
-const Account = require(path.join(__dirname, "..", "models", "Account"));
+const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 
 const handleRefreshToken = async (req, res) => {
@@ -28,7 +27,7 @@ const handleRefreshToken = async (req, res) => {
             { expiresIn: "5m"}
          );
 
-         res.json({ accessToken });
+         res.status(200).json({ accessToken });
       }
    );
 }
