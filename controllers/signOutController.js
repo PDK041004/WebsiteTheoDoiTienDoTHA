@@ -1,4 +1,5 @@
-const Account = require("../models/Account");
+const path = require("path");
+const Account = require(path.join(__dirname, "..", "models", "Account"));
 
 /* ================== Đăng xuất ================== */
 const handleSignOut = async (req, res) => {

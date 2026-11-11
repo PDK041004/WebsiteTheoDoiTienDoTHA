@@ -1,4 +1,5 @@
-const Judgement = require("../models/Judgement");
+const path = require("path");
+const Judgement = require(path.join(__dirname, "..", "models", "Judgement"));
 
 /* ================== Truy vấn bản án ================== */
 //Toàn bộ

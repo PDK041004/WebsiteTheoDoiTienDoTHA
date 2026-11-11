@@ -1,7 +1,7 @@
 const path = require("path");
 const express = require("express");
 const router = express.Router();
-const judgementsController = require(path.join(__dirname, "..", "..", "controllers", "judgementsController.js"));
+const judgementsController = require(path.join(__dirname, "..", "..", "controllers", "judgementsController"));
 
 router.get("/", async (req, res) => {
    await res.status(200).sendFile(path.join(__dirname, "..", "..", "views", "nguoidan.html"));

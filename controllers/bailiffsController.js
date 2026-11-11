@@ -1,4 +1,5 @@
-const Bailiffs = require("../models/Bailiff");
+const path = require("path");
+const Bailiff = require(path.join(__dirname, "..", "models", "Bailiff"));
 
 const getAllBailiffs = async (req, res) => {
     try {

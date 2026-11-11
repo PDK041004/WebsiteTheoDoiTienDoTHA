@@ -1,7 +1,7 @@
 const path = require("path");
 const express = require("express");
 const router = express.Router();
-const accountsController = require(path.join(__dirname, "..", "..", "controllers", "accountsController.js"));
+const accountsController = require(path.join(__dirname, "..", "..", "controllers", "accountsController"));
 
 
 router.get("/", async (req, res) => {

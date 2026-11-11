@@ -1,4 +1,5 @@
-const Account = require("../models/Account");
+const path = require("path");
+const Account = require(path.join(__dirname, "..", "models", "Account"));
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -29,7 +30,7 @@ const handleSignIn = async (req, res) => {
          account.refreshToken = refreshToken;
          await account.save();
 
-         res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", /*secure: true,*/ maxAge: 24 * 60 * 60 * 1000 });
+         res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
          console.log(`User "${userName}" has signed in successfully!`);
 
