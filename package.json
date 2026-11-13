@@ -32,6 +32,7 @@
     "bcrypt@6.0.0": true,
     "nodemon@1.19.4": true,
     "cookie-parser@1.4.7": true,
-    "jsonwebtoken@9.0.3": true
+    "jsonwebtoken@9.0.3": true,
+    "otp-generator@4.0.1": true
   }
 }
