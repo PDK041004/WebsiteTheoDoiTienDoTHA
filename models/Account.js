@@ -2,16 +2,35 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const accountSchema = new Schema({
-   username: {
+   userName: {
       type: String,
-      required: true,
-      unique: true
+      unique: true,
+      required: true
+   },
+   phoneNumber: {
+      type: String,
+      maxlength: 10,
+      unique: true,
+      required: true
    },
    password: {
       type: String,
       required: true
    },
    role: {
+      type: Number,
+      required: false,
+      default: 0
+   },
+   otp: {
+      type: String,
+      default: null
+   },
+   otpExpiry: {
+      type: Date,
+      default: null
+   },
+   otpAttempts: {
       type: Number,
       default: 0
    },

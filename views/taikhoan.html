@@ -14,8 +14,8 @@
     <div class="container">
         <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
         <div class="ms-auto">
-          <a href="/homepage" class="btn btn-outline-light">Đăng xuất</a>
-    </div>
+          <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
+        </div>
     </div>
 </nav>
 
@@ -41,31 +41,6 @@
         </thead>
 
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>admin</td>
-                <td>Quản trị</td>
-                <td>
-                    <span class="badge bg-danger">Admin</span>
-                </td>
-                <td>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Sửa</button>
-                    <button class="btn btn-danger btn-sm">Xóa</button>
-                </td>
-            </tr>
-
-            <tr>
-                <td>2</td>
-                <td>user01</td>
-                <td>Nguyễn Văn A</td>
-                <td>
-                    <span class="badge bg-primary">Người dân</span>
-                </td>
-                <td>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Sửa</button>
-                    <button class="btn btn-danger btn-sm">Xóa</button>
-                </td>
-            </tr>
         </tbody>
     </table>
 
@@ -86,7 +61,12 @@
 
             <div class="mb-2">
                 <label>Tên đăng nhập</label>
-                <input type="text" class="form-control">
+                <input type="user-name" class="form-control">
+            </div>
+
+            <div class="mb-2">
+                <label>Số điện thoại</label>
+                <input type="phone-number" maxlength="10" class="form-control">
             </div>
 
             <div class="mb-2">
@@ -94,18 +74,18 @@
                 <input type="password" class="form-control">
             </div>
 
-            <div class="mb-2">
+            <!-- <div class="mb-2">
                 <label>Họ tên</label>
                 <input type="text" class="form-control">
-            </div>
+            </div> -->
 
             <div class="mb-2">
                 <label>Vai trò</label>
                 <select class="form-control">
-                    <option>Admin</option>
-                    <option>Công chức</option>
-                    <option>Chấp hành viên</option>
-                    <option>Người dân</option>
+                    <option value="0">Người dân</option>
+                    <option value="1">Chấp hành viên</option>
+                    <option value="2">Công chức</option>
+                    <option value="3">Admin</option>
                 </select>
             </div>
 
@@ -163,56 +143,89 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-function loadUsers(){
-    fetch("/users")
-    .then(res=>res.json())
-    .then(data=>{
+
+
+
+</script>
+
+<script>
+async function signOut() {
+    try {
+        const res = await fetch("/dang-xuat", {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type":"application/json" }
+        });
+        
+        const data = await res.json();
+        alert(data.message);
+        window.location.href = "/trang-chu";
+    } catch (error) {
+        console.error(error);
+        alert("Error signing out");
+    }
+}
+
+async function loadAccounts() {
+    try {
+        const res = await fetch("/tai-khoan/api", {
+            method: "GET",
+            credentials: "include",
+            headers:{ "Content-Type":"application/json" }
+        })
+        const data = await res.json();
+        alert(data.accounts.length + " accounts found.");
+
         let html = "";
 
-        data.forEach(u=>{
+        data.accounts.forEach(account => {
+            if(account.role === 0) { account.role = "Người dân"; }
+            else if(account.role === 1) { account.role = "Chấp hành viên"; }
+            else if(account.role === 2) { account.role = "Công chức"; }
+            else if(account.role === 3) { account.role = "Admin"; }
             html += `
             <tr>
-                <td>${u.id}</td>
-                <td>${u.username}</td>
-                <td>${u.fullname}</td>
-                <td>${u.role}</td>
+                <td>${account._id}</td>
+                <td>${account.userName}</td>
+                <td></td>
+                <td>${account.role}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editUser(${u.id}, '${u.fullname}', '${u.role}')">Sửa</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Xóa</button>
+                    <button class="btn btn-warning btn-sm" onclick="editUser(${account.id}, '${account.fullname}', '${account.role}')">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${account.id})">Xóa</button>
                 </td>
             </tr>
             `;
         });
 
         document.querySelector("tbody").innerHTML = html;
-    });
+    } catch (error) {
+        console.error(error);
+        alert("Error finding accounts");
+    }
 }
 
-window.onload = loadUsers;
-</script>
-
-<script>
-function addUser(e){
+async function addUser(e){
     e.preventDefault();
 
     const data = {
-        username: document.querySelector("#addModal input[type='text']").value,
+        userName: document.querySelector("#addModal input[type='user-name']").value,
+        phoneNumber: document.querySelector("#addModal input[type='phone-number'][maxlength='10']").value,
         password: document.querySelector("#addModal input[type='password']").value,
-        fullname: document.querySelectorAll("#addModal input[type='text']")[1].value,
         role: document.querySelector("#addModal select").value
     };
 
-    fetch("/users",{
+    const res = await fetch("/tai-khoan/api",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(data)
     })
-    .then(res=>res.text())
-    .then(msg=>{
-        alert(msg);
-        loadUsers();
-    });
+
+    const obj = await res.json();
+        alert(obj.message);
+        loadAccounts();
 }
+
+window.onload = loadAccounts();
 </script>
 
 <script>
@@ -251,7 +264,7 @@ function updateUser(e){
 <script>
 function deleteUser(id){
     if(confirm("Xóa tài khoản này?")){
-        fetch("/users/" + id,{
+        fetch("/tai-khoan/dang-ky" + id,{
             method:"DELETE"
         })
         .then(res=>res.text())
