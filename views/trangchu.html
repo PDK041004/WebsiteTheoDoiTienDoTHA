@@ -124,37 +124,38 @@
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="modal-body">
-        <form onsubmit="login(event)">
-          <div class="mb-3">
-            <label>Tên đăng nhập</label>
-            <input type="text" id="user" class="form-control" required>
-          </div>
+        <div class="modal-body">
+            <form onsubmit="login(event)">
+                <div class="mb-3">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="user" class="form-control" required>
+                </div>
 
-          <div class="mb-3">
-            <label>Mật khẩu</label>
-            <input type="password" id="pass" class="form-control" required>
-          </div>
+                <div class="mb-3">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="pass" class="form-control" required>
+                </div>
 
-          <!-- QUÊN MẬT KHẨU -->
-          <div class="mb-3 text-end">
-            <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#forgotModal">
-              Quên mật khẩu?
-            </a>
-          </div>
-          <div class="mb-3" id="otpBox" style="display:none">
-  <label>Mã OTP (gửi qua SMS)</label>
-  <input type="text" id="otp" class="form-control" maxlength="6">
-</div>
-          <button class="btn btn-danger w-100">Đăng nhập</button>
+                <!-- QUÊN MẬT KHẨU -->
+                <div class="mb-3 text-end">
+                    <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#forgotModal">
+                        Quên mật khẩu?
+                    </a>
+                </div>
+                <div class="mb-3" id="otpBox" style="display:none">
+                    <label>Mã OTP (gửi qua SMS)</label>
+                    <input type="text" id="otp" class="form-control" maxlength="6">
+                </div>
+                
+                <button class="btn btn-danger w-100">Đăng nhập</button>
 
-          <!-- LINK ĐĂNG KÝ -->
-          <div class="text-center mt-3">
-            <span>Chưa có tài khoản? </span>
-            <a href="/accounts/register" class="text-danger">Đăng ký ngay</a>
-          </div>
-        </form>
-      </div>
+                <!-- LINK ĐĂNG KÝ -->
+                <div class="text-center mt-3">
+                    <span>Chưa có tài khoản? </span>
+                    <a href="/accounts/register" class="text-danger">Đăng ký ngay</a>
+                </div>
+            </form>
+        </div>
 
     </div>
   </div>

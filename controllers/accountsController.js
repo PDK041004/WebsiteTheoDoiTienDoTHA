@@ -78,19 +78,19 @@ const login = async (req, res) => {
       }
 
       if (!account.phone) {
-   return res.status(403).json({ message: "Tài khoản chưa có số điện thoại" });
-}
-const otp = crypto.randomInt(100000, 1000000).toString();
-account.otp = await bcrypt.hash(otp, 10);
-account.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
-account.otpAttempts = 0;
-await account.save();
-await sendSms(account.phone, `Ma OTP cua ban la ${otp}. Het han sau 5 phut.`);
+         return res.status(403).json({ message: "Tài khoản chưa có số điện thoại" });
+      }
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      account.otp = await bcrypt.hash(otp, 10);
+      account.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+      account.otpAttempts = 0;
+      await account.save();
+      await sendSms(account.phone, `Ma OTP cua ban la ${otp}. Het han sau 5 phut.`);
 
-res.status(200).json({
-   message: "Đã gửi mã OTP về số " + "*******" + account.phone.slice(-3),
-   needOtp: true
-});
+      res.status(200).json({
+         message: "Đã gửi mã OTP về số " + "*******" + account.phone.slice(-3),
+         needOtp: true
+      });
    } catch (error) {
       res.status(500).json({ message: error.message });
    }
