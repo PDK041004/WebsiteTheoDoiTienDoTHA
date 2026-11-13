@@ -34,7 +34,7 @@
         <a href="#" onclick="showSection('phancong')">Phân công xử lý</a>
         <a href="#" onclick="showSection('xacnhan')">Xác nhận hồ sơ</a>
         <a href="#" onclick="showSection('baocao')">Báo cáo</a>
-        <a href="/homepage">Đăng xuất</a>
+        <a onclick="signOut()">Đăng xuất</a>
     </div>
 
     <!-- CONTENT -->
@@ -234,6 +234,23 @@
 </div>
 
 <script>
+async function signOut() {
+    try {
+        const res = await fetch("/dang-xuat", {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type":"application/json" }
+        });
+        
+        const data = await res.json();
+        alert(data.message);
+        window.location.href = "/trang-chu";
+    } catch (error) {
+        console.error(error);
+        alert("Error signing out");
+    }
+}
+
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
     document.getElementById(id).style.display = 'block';

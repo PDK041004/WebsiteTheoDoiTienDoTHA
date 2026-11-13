@@ -14,7 +14,7 @@
         <div class="container">
             <span class="navbar-brand">CỔNG DỊCH VỤ NGƯỜI DÂN</span>
             <div class="ms-auto">
-            <a href="/homepage" class="btn btn-outline-light">Đăng xuất</a>
+            <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
             </div>
         </div>
     </nav>
@@ -81,10 +81,8 @@
                                     <option>Biện pháp khẩn cấp tạm thời</option>
                                 </select>
                             </div>
-
                             <button class="btn btn-danger">Gửi hồ sơ</button>
                         </form>
-
                     </div>
                 </div>
             </div>
@@ -96,19 +94,22 @@
                         Tra cứu hồ sơ
                     </div>
                     <div class="card-body">
+
                     <input type="text" class="form-control mb-3" placeholder="🔍 Tìm hồ sơ..." onkeyup="searchTable(this,'tableHoso')">
 
                     <table class="table table-bordered" id="tableHoso">
-                            <thead>
-                                <tr>
-                                    <th>Mã hồ sơ</th>
-                                    <th>Người dân</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
+                        <thead>
+                            <tr>
+                                <th>Mã hồ sơ</th>
+                                <th>Loại hồ sơ</th>
+                                <th>Chi tiết hồ sơ</th>
+                                <th>Giai đoạn thi hành án</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
 
-                            <tbody>
-                            </tbody>
+                        <tbody>
+                        </tbody>
                         </table>
                     </div>
                 </div>
@@ -121,8 +122,8 @@
                         Tiến độ xử lý hồ sơ
                     </div>
                     <div class="card-body">
-
                         <input type="text" class="form-control mb-2" placeholder="Nhập mã hồ sơ...">
+
                         <button class="btn btn-danger mb-3">Xem tiến độ</button>
 
                         <ul class="list-group">
@@ -139,7 +140,88 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-    function sendHoso(e){
+    async function signOut() {
+        try {
+            const res = await fetch("/dang-xuat", {
+                method: "GET",
+                credentials: "include",
+                headers: { "Content-Type":"application/json" }
+            });
+            
+            const data = await res.json();
+            alert(data.message);
+            window.location.href = "/trang-chu";
+        } catch (error) {
+            console.error(error);
+            alert("Error signing out");
+        }
+    }
+
+    async function loadJudgements() {
+        try {
+            const res = await fetch("/ban-an/api", {
+                method: "GET",
+                credentials: "include",
+                headers:{ "Content-Type":"application/json" }
+            });
+
+            if(res.status === 401) {
+                const token = await fetch("/refresh", {
+                    method: "GET",
+                    credentials: "include",
+                    headers:{ "Content-Type":"application/json" }
+                });
+
+                const data = token.json();
+
+                alert({"message": "Yeet", "accessToken": token.accessToken});
+            }
+
+            const data = await res.json();
+            alert(data.judgements.length + " judgements found.");
+
+            let html = "";
+
+            data.judgements.forEach(judgement => {
+                switch(judgement.phase) {
+                    case 1:
+                        judgement.phase = "Khởi động";
+                        break;
+                    case 2:
+                        judgement.phase = "Tự nguyện";
+                        break;
+                    case 3:
+                        judgement.phase = "Xác nhận điều kiện";
+                        break;
+                    case 4:
+                        judgement.phase = "Cưỡng chế";
+                        break;
+                    case 5:
+                        judgement.phase = "Kết thúc";
+                        break;
+                }
+                html += `
+                <tr>
+                    <td>${judgement.designation}</td>
+                    <td>${judgement.classification}</td>
+                    <td>${judgement.documents}</td>
+                    <td>${judgement.phase}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editUser(${judgement.id}, '${judgement.fullname}', '${judgement.role}')">Sửa</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser(${judgement.id})">Xóa</button>
+                    </td>
+                </tr>
+                `;
+            });
+
+            document.querySelector("tbody").innerHTML = html;
+        } catch (error) {
+            console.error(error);
+            alert("Error finding judgements");
+        }
+    }
+
+    async function sendJudgement(e){
         e.preventDefault();
 
         const tennguoi = document.querySelector("input[type='text']").value;
@@ -155,28 +237,31 @@
             danhmuc: "Chưa phân loại"
         };
 
-        fetch("/hoso",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.text())
-        .then(msg => {
-            alert(msg);
+        try {
+            const res = await fetch("/ban-an/api", {
+                method:"POST",
+                credentials: "include",
+                headers: { "Content-Type":"application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const obj = await res.json();
+            alert(obj.message);
 
             // 🔥 reset form
             document.querySelector("form").reset();
 
             // 🔥 debug
-            console.log("Đã gửi:", data);
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Lỗi gửi hồ sơ");
-        });
+            console.log(`Sent: ${data}`, );
+        } catch (error) {
+            console.error(error);
+            alert("Error sending judgment request");
+        }
     }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        loadJudgements();
+    });
     </script>
 </body>
 </html>

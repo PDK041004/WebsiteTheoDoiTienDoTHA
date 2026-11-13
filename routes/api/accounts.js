@@ -1,15 +1,23 @@
+const path = require("path");
 const express = require("express");
 const router = express.Router();
-const path = require("path");
-const accountsController = require(path.join(__dirname, "..", "..", "controllers", "accountsController.js"));
+const accountsController = require(path.join(__dirname, "..", "..", "controllers", "accountsController"));
 
-// Đăng ký tài khoản
-router.route("/register")
-   .get(accountsController.getRegisterForm)
-   .post(accountsController.registerAccount);
 
-// Đăng nhập
-router.route("/")
-   .post(accountsController.login);
-router.post("/verify-otp", accountsController.verifyOtp);
+router.get("/", async (req, res) => {
+   await res.status(200).sendFile(path.join(__dirname, "..", "..", "views", "taikhoan.html"));
+});
+
+/* ================== Quản lý tài khoản hệ thống ================== */
+router.route("/api")
+   .get(accountsController.getAllAccounts)
+   .post(accountsController.createAccount);
+
+   
+//Đăng ký tài khoản
+router.route("/dang-ky")
+   .get(async (req, res) => {
+      await res.status(200).sendFile(path.join(__dirname, "..", "..", "views", "dangky.html"));
+   })
+
 module.exports = router;

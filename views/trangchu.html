@@ -10,228 +10,242 @@
 
 <body>
 
-<!-- HEADER -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
-            CỤC THI HÀNH ÁN DÂN SỰ TP HẢI PHÒNG
-        </a>
+    <!-- HEADER -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                CỤC THI HÀNH ÁN DÂN SỰ TP HẢI PHÒNG
+            </a>
 
-    <div class="ms-auto">
-      <button class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
-      <a href="/accounts/register" class="btn btn-outline-light">Đăng ký</a>
+        <div class="ms-auto">
+        <button class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
+        <a href="/tai-khoan/dang-ky" class="btn btn-outline-light">Đăng ký</a>
+        </div>
+        </div>
+    </nav>
+
+    <!-- MENU -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div class="container">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" href="/trang-chu">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Tra cứu hồ sơ</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- BANNER -->
+    <div class="container mt-3">
+        <div class="bg-secondary text-white text-center p-5 rounded">
+            <h2>HỆ THỐNG QUẢN LÝ THI HÀNH ÁN DÂN SỰ</h2>
+            <p>Hỗ trợ quản lý, theo dõi và tra cứu hồ sơ nhanh chóng</p>
+        </div>
     </div>
-    </div>
-</nav>
 
-<!-- MENU -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-    <div class="container">
-        <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link active" href="/homepage">Trang chủ</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Tra cứu hồ sơ</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
-        </ul>
-    </div>
-</nav>
+    <!-- CONTENT -->
+    <div class="container mt-4">
+        <div class="row">
 
-<!-- BANNER -->
-<div class="container mt-3">
-    <div class="bg-secondary text-white text-center p-5 rounded">
-        <h2>HỆ THỐNG QUẢN LÝ THI HÀNH ÁN DÂN SỰ</h2>
-        <p>Hỗ trợ quản lý, theo dõi và tra cứu hồ sơ nhanh chóng</p>
-    </div>
-</div>
+            <!-- LEFT -->
+            <div class="col-md-8">
+                <h4>Giới thiệu hệ thống</h4>
+                <p>
+                    Hệ thống website quản lý tiến độ thực hiện hồ sơ thi hành án dân sự
+                    giúp nâng cao hiệu quả quản lý, hỗ trợ công chức và người dân
+                    tra cứu thông tin một cách minh bạch và nhanh chóng.
+                </p>
 
-<!-- CONTENT -->
-<div class="container mt-4">
-    <div class="row">
-
-        <!-- LEFT -->
-        <div class="col-md-8">
-            <h4>Giới thiệu hệ thống</h4>
-            <p>
-                Hệ thống website quản lý tiến độ thực hiện hồ sơ thi hành án dân sự
-                giúp nâng cao hiệu quả quản lý, hỗ trợ công chức và người dân
-                tra cứu thông tin một cách minh bạch và nhanh chóng.
-            </p>
-
-            <div class="card mb-3">
-                <div class="card-header bg-danger text-white">
-                    Tính năng chính
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        Tính năng chính
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Quản lý hồ sơ thi hành án</li>
+                            <li>Theo dõi tiến độ xử lý</li>
+                            <li>Tra cứu hồ sơ</li>
+                            <li>Phân công xử lý</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <ul>
-                        <li>Quản lý hồ sơ thi hành án</li>
-                        <li>Theo dõi tiến độ xử lý</li>
-                        <li>Tra cứu hồ sơ</li>
-                        <li>Phân công xử lý</li>
-                    </ul>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="col-md-4">
+
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        Văn bản điều hành
+                    </div>
+                    <div class="card-body">
+                        <p>Văn bản trung ương</p>
+                        <p>Văn bản địa phương</p>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        Thông báo
+                    </div>
+                    <div class="card-body">
+                        <p>Lịch làm việc</p>
+                        <p>Thông báo thi hành án</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        Hỗ trợ
+                    </div>
+                    <div class="card-body">
+                        <p>Đường dây nóng: 02433.xxx.xxx</p>
+                        <p>Hướng dẫn sử dụng</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-dark text-white text-center p-3 mt-4">
+        © 2026 - Hệ thống quản lý thi hành án dân sự Hải Phòng
+    </footer>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Đăng nhập</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form onsubmit="login(event)">
+                        <div class="mb-3">
+                            <label>Tên đăng nhập</label>
+                            <input type="text" id="user" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Mật khẩu</label>
+                            <input type="password" id="pass" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3" id="otpBox" style="display:none">
+                            <label>Mã OTP (gửi qua SMS)</label>
+                            <input type="text" id="otp" class="form-control" maxlength="6">
+                            <button id="btn-verify" class="btn btn-danger w-100" style="margin-top: 16px;" onclick="verifyOTP">Xác thực OTP</button>
+                        </div>
+
+                        <button id="btn-reg" class="btn btn-danger w-100" onclick="login">Đăng nhập</button>
+
+                        <!-- QUÊN MẬT KHẨU -->
+                        <div class="mb-3 text-end" style="margin-top: 10px; margin-right: 5px;">
+                            <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#forgotModal">
+                            Quên mật khẩu?
+                            </a>
+                        </div>
+
+                        <!-- LINK ĐĂNG KÝ -->
+                        <div class="text-center mt-3">
+                            <span>Chưa có tài khoản? </span>
+                            <a href="/tai-khoan/dang-ky" class="text-danger">Đăng ký ngay</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
-        <!-- RIGHT -->
-        <div class="col-md-4">
-
-            <div class="card mb-3">
-                <div class="card-header bg-danger text-white">
-                    Văn bản điều hành
+    </div>
+    <!-- ================= FORGOT PASSWORD MODAL ================= -->
+    <div class="modal fade" id="forgotModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Quên mật khẩu</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="card-body">
-                    <p>Văn bản trung ương</p>
-                    <p>Văn bản địa phương</p>
+
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label>Nhập email đã đăng ký</label>
+                            <input type="email" class="form-control" required>
+                        </div>
+
+                        <button class="btn btn-danger w-100">Gửi yêu cầu</button>
+                    </form>
                 </div>
             </div>
-
-            <div class="card mb-3">
-                <div class="card-header bg-danger text-white">
-                    Thông báo
-                </div>
-                <div class="card-body">
-                    <p>Lịch làm việc</p>
-                    <p>Thông báo thi hành án</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-danger text-white">
-                    Hỗ trợ
-                </div>
-                <div class="card-body">
-                    <p>Đường dây nóng: 02433.xxx.xxx</p>
-                    <p>Hướng dẫn sử dụng</p>
-                </div>
-            </div>
-
         </div>
     </div>
-</div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- FOOTER -->
-<footer class="bg-dark text-white text-center p-3 mt-4">
-    © 2026 - Hệ thống quản lý thi hành án dân sự Hải Phòng
-</footer>
+    <script>
+        async function login(e) {
+            e.preventDefault();
+            const data = {
+                userName: document.getElementById("user").value,
+                password: document.getElementById("pass").value
+            }
+            
+            try {
+                const res = await fetch("/dang-nhap", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include", // Gửi cookie cùng với yêu cầu
+                    body: JSON.stringify(data)
+                });
 
-<!-- LOGIN MODAL -->
-<div class="modal fade" id="loginModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Đăng nhập</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-        <div class="modal-body">
-            <form onsubmit="login(event)">
-                <div class="mb-3">
-                    <label>Tên đăng nhập</label>
-                    <input type="text" id="user" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Mật khẩu</label>
-                    <input type="password" id="pass" class="form-control" required>
-                </div>
-
-                <!-- QUÊN MẬT KHẨU -->
-                <div class="mb-3 text-end">
-                    <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#forgotModal">
-                        Quên mật khẩu?
-                    </a>
-                </div>
-                <div class="mb-3" id="otpBox" style="display:none">
-                    <label>Mã OTP (gửi qua SMS)</label>
-                    <input type="text" id="otp" class="form-control" maxlength="6">
-                </div>
-                
-                <button class="btn btn-danger w-100">Đăng nhập</button>
-
-                <!-- LINK ĐĂNG KÝ -->
-                <div class="text-center mt-3">
-                    <span>Chưa có tài khoản? </span>
-                    <a href="/accounts/register" class="text-danger">Đăng ký ngay</a>
-                </div>
-            </form>
-        </div>
-
-    </div>
-  </div>
-</div>
-<!-- ================= FORGOT PASSWORD MODAL ================= -->
-<div class="modal fade" id="forgotModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Quên mật khẩu</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label>Nhập email đã đăng ký</label>
-            <input type="email" class="form-control" required>
-          </div>
-
-          <button class="btn btn-danger w-100">Gửi yêu cầu</button>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-let waitingOtp = false;
-
-function login(e){
-    e.preventDefault();
-    const username = document.getElementById("user").value;
-    const password = document.getElementById("pass").value;
-
-    if(!waitingOtp){
-        fetch('/accounts/',{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ username, password })
-        })
-        .then(res=>res.json())
-        .then(obj=>{
-            alert(obj.message);
-            if(obj.needOtp){
-                waitingOtp = true;
+                const obj = await res.json();
+                alert(obj.message);
                 document.getElementById("otpBox").style.display = "block";
                 document.getElementById("user").readOnly = true;
                 document.getElementById("pass").readOnly = true;
+                
+            } catch (err) {
+                console.error("Lỗi:", err);
+                alert(err.message);
             }
-        })
-        .catch(()=>alert("Không kết nối được server"));
-    } else {
-        const otp = document.getElementById("otp").value;
-        fetch('/accounts/verify-otp',{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ username, otp })
-        })
-        .then(res=>res.json())
-        .then(obj=>{
-            alert(obj.message);
-            if(obj.role === undefined) return;
-            if(obj.role === 3) location = "taikhoan.html";
-            else if(obj.role === 2) location = "congchuc.html";
-            else if(obj.role === 1) location = "chaphanhvien.html";
-            else location = "nguoidan.html";
-        })
-        .catch(()=>alert("Không kết nối được server"));
-    }
-}
-</script>
+        }
+
+        async function verifyOTP(e) {
+            e.preventDefault();
+            const data = {
+                userName: document.getElementById("user").value,
+                otp: document.getElementById("otp").value
+            }
+
+            try {
+                const res = await fetch("/dang-nhap/otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include", // Gửi cookie cùng với yêu cầu
+                    body: JSON.stringify(data)
+                });
+
+                const obj = await res.json();
+                alert(obj.message);
+                if(obj.role === 3) { location = "/tai-khoan" }
+                else if(obj.role === 2) { location = "congchuc.html" }
+                else if(obj.role === 1) { location = "/thi-hanh-an" }
+                else { location = "/ban-an" }
+            } catch(err) {
+                console.error("Lỗi:", err);
+                alert(err.message);
+            }
+        }
+    </script>
+
+    <script>
+        const btn2 = document.querySelector("#btn-verify");
+        btn2.addEventListener("click", verifyOTP);
+        
+    </script>
 
 </body>
 </html>
