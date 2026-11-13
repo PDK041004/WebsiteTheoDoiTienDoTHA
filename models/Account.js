@@ -22,6 +22,18 @@ const accountSchema = new Schema({
       required: false,
       default: 0
    },
+   otp: {
+      type: String,
+      default: null
+   },
+   otpExpiry: {
+      type: Date,
+      default: null
+   },
+   otpAttempts: {
+      type: Number,
+      default: 0
+   },
    refreshToken: {
       type: String,
       required: false,

@@ -19,7 +19,7 @@ const getJudgement = async (req, res) => {
 }
 
 const registerJudgement = async (req, res) => {
-   const { designation, classification, documents } = req.body;
+   const { designation, classification, documents} = req.body;
    if(!designation || ! classification || !documents) {
       return res.status(400).json ({ message: "Designation number, classification and documents are required." }); }
 
@@ -30,7 +30,7 @@ const registerJudgement = async (req, res) => {
       const newJudgement = await Judgement.create({
          "designation": designation,
          "classification": classification,
-         "documents": documents
+         "documents": documents,
       });
 
       console.log(newJudgement);
@@ -47,7 +47,7 @@ const registerJudgement = async (req, res) => {
 }
 
 const updateJudgement = async (req, res) => {
-   const { designation, newDesignation, newClassification, newDocuments } = req.body;
+   const { designation, newDesignation, newClassification, newDocuments, newPhase } = req.body;
    if(!designation || !newDesignation || !newClassification || !newDocuments) {
       return res.status(400).json ({ message: "All fields are required." }); }
 
@@ -57,6 +57,7 @@ const updateJudgement = async (req, res) => {
    judgement.designation = newDesignation;
    judgement.classification = newClassification;
    judgement.documents = newDocuments;
+   judgement.phase = newPhase;
 
    const result = await judgement.save();
 

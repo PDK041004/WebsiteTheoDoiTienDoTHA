@@ -6,4 +6,6 @@ const authController = require(path.join(__dirname, "..", "..", "controllers", "
 /* ================== Đăng nhập ================== */
 router.post("/", authController.handleSignIn);
 
+router.post("/otp", authController.verifyOTP);
+
 module.exports = router;

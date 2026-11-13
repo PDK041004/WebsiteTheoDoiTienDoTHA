@@ -15,6 +15,11 @@ const judgementSchema = new Schema({
       type: String,
       required: true
    },
+   phase: {
+      type: Number,
+      required: true,
+      default: 1
+   },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Judgement", judgementSchema);
