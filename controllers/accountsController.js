@@ -1,6 +1,7 @@
 const path = require("path");
 const Account = require(path.join(__dirname, "..", "models", "Account"));
 const bcrypt = require("bcrypt");
+const { match } = require("assert");
 
 /* ================== Truy vấn tài khoản ================== */
 // Toàn bộ
@@ -41,7 +42,7 @@ const createAccount = async (req, res) => {
       console.log(newAccount);
       
       return res.status(201).json({
-         message: `Account ${userName} registered successfully!`,
+         message: `Account "${userName}" registered successfully!`,
          account: newAccount
       });
    } catch(err) {
@@ -58,11 +59,54 @@ const createAccount = async (req, res) => {
 
 /* ================== Cập nhật tài khoản ================== */
 const updateAccount = async (req, res) => {
-   const { userName, newUserName, newPhoneNumber, newPassword, newRole } = req.body;
+   const { _id, userName, phoneNumber, role } = req.body;
+   if(!_id) return res.status(400).json({ message: "No ID was given." });
+
+   try {
+      await Account.updateOne({ _id }, { userName, phoneNumber, role }).exec();
+
+      res.status(200).json({ message: "Account information updated successfully!" });
+   } catch(error) {
+      res.status(500).json({ message: error.message });
+   }
 };
+
+/* ================== Thay đổi mật khẩu ================== */
+const changePassword = async (req, res) => {
+   const { _id, oldPassword, newPassword } = req.body;
+   if(!_id) return res.status(400).json({ message: "No ID was given." });
+
+   const account = await Account.findOne({ _id }).exec();
+   if(!account) return res.status(401).json({ message: "This acccount cannot be found." });
+
+   const match = await bcrypt.compare(oldPassword, account.password);
+   if(match) {
+      await Account.updateOne({ _id }, { password: newPassword }).exec();
+
+      res.status(200).json({ message: "Account password updated successfully!" });
+   } else return res.status(401).json({ message: "Incorrect password." });
+};
+
+/* ================== Xóa tài khoản ================== */
+const deleteAccount = async (req, res) => {
+   const { _id } = req.body;
+   if(!_id) return res.status(400).json({ message: "No ID was given." });
+
+   const account = await Account.findOne({ _id }).exec();
+   if(!account) return res.status(401).json({ message: "This acccount cannot be found." });
+
+   try {
+      await Account.deleteOne({ _id }).exec();
+      res.status(200).json({ message: "Account deleted successfully." });
+   } catch(error) {
+      res.status(500).json({ message: error.message });
+   }
+}
 
 module.exports = {
    getAllAccounts,
    getAccount,
-   createAccount
+   createAccount,
+   updateAccount,
+   deleteAccount
 };

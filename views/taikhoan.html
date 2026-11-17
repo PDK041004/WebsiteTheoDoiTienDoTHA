@@ -6,275 +6,263 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
+    <!-- HEADER -->
+    <nav class="navbar navbar-dark bg-danger">
+        <div class="container">
+            <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
+            <div class="ms-auto">
+            <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
+            </div>
+        </div>
+    </nav>
 
-<!-- HEADER -->
-<nav class="navbar navbar-dark bg-danger">
-    <div class="container">
-        <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
-        <div class="ms-auto">
-          <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
+    <div class="container mt-4">
+        <h4>Quản lý tài khoản & phân quyền</h4>
+        <!-- BUTTON -->
+        <button class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#addModal">
+            + Thêm tài khoản
+        </button>
+
+        <!-- TABLE -->
+        <table class="table table-bordered">
+            <thead class="table-danger">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Vai trò</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- MODAL THÊM -->
+    <div class="modal fade" id="addModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5>Thêm tài khoản</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form onsubmit="addUser(event)">
+                        <div class="mb-2">
+                            <label>Tên đăng nhập</label>
+                            <input type="user-name" class="form-control">
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Số điện thoại</label>
+                            <input type="phone-number" maxlength="10" class="form-control">
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Mật khẩu</label>
+                            <input type="password" class="form-control">
+                        </div>
+
+                        <!-- <div class="mb-2">
+                            <label>Họ tên</label>
+                            <input type="text" class="form-control">
+                        </div> -->
+
+                        <div class="mb-2">
+                            <label>Vai trò</label>
+                            <select class="form-control">
+                                <option value="0" selected>Người dân</option>
+                                <option value="1">Chấp hành viên</option>
+                                <option value="2">Công chức viên</option>
+                                <option value="3">Admin</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-danger w-100">Lưu</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-</nav>
 
-<div class="container mt-4">
+    <!-- MODAL SỬA -->
+    <div class="modal fade" id="editModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5>Sửa tài khoản</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
-    <h4>Quản lý tài khoản & phân quyền</h4>
+                <div class="modal-body">
+                    <form onsubmit="updateUser(event)">
+                        <div class="mb-2">
+                            <label>Tên đăng nhập</label>
+                            <input type="text" id="user-name" class="form-control">
+                        </div>
 
-    <!-- BUTTON -->
-    <button class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#addModal">
-        + Thêm tài khoản
-    </button>
+                        <!-- <div class="mb-2">
+                            <label>Họ tên</label>
+                            <input type="text" class="form-control" value="Nguyễn Văn A">
+                        </div> -->
 
-    <!-- TABLE -->
-    <table class="table table-bordered">
-        <thead class="table-danger">
-            <tr>
-                <th>ID</th>
-                <th>Tên đăng nhập</th>
-                <th>Họ tên</th>
-                <th>Vai trò</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
+                        <div class="mb-2">
+                            <label>Số điện thoại</label>
+                            <input type="text" id="phone-number" class="form-control">
+                        </div>
 
-        <tbody>
-        </tbody>
-    </table>
+                        <div class="mb-2">
+                            <label>Vai trò</label>
+                            <select class="form-control">
+                                <option value="0">Người dân</option>
+                                <option value="1">Chấp hành viên</option>
+                                <option value="2">Công chức viên</option>
+                                <option value="3">Admin</option>
+                            </select>
+                        </div>
 
-</div>
-
-<!-- MODAL THÊM -->
-<div class="modal fade" id="addModal">
-<div class="modal-dialog">
-<div class="modal-content">
-
-    <div class="modal-header bg-danger text-white">
-        <h5>Thêm tài khoản</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
+                        <button class="btn btn-warning w-100">Cập nhật</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="modal-body">
-        <form onsubmit="addUser(event)">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-            <div class="mb-2">
-                <label>Tên đăng nhập</label>
-                <input type="user-name" class="form-control">
-            </div>
+    <script>
+        async function signOut() {
+            try {
+                const res = await fetch("/dang-xuat", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: { "Content-Type":"application/json" }
+                });
+                
+                const data = await res.json();
+                alert(data.message);
+                window.location.href = "/trang-chu";
+            } catch (error) {
+                console.error(error);
+                alert("Error signing out");
+            }
+        }
 
-            <div class="mb-2">
-                <label>Số điện thoại</label>
-                <input type="phone-number" maxlength="10" class="form-control">
-            </div>
+        async function loadAccounts() {
+            try {
+                const res = await fetch("/tai-khoan/api", {
+                    method: "GET",
+                    credentials: "include",
+                    headers:{ "Content-Type":"application/json" }
+                })
+                const data = await res.json();
+                // alert(data.accounts.length + " accounts found.");
 
-            <div class="mb-2">
-                <label>Mật khẩu</label>
-                <input type="password" class="form-control">
-            </div>
+                let html = "", role = "";
 
-            <!-- <div class="mb-2">
-                <label>Họ tên</label>
-                <input type="text" class="form-control">
-            </div> -->
+                data.accounts.forEach(account => {
+                    if(account.role === 0) { role = "Người dân"; }
+                    else if(account.role === 1) { role = "Chấp hành viên"; }
+                    else if(account.role === 2) { role = "Công chức viên"; }
+                    else if(account.role === 3) { role = "Admin"; }
+                    html += `
+                    <tr>
+                        <td>${account._id}</td>
+                        <td>${account.userName}</td>
+                        <td></td>
+                        <td>${role}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="displayUser('${account._id}', '${account.userName}', '${account.phoneNumber}', '${account.role}')">Sửa</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser('${account._id}')">Xóa</button>
+                        </td>
+                    </tr>
+                    `;
+                });
 
-            <div class="mb-2">
-                <label>Vai trò</label>
-                <select class="form-control">
-                    <option value="0">Người dân</option>
-                    <option value="1">Chấp hành viên</option>
-                    <option value="2">Công chức</option>
-                    <option value="3">Admin</option>
-                </select>
-            </div>
+                document.querySelector("tbody").innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                alert("Error finding accounts");
+            }
+        }
 
-            <button class="btn btn-danger w-100">Lưu</button>
+        async function addUser(e){
+            e.preventDefault();
 
-        </form>
-    </div>
+            const data = {
+                userName: document.querySelector("#addModal input[type='user-name']").value,
+                phoneNumber: document.querySelector("#addModal input[type='phone-number'][maxlength='10']").value,
+                password: document.querySelector("#addModal input[type='password']").value,
+                role: document.querySelector("#addModal select").value
+            };
 
-</div>
-</div>
-</div>
+            try {
+                const res = await fetch("/tai-khoan/api", {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify(data)
+                })
 
-<!-- MODAL SỬA -->
-<div class="modal fade" id="editModal">
-<div class="modal-dialog">
-<div class="modal-content">
+                const obj = await res.json();
+                alert(obj.message);
+                loadAccounts();
+            } catch(error) {
+                alert(error.message);
+            } 
+        }
 
-    <div class="modal-header bg-warning">
-        <h5>Sửa tài khoản</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-    </div>
+        let id = null;
+        async function displayUser(_id, userName, phoneNumber, role) {
+            id = _id;
+            document.querySelector("#editModal input[id='user-name']").value = userName;
+            document.querySelector("#editModal input[id='phone-number']").value = phoneNumber;
+            document.querySelector("#editModal select").value = role;
 
-    <div class="modal-body">
-        <form onsubmit="updateUser(event)">
+            await new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
 
-            <div class="mb-2">
-                <label>Tên đăng nhập</label>
-                <input type="text" class="form-control" value="user01">
-            </div>
+        async function updateUser(e){
+            e.preventDefault();
 
-            <div class="mb-2">
-                <label>Họ tên</label>
-                <input type="text" class="form-control" value="Nguyễn Văn A">
-            </div>
+            const data = {
+                _id: id,
+                userName: document.querySelector("#editModal input[id='user-name']").value,
+                phoneNumber: document.querySelector("#editModal input[id='phone-number']").value,
+                role: document.querySelector("#editModal select").value
+            };
 
-            <div class="mb-2">
-                <label>Vai trò</label>
-                <select class="form-control">
-                    <option>Admin</option>
-                    <option selected>Người dân</option>
-                    <option>Công chức</option>
-                    <option>Chấp hành viên</option>
-                </select>
-            </div>
+            try {
+                const res = await fetch("/tai-khoan/api", {
+                    method: "PUT",
+                    headers: { "Content-Type":"application/json" },
+                    body: JSON.stringify(data)
+                });
+                const obj = await res.json();
+                alert(obj.message);
+                loadAccounts();
+            } catch(error) {
+                alert(error.message);
+            }
+        }
 
-            <button class="btn btn-warning w-100">Cập nhật</button>
+        async function deleteUser(_id) {
+            if(confirm("Xóa tài khoản này?")) {
+                const data = { _id: _id }
+                const res = await fetch("/tai-khoan/api", {
+                    method:"DELETE",
+                    headers: { "Content-Type":"application/json" },
+                    body: JSON.stringify(data)
+                });
+                const obj = await res.json();
+                alert(obj.message);
+                loadAccounts();
+            }
+        }
 
-        </form>
-    </div>
-
-</div>
-</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-
-
-
-</script>
-
-<script>
-async function signOut() {
-    try {
-        const res = await fetch("/dang-xuat", {
-            method: "GET",
-            credentials: "include",
-            headers: { "Content-Type":"application/json" }
-        });
-        
-        const data = await res.json();
-        alert(data.message);
-        window.location.href = "/trang-chu";
-    } catch (error) {
-        console.error(error);
-        alert("Error signing out");
-    }
-}
-
-async function loadAccounts() {
-    try {
-        const res = await fetch("/tai-khoan/api", {
-            method: "GET",
-            credentials: "include",
-            headers:{ "Content-Type":"application/json" }
-        })
-        const data = await res.json();
-        alert(data.accounts.length + " accounts found.");
-
-        let html = "";
-
-        data.accounts.forEach(account => {
-            if(account.role === 0) { account.role = "Người dân"; }
-            else if(account.role === 1) { account.role = "Chấp hành viên"; }
-            else if(account.role === 2) { account.role = "Công chức"; }
-            else if(account.role === 3) { account.role = "Admin"; }
-            html += `
-            <tr>
-                <td>${account._id}</td>
-                <td>${account.userName}</td>
-                <td></td>
-                <td>${account.role}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="editUser(${account.id}, '${account.fullname}', '${account.role}')">Sửa</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${account.id})">Xóa</button>
-                </td>
-            </tr>
-            `;
-        });
-
-        document.querySelector("tbody").innerHTML = html;
-    } catch (error) {
-        console.error(error);
-        alert("Error finding accounts");
-    }
-}
-
-async function addUser(e){
-    e.preventDefault();
-
-    const data = {
-        userName: document.querySelector("#addModal input[type='user-name']").value,
-        phoneNumber: document.querySelector("#addModal input[type='phone-number'][maxlength='10']").value,
-        password: document.querySelector("#addModal input[type='password']").value,
-        role: document.querySelector("#addModal select").value
-    };
-
-    const res = await fetch("/tai-khoan/api",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(data)
-    })
-
-    const obj = await res.json();
-        alert(obj.message);
-        loadAccounts();
-}
-
-window.onload = loadAccounts();
-</script>
-
-<script>
-let currentId = null;
-
-function editUser(id, fullname, role){
-    currentId = id;
-
-    document.querySelector("#editModal input[type='text']").value = fullname;
-    document.querySelector("#editModal select").value = role;
-
-    new bootstrap.Modal(document.getElementById('editModal')).show();
-}
-
-function updateUser(e){
-    e.preventDefault();
-
-    const data = {
-        fullname: document.querySelector("#editModal input[type='text']").value,
-        role: document.querySelector("#editModal select").value
-    };
-
-    fetch("/users/" + currentId,{
-        method:"PUT",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(data)
-    })
-    .then(res=>res.text())
-    .then(msg=>{
-        alert(msg);
-        loadUsers();
-    });
-}
-</script>
-
-<script>
-function deleteUser(id){
-    if(confirm("Xóa tài khoản này?")){
-        fetch("/tai-khoan/dang-ky" + id,{
-            method:"DELETE"
-        })
-        .then(res=>res.text())
-        .then(msg=>{
-            alert(msg);
-            loadUsers();
-        });
-    }
-}
-</script>
-
+        window.onload = loadAccounts();
+    </script>
 </body>
 </html>

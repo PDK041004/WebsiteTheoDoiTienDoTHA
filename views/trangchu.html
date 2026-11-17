@@ -124,7 +124,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <form onsubmit="login(event)">
+                    <form onsubmit="verifyOTP(event)">
                         <div class="mb-3">
                             <label>Tên đăng nhập</label>
                             <input type="text" id="user" class="form-control" required>
@@ -138,10 +138,10 @@
                         <div class="mb-3" id="otpBox" style="display:none">
                             <label>Mã OTP (gửi qua SMS)</label>
                             <input type="text" id="otp" class="form-control" maxlength="6">
-                            <button id="btn-verify" class="btn btn-danger w-100" style="margin-top: 16px;" onclick="verifyOTP">Xác thực OTP</button>
+                            <button id="btn-verify" class="btn btn-danger w-100" style="margin-top: 16px;">Xác thực OTP</button>
                         </div>
 
-                        <button id="btn-reg" class="btn btn-danger w-100" onclick="login">Đăng nhập</button>
+                        <button id="btn-reg" class="btn btn-danger w-100" onclick="login(event)">Đăng nhập</button>
 
                         <!-- QUÊN MẬT KHẨU -->
                         <div class="mb-3 text-end" style="margin-top: 10px; margin-right: 5px;">
@@ -227,13 +227,16 @@
                     credentials: "include", // Gửi cookie cùng với yêu cầu
                     body: JSON.stringify(data)
                 });
-
+                
                 const obj = await res.json();
                 alert(obj.message);
-                if(obj.role === 3) { location = "/tai-khoan" }
-                else if(obj.role === 2) { location = "congchuc.html" }
-                else if(obj.role === 1) { location = "/thi-hanh-an" }
-                else { location = "/ban-an" }
+
+                if(res.status !== 401) {
+                    if(obj.role === 3) { location = "/tai-khoan" }
+                    else if(obj.role === 2) { location = "congchuc.html" }
+                    else if(obj.role === 1) { location = "/thi-hanh-an" }
+                    else { location = "/ban-an" }   
+                }
             } catch(err) {
                 console.error("Lỗi:", err);
                 alert(err.message);

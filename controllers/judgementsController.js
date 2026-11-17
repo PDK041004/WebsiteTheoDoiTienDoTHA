@@ -47,24 +47,24 @@ const registerJudgement = async (req, res) => {
 }
 
 const updateJudgement = async (req, res) => {
-   const { designation, newDesignation, newClassification, newDocuments, newPhase } = req.body;
-   if(!designation || !newDesignation || !newClassification || !newDocuments) {
-      return res.status(400).json ({ message: "All fields are required." }); }
+   const { _id, designation, classification, documents, phase } = req.body;
+   if(!_id) {
+      return res.status(400).json ({ message: "No ID was given." }); }
 
-   const judgement = await Judgement.findOne({ designation }).exec();
+   const judgement = await Judgement.findOne({ _id }).exec();
    if(!judgement) { return res.status(404).json({ message: "This judgement cannot be found." }); }
 
-   judgement.designation = newDesignation;
-   judgement.classification = newClassification;
-   judgement.documents = newDocuments;
-   judgement.phase = newPhase;
+   judgement.designation = designation;
+   judgement.classification = classification;
+   judgement.documents = documents;
+   judgement.phase = phase;
 
    const result = await judgement.save();
 
    console.log(result);
 
    return res.status(204).json({
-      message: "Light wieght!",
+      message: "Judgement information updated successfully!",
       judgement: judgement
    });
 }
