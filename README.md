@@ -16,18 +16,26 @@ Tài liệu này tóm tắt các thay đổi trong đợt cập nhật gần nh�
   - Chấp hành viên cập nhật **tiến độ thi hành án theo 5 giai đoạn**. Muốn chuyển sang Cưỡng chế phải có căn cứ và điều kiện.
   - Chấp hành viên **cập nhật hồ sơ**: đổi trạng thái, nhập nội dung xử lý và đính kèm tài liệu.
   - Công chức có thêm mục **Báo cáo** (lập phiếu thu phí thi hành án) và mục **Thống kê theo tháng**.
+- **Đợt 3:**
+  - **Mã hồ sơ do công chức nhập tay** khi xác nhận, không còn tự sinh. Đợt này phải chạy script đổi index (xem mục Cài đặt).
+  - Người dân phải **đăng nhập**. Hồ sơ gắn với tài khoản người gửi. Form đăng ký có thêm **SĐT, địa chỉ**.
+  - Trang người dân có tab **Tra cứu**, gộp "Tra cứu hồ sơ" và "Xem tiến độ" cũ:
+    - thông tin người dân;
+    - toàn bộ hồ sơ của tài khoản, tìm được theo mã và loại hồ sơ;
+    - xem tiến độ của từng hồ sơ.
+  - Người dân **gửi phản hồi** cho chấp hành viên phụ trách. Chấp hành viên **trả lời**, và câu trả lời hiện ở cột "Phản hồi từ cơ quan THA".
 
 ### Luồng xử lý hồ sơ
 
 ```
-Người dân gửi hồ sơ + bản án
+Người dân (đã đăng nhập) gửi hồ sơ + bản án      ── hồ sơ chưa có mã
         │
         ▼
   [Chờ xác nhận] ──(công chức: yêu cầu bổ sung)──▶ [Cần bổ sung]
         ▲                                              │
         └────────────(người dân gửi bổ sung)───────────┘
         │
-   (công chức: xác nhận đủ điều kiện)
+   (công chức: nhập mã hồ sơ + xác nhận đủ điều kiện)
         ▼
   [Đã xác nhận]
         │
@@ -79,7 +87,14 @@ Mỗi lần đổi trạng thái đều được ghi vào **lịch sử hồ sơ
    MONGODB_URI = '<chuỗi kết nối MongoDB>'
    ```
    Database được dùng là `CSDL-THA`. Nếu dùng MongoDB Atlas, cần thêm IP máy của bạn vào **Network Access**.
-3. Chạy server:
+3. **(Đợt 3, chạy một lần cho mỗi database)** Đổi index mã hồ sơ:
+   ```
+   node scripts/doi-index-mahoso.js
+   ```
+   Script thay index unique cũ `mahoso_1` bằng `mahoso_unique`, loại index chỉ xét hồ sơ đã có mã.
+   - **Vì sao cần:** hồ sơ chờ xác nhận chưa có mã, nên với index cũ, từ hồ sơ thứ hai trở đi sẽ bị báo trùng mã.
+   - **Database `CSDL-THA` chung đã được đổi rồi.** Nếu dùng bản code cũ (mã `unique: true`), index cũ có thể bị tạo lại. Khi đó chạy lại script này.
+4. Chạy server:
    ```
    npm run dev
    ```
@@ -93,12 +108,31 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
 
 ### Người dân (`views/nguoidan.html`)
 
-- **Đăng ký hồ sơ:** nhập họ tên, CCCD, nội dung và loại hồ sơ, rồi **đính kèm bản án** (PDF/JPG/PNG, tối đa 5 file, mỗi file ≤ 10MB). Gửi xong sẽ nhận được **mã hồ sơ**.
+- Trang **bắt buộc đăng nhập** bằng tài khoản người dân (`role = 0`). Nút Đăng xuất xóa phiên đăng nhập.
+- **Đăng ký hồ sơ:**
+  - Thông tin người yêu cầu gồm **họ tên, CCCD, SĐT, địa chỉ**:
+    - CCCD gồm 12 chữ số;
+    - SĐT gồm 10 chữ số, bắt đầu bằng 0;
+    - địa chỉ bắt buộc.
+
+    Trình duyệt và server đều kiểm tra. Thông tin này được lưu vào tài khoản và **tự điền sẵn** ở lần gửi sau.
+  - Sau đó chọn loại hồ sơ, nhập nội dung và **đính kèm bản án** (PDF/JPG/PNG, tối đa 5 file, mỗi file ≤ 10MB).
+  - Hồ sơ **chưa có mã** cho tới khi công chức xác nhận.
   - Đã sửa lỗi: form gọi hàm `sendHoSo` nhưng hàm lại tên `sendHoso`, nên trước đây form không gửi được.
-- **Tra cứu hồ sơ:** nhập CCCD để xem danh sách hồ sơ, trạng thái và phản hồi từ cơ quan thi hành án.
-  - Nếu hồ sơ ở trạng thái **Cần bổ sung**, trang hiện nội dung còn thiếu và nút **Bổ sung** để gửi thêm file hoặc ghi chú.
-- CCCD bắt buộc **12 chữ số**. Trình duyệt và server đều kiểm tra.
-- Khi tra cứu, hồ sơ đang xử lý hoặc tạm dừng có hiện thêm **giai đoạn thi hành án** hiện tại.
+- **Tra cứu** (gộp "Tra cứu hồ sơ" và "Xem tiến độ" cũ):
+  - **Thông tin người dân:** họ tên, CCCD, SĐT, địa chỉ.
+  - **Toàn bộ hồ sơ của tài khoản**, tìm theo **mã hồ sơ** và **loại hồ sơ**. Hồ sơ chưa có mã hiện "Chưa cấp mã".
+  - **Xem tiến độ:**
+    - quá trình xử lý (Gửi hồ sơ → Đã xác nhận → Đã phân công → Thi hành án → Hoàn thành);
+    - 5 giai đoạn thi hành án;
+    - chấp hành viên phụ trách;
+    - lịch sử hồ sơ.
+  - Hồ sơ **Cần bổ sung** có nút **Bổ sung** để gửi thêm file hoặc ghi chú.
+  - Hồ sơ đã phân công có nút **Phản hồi** để gửi ý kiến cho chấp hành viên phụ trách (tối đa 1000 ký tự). Cửa sổ phản hồi hiện dạng hỏi–đáp.
+  - Cột **"Phản hồi từ cơ quan THA"** lấy từ một trong hai nguồn:
+    - nội dung công chức **yêu cầu bổ sung**, được ưu tiên;
+    - **câu trả lời mới nhất của chấp hành viên**, có nhãn "Mới" khi chưa đọc.
+- Hồ sơ gửi trước đợt 3 chưa gắn với tài khoản nào nên không hiện ở trang Tra cứu.
 
 ### Công chức (`views/congchuc.html`)
 
@@ -109,7 +143,11 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
   - **Chọn trưởng phòng.** Trưởng phòng phải là nhân viên của phòng đó, và tự bị bỏ chức danh khi rời phòng.
 - **Xác nhận hồ sơ:**
   - Danh sách hồ sơ chờ xác nhận. Hồ sơ người dân đã bổ sung có nhãn "Đã bổ sung".
-  - **Xem bản án** ngay trong trang (PDF/ảnh), cùng thông tin người gửi và lịch sử hồ sơ.
+  - **Xem bản án** ngay trong trang (PDF/ảnh), cùng thông tin người gửi (gồm SĐT, địa chỉ) và lịch sử hồ sơ.
+  - **Nhập mã hồ sơ** khi xác nhận:
+    - bắt buộc, tối đa 50 ký tự;
+    - chỉ gồm chữ, số và các ký tự `/ . _ -`, không có dấu cách, ví dụ `125/QĐ-CCTHADS`;
+    - không được trùng mã đã có.
   - **Xác nhận đủ điều kiện**: hồ sơ chuyển sang mục Phân công.
   - **Yêu cầu bổ sung**: bắt buộc nhập nội dung còn thiếu; nội dung này hiện cho người dân khi tra cứu.
 - **Phân công xử lý:**
@@ -152,6 +190,10 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
   - Nút **Ghi nhận tiến độ** để ghi chú trong giai đoạn hiện tại, và các nút chuyển sang giai đoạn kế tiếp.
   - Khi chọn Cưỡng chế, trang mở khung nhập **căn cứ** và **nội dung điều kiện**.
   - Bấm Kết thúc thì trang hỏi xác nhận trước.
+- **Phản hồi từ người dân:**
+  - Mỗi phản hồi tạo thông báo **"Phản hồi từ người dân"**. Bấm vào thông báo thì mở danh sách phản hồi của hồ sơ đó, kèm SĐT và địa chỉ người dân.
+  - Nút **Phản hồi** có ở bảng hồ sơ và bảng xác minh. Nút hiện nhãn đỏ "N chưa trả lời" cho tới khi trả lời hết.
+  - Mỗi phản hồi được **trả lời một lần**, và thấy được người dân đã xem câu trả lời hay chưa.
 - Các ô thống kê đầu trang dùng số liệu thật: Tổng hồ sơ / Chờ xác minh / Đang xử lý / Hoàn thành.
 - Đã sửa lỗi bố cục: mục Thông báo trước đây nằm ngoài khung nội dung.
 
@@ -164,12 +206,15 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
 | Phương thức | Đường dẫn | Mô tả |
 |---|---|---|
 | GET | `/hoso` | Tất cả hồ sơ |
-| POST | `/hoso` | Người dân gửi hồ sơ (multipart, file ở field `banan`) |
-| GET | `/hoso/tra-cuu?cccd=` | Tra cứu hồ sơ theo CCCD |
+| POST | `/hoso` | Người dân gửi hồ sơ (multipart: `accountId`, `tennguoi`, `cccd`, `sdt`, `diachi`, `noidung`, `loaihoso`, file ở field `banan`) |
+| GET | `/hoso/nguoi-dan?accountId=` | Thông tin người dân và toàn bộ hồ sơ của tài khoản (thay cho `/hoso/tra-cuu?cccd=` đã bỏ) |
 | GET | `/hoso/cho-xac-nhan` | Hồ sơ chờ công chức xác nhận |
-| PUT | `/hoso/:id/xac-nhan` | Xác nhận hồ sơ đủ điều kiện |
+| PUT | `/hoso/:id/xac-nhan` | Nhập mã và xác nhận hồ sơ đủ điều kiện (`{ mahoso }`) |
 | PUT | `/hoso/:id/yeu-cau-bo-sung` | Yêu cầu bổ sung (`{ phanhoi }`) |
-| PUT | `/hoso/:id/bo-sung` | Người dân gửi bổ sung (multipart: `cccd`, `ghichu`, `banan`) |
+| PUT | `/hoso/:id/bo-sung` | Người dân gửi bổ sung (multipart: `accountId`, `ghichu`, `banan`) |
+| POST | `/hoso/:id/phan-hoi` | Người dân gửi phản hồi cho chấp hành viên phụ trách (`{ accountId, noidung }`) |
+| PUT | `/hoso/:id/phan-hoi/:phanhoiId/tra-loi` | Chấp hành viên trả lời một phản hồi (`{ officerId, noidung }`) |
+| PUT | `/hoso/:id/phan-hoi/da-xem` | Người dân đánh dấu đã đọc câu trả lời (`{ accountId }`) |
 | GET | `/hoso/chua-phan-cong` | Hồ sơ đã xác nhận, chưa phân công |
 | PUT | `/hoso/phan-cong` | Phân công (`{ hosoIds, officerId }`) |
 | GET | `/hoso/cua-toi?officerId=` | Hồ sơ của một chấp hành viên |
@@ -226,6 +271,7 @@ Các API trả về JSON dạng `{ code, message }`, với thông báo bằng ti
 | `phongbans` | `models/PhongBan.js` | **Mới.** Phòng ban và trưởng phòng (`truongphong`) |
 | `thongbaos` | `models/ThongBao.js` | **Mới.** Thông báo gửi cho từng tài khoản |
 | `phieuthus` | `models/PhieuThu.js` | **Mới (đợt 2).** Phiếu thu phí thi hành án, mỗi hồ sơ một phiếu |
+| `accounts` | `models/Account.js` | Thêm các trường `fullname`, `phone`, `phongban`; đợt 3 thêm `cccd`, `diachi` (thông tin người dân) |
 
 Đợt 2 thêm vào `hosos` các trường:
 - `giaidoan`: giai đoạn thi hành án hiện tại.
@@ -234,7 +280,14 @@ Các API trả về JSON dạng `{ code, message }`, với thông báo bằng ti
 - `tailieu`: tài liệu chấp hành viên đính kèm.
 
 Đợt 2 cũng thêm trạng thái **Tạm dừng**.
-| `accounts` | `models/Account.js` | Thêm các trường `fullname`, `phone`, `phongban` |
+
+Đợt 3:
+- `hosos`:
+  - `mahoso` mặc định `null`. Công chức nhập khi xác nhận. Index `mahoso_unique` chỉ áp dụng cho hồ sơ đã có mã.
+  - Thêm `sdt`, `diachi`.
+  - Thêm `nguoigui`: tài khoản người dân đã gửi hồ sơ.
+  - Thêm `phanhoinguoidan`: phản hồi của người dân, gồm `noidung`, `traloi`, `traloiAt` và `daxem` (người dân đã đọc câu trả lời).
+- `thongbaos`: thêm trường `loai`, nhận `phancong` hoặc `phanhoi`.
 
 Quy ước `role` của tài khoản: `0` người dân, `1` chấp hành viên, `2` công chức, `3` quản trị.
 
@@ -269,6 +322,7 @@ routes/api/thongbao.js
 models/PhieuThu.js                  (đợt 2) Phiếu thu, biểu phí và hàm tính phí
 controllers/baocaoController.js     (đợt 2) Báo cáo, thống kê tháng, phiếu thu
 routes/api/baocao.js                (đợt 2)
+scripts/doi-index-mahoso.js         (đợt 3) Đổi index mã hồ sơ, chạy một lần
 ```
 
 **Cập nhật:**
@@ -287,10 +341,13 @@ package.json                        Thêm multer
 
 ## Hạn chế hiện tại
 
-- **Chưa có phân quyền ở API:** ai biết đường dẫn đều gọi được, và file bản án trong `/uploads` mở được nếu có link (tên file được đặt ngẫu nhiên). Ai biết CCCD của người khác cũng tra cứu được hồ sơ của họ.
+- **Chưa có phân quyền thật ở API:**
+  - Tài khoản đăng nhập chỉ lưu ở `localStorage`. Server tin `accountId` / `officerId` do trình duyệt gửi lên, nên ai biết id tài khoản của người khác vẫn gọi API thay họ được.
+  - File bản án trong `/uploads` mở được nếu có link (tên file được đặt ngẫu nhiên).
+  - Đợt 3 đã bỏ tra cứu theo CCCD, vì trước đó ai biết CCCD của người khác cũng xem được hồ sơ của họ.
 - **Biểu phí** thi hành án (3% / 2% / 1% / 0,5% theo bậc) được đặt theo Thông tư 216/2016/TT-BTC nhưng **chưa được đối chiếu lại** với văn bản hiện hành. Danh sách **căn cứ cưỡng chế** là bản soạn sẵn. Cần kiểm tra cả hai trước khi dùng thật.
 - Người lập phiếu thu lấy từ tài khoản đang đăng nhập, lưu ở `localStorage` của trình duyệt. Trang công chức chưa kiểm tra đăng nhập.
-- Tab **Xem tiến độ** của người dân vẫn là dữ liệu mẫu, dù dữ liệu lịch sử hồ sơ đã có sẵn.
+- Hồ sơ gửi trước đợt 3 chưa gắn với tài khoản người dân (`nguoigui` rỗng) nên không hiện ở trang Tra cứu và không gửi phản hồi được.
 - Trang **quản lý tài khoản** (`views/taikhoan.html`) vẫn gọi các route `/users` viết cho MySQL, nên chưa hoạt động.
 - Nếu hai công chức cùng phân công cho một chấp hành viên vào đúng một thời điểm, số hồ sơ có thể vượt 200 một chút.
 - File `database.js` ở thư mục gốc là phần MySQL cũ, không còn được dùng.

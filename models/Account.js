@@ -19,6 +19,15 @@ const accountSchema = new Schema({
       type: String,
       default: ""
    },
+   // Thông tin người dân, cập nhật mỗi lần gửi hồ sơ
+   cccd: {
+      type: String,
+      default: ""
+   },
+   diachi: {
+      type: String,
+      default: ""
+   },
    // 0: người dân, 1: chấp hành viên, 2: công chức, 3: quản trị
    role: {
       type: Number,

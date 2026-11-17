@@ -57,11 +57,24 @@ const lichSuSchema = new Schema({
    thoigian: { type: Date, default: Date.now }
 }, { _id: false });
 
+// Phản hồi của người dân và câu trả lời của chấp hành viên (có _id để trả lời đúng phản hồi)
+const phanHoiSchema = new Schema({
+   noidung: { type: String, required: true },
+   // Chấp hành viên nhận phản hồi tại thời điểm gửi
+   nguoinhan: { type: Schema.Types.ObjectId, ref: "Account", default: null },
+   thoigian: { type: Date, default: Date.now },
+   traloi: { type: String, default: "" },
+   nguoitraloi: { type: Schema.Types.ObjectId, ref: "Account", default: null },
+   traloiAt: { type: Date, default: null },
+   // Người dân đã đọc câu trả lời chưa
+   daxem: { type: Boolean, default: false }
+});
+
 const hoSoSchema = new Schema({
+   // Công chức nhập tay khi xác nhận hồ sơ, trước đó để null
    mahoso: {
       type: String,
-      required: true,
-      unique: true
+      default: null
    },
    tennguoi: {
       type: String,
@@ -70,6 +83,20 @@ const hoSoSchema = new Schema({
    cccd: {
       type: String,
       default: ""
+   },
+   sdt: {
+      type: String,
+      default: ""
+   },
+   diachi: {
+      type: String,
+      default: ""
+   },
+   // Tài khoản người dân đã gửi hồ sơ
+   nguoigui: {
+      type: Schema.Types.ObjectId,
+      ref: "Account",
+      default: null
    },
    noidung: {
       type: String,
@@ -130,10 +157,24 @@ const hoSoSchema = new Schema({
    tailieu: {
       type: [fileSchema],
       default: []
+   },
+   // Phản hồi người dân gửi cho chấp hành viên phụ trách
+   phanhoinguoidan: {
+      type: [phanHoiSchema],
+      default: []
    }
 }, { timestamps: true });
 
+// Mã hồ sơ không trùng, chỉ xét hồ sơ đã có mã (nhiều hồ sơ chờ xác nhận cùng chưa có mã)
+hoSoSchema.index(
+   { mahoso: 1 },
+   { name: "mahoso_unique", unique: true, partialFilterExpression: { mahoso: { $type: "string" } } }
+);
+
+const MAHOSO_REGEX = /^[\p{L}\d/._-]{1,50}$/u;
+
 const HoSo = mongoose.model("HoSo", hoSoSchema);
+HoSo.MAHOSO_REGEX = MAHOSO_REGEX;
 HoSo.TRANG_THAI = TRANG_THAI;
 HoSo.CAN_CU_CUONG_CHE = CAN_CU_CUONG_CHE;
 HoSo.GIAI_DOAN = GIAI_DOAN;

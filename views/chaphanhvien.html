@@ -380,6 +380,23 @@
 </div>
 </div>
 
+<!-- PHẢN HỒI TỪ NGƯỜI DÂN -->
+<div class="modal fade" id="phanHoiModal">
+<div class="modal-dialog modal-dialog-scrollable">
+<div class="modal-content">
+<div class="modal-header bg-info text-white">
+<h5>Phản hồi từ người dân - <span id="phMahoso"></span></h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<p class="mb-1"><strong>Người dân:</strong> <span id="phTennguoi"></span></p>
+<p class="mb-3"><strong>Liên hệ:</strong> <span id="phLienhe"></span></p>
+<ul id="phDanhSach" class="list-group list-group-flush"></ul>
+</div>
+</div>
+</div>
+</div>
+
 <!-- TOAST -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
 <div id="liveToast" class="toast align-items-center text-bg-success border-0">
@@ -486,7 +503,10 @@ function renderHoSo() {
                 <td>${escapeHtml(hs.tennguoi)}</td>
                 <td>${escapeHtml(hs.loaihoso)}</td>
                 <td>${formatDate(hs.assignedAt)}</td>
-                <td><button class="btn btn-warning btn-sm" onclick="openXacMinh('${hs._id}')">Xác minh</button></td>
+                <td class="text-nowrap">
+                    <button class="btn btn-warning btn-sm" onclick="openXacMinh('${hs._id}')">Xác minh</button>
+                    ${phanHoiButton(hs)}
+                </td>
             </tr>`).join("");
 
     document.querySelector("#tableHoso tbody").innerHTML = daNhan.length === 0
@@ -504,6 +524,7 @@ function renderHoSo() {
                     <button class="btn btn-success btn-sm" onclick="openCapNhat('${hs._id}')">
                         ${hs.trangthai === "Hoàn thành" ? "Xem hồ sơ" : "Cập nhật hồ sơ"}
                     </button>
+                    ${phanHoiButton(hs)}
                 </td>
             </tr>`).join("");
 
@@ -886,7 +907,12 @@ function loadThongBao() {
             if (seenThongBaoIds) {
                 const moi = unread.filter(tb => !seenThongBaoIds.has(tb._id));
                 if (moi.length > 0) {
-                    showToast(`Bạn có ${moi.length} bản án mới cần xử lý`);
+                    const soPhanHoi = moi.filter(tb => tb.loai === "phanhoi").length;
+                    const soBanAn = moi.length - soPhanHoi;
+                    showToast([
+                        soBanAn ? `${soBanAn} bản án mới cần xử lý` : "",
+                        soPhanHoi ? `${soPhanHoi} phản hồi mới từ người dân` : ""
+                    ].filter(Boolean).join(", "));
                     loadMyHoSo();
                 }
             }
@@ -925,6 +951,12 @@ function openThongBao(id) {
             alert("Hồ sơ này không còn được phân công cho bạn");
             return;
         }
+        // Thông báo phản hồi: mở danh sách phản hồi của hồ sơ
+        if (tb.loai === "phanhoi") {
+            showSection(hoso.trangthai === "Đã phân công" ? "xacminh" : "hoso");
+            openPhanHoi(hoso._id);
+            return;
+        }
         if (hoso.trangthai !== "Đã phân công") {
             alert(`Hồ sơ ${hoso.mahoso} đã được xác minh nhận trước đó`);
             showSection("hoso");
@@ -933,6 +965,76 @@ function openThongBao(id) {
         showSection("xacminh");
         openXacMinh(hoso._id);
     });
+}
+
+/* ================== Phản hồi từ người dân ================== */
+let currentPhanHoi = null;
+
+// Nút xem phản hồi trong bảng hồ sơ, đỏ khi còn phản hồi chưa trả lời
+function phanHoiButton(hs) {
+    const list = hs.phanhoinguoidan || [];
+    if (list.length === 0) return "";
+    const chuaTraLoi = list.filter(p => !p.traloiAt).length;
+    return `<button class="btn btn-outline-info btn-sm" onclick="openPhanHoi('${hs._id}')">
+                Phản hồi ${chuaTraLoi
+                    ? `<span class="badge bg-danger">${chuaTraLoi} chưa trả lời</span>`
+                    : `<span class="badge bg-info">${list.length}</span>`}
+            </button>`;
+}
+
+function openPhanHoi(hosoId) {
+    currentPhanHoi = myHoSo.find(h => h._id === hosoId);
+    if (!currentPhanHoi) return;
+    const hs = currentPhanHoi;
+    const list = hs.phanhoinguoidan || [];
+
+    document.getElementById("phMahoso").innerText = hs.mahoso;
+    document.getElementById("phTennguoi").innerText = hs.tennguoi;
+    document.getElementById("phLienhe").innerText = [hs.sdt, hs.diachi].filter(Boolean).join(" - ") || "Chưa có";
+    document.getElementById("phDanhSach").innerHTML = list.length === 0
+        ? '<li class="list-group-item px-0 text-muted">Chưa có phản hồi</li>'
+        : [...list].reverse().map(p => `
+            <li class="list-group-item px-0">
+                <strong>${formatDate(p.thoigian)}</strong> - Người dân
+                <div style="white-space:pre-wrap">${escapeHtml(p.noidung)}</div>
+                ${p.traloiAt
+                    ? `<div class="border-start border-3 border-success ps-2 mt-2">
+                           <small class="text-success"><strong>Bạn đã trả lời</strong> - ${formatDate(p.traloiAt)}
+                           ${p.daxem ? "(người dân đã xem)" : "(người dân chưa xem)"}</small>
+                           <div style="white-space:pre-wrap">${escapeHtml(p.traloi)}</div>
+                       </div>`
+                    : `<div class="mt-2">
+                           <textarea id="tl-${p._id}" class="form-control form-control-sm mb-1" rows="2" maxlength="1000"
+                                     placeholder="Nhập câu trả lời cho người dân..."></textarea>
+                           <button class="btn btn-success btn-sm" onclick="traLoiPhanHoi('${p._id}', this)">Trả lời</button>
+                       </div>`}
+            </li>`).join("");
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("phanHoiModal")).show();
+}
+
+function traLoiPhanHoi(phanhoiId, btn) {
+    if (!currentPhanHoi) return;
+    const noidung = document.getElementById("tl-" + phanhoiId).value.trim();
+    if (!noidung) return alert("Vui lòng nhập nội dung trả lời");
+
+    btn.disabled = true;
+    fetch(`/hoso/${currentPhanHoi._id}/phan-hoi/${phanhoiId}/tra-loi`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ officerId: account._id, noidung })
+    })
+        .then(res => res.json())
+        .then(obj => {
+            alert(obj.message);
+            const id = currentPhanHoi._id;
+            loadThongBao();
+            loadMyHoSo().then(() => openPhanHoi(id));
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Không kết nối được server");
+        })
+        .finally(() => btn.disabled = false);
 }
 
 /* ================== Khởi động ================== */

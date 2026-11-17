@@ -290,6 +290,8 @@
                     <div class="col-md-5">
                         <p><strong>Người yêu cầu:</strong> <span id="mTennguoi"></span></p>
                         <p><strong>CCCD:</strong> <span id="mCccd"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="mSdt"></span></p>
+                        <p><strong>Địa chỉ:</strong> <span id="mDiachi"></span></p>
                         <p><strong>Loại hồ sơ:</strong> <span id="mLoaihoso"></span></p>
                         <p><strong>Nội dung yêu cầu:</strong></p>
                         <p id="mNoidung" class="border rounded p-2 bg-light" style="white-space:pre-wrap"></p>
@@ -304,6 +306,13 @@
                         <div id="mPreview" class="border rounded bg-light d-flex align-items-center justify-content-center text-muted"
                              style="height:60vh">Chọn một file bản án để xem</div>
                     </div>
+                </div>
+
+                <div class="mt-3">
+                    <label for="mMahosoInput"><strong>Mã hồ sơ</strong> (bắt buộc khi xác nhận đủ điều kiện)</label>
+                    <input type="text" id="mMahosoInput" class="form-control" maxlength="50"
+                           placeholder="VD: 125/QĐ-CCTHADS" pattern="[\p{L}\d\/._\-]{1,50}"
+                           title="Chỉ gồm chữ, số và các ký tự / . _ - (không có dấu cách)">
                 </div>
 
                 <div class="mt-3">
@@ -395,6 +404,8 @@
                     <div class="col-md-5">
                         <p><strong>Người yêu cầu:</strong> <span id="bcTennguoi"></span></p>
                         <p><strong>CCCD:</strong> <span id="bcCccd"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="bcSdt"></span></p>
+                        <p><strong>Địa chỉ:</strong> <span id="bcDiachi"></span></p>
                         <p><strong>Loại hồ sơ:</strong> <span id="bcLoaihoso"></span></p>
                         <p><strong>Chấp hành viên:</strong> <span id="bcOfficer"></span></p>
                         <p><strong>Nội dung yêu cầu:</strong></p>
@@ -683,7 +694,7 @@ function loadPendingHoSo() {
                 const daBoSung = hs.lichsu.some(l => l.ghichu.startsWith('Người dân đã bổ sung'));
                 return `
                     <tr>
-                        <td>${escapeHtml(hs.mahoso)}</td>
+                        <td>${hs.mahoso ? escapeHtml(hs.mahoso) : '<span class="text-muted">Chưa có mã</span>'}</td>
                         <td>${escapeHtml(hs.tennguoi)}</td>
                         <td>${escapeHtml(hs.loaihoso)}</td>
                         <td>${hs.files.length} file</td>
@@ -702,9 +713,12 @@ function openHoSo(id) {
     currentHoSo = pendingList.find(hs => hs._id === id);
     if (!currentHoSo) return;
 
-    document.getElementById('mMahoso').innerText = currentHoSo.mahoso;
+    document.getElementById('mMahoso').innerText = currentHoSo.mahoso || `của ${currentHoSo.tennguoi}`;
+    document.getElementById('mMahosoInput').value = currentHoSo.mahoso || '';
     document.getElementById('mTennguoi').innerText = currentHoSo.tennguoi;
     document.getElementById('mCccd').innerText = currentHoSo.cccd;
+    document.getElementById('mSdt').innerText = currentHoSo.sdt || '(Không có)';
+    document.getElementById('mDiachi').innerText = currentHoSo.diachi || '(Không có)';
     document.getElementById('mLoaihoso').innerText = currentHoSo.loaihoso;
     document.getElementById('mNoidung').innerText = currentHoSo.noidung || '(Không có)';
     document.getElementById('mPhanhoi').value = '';
@@ -750,10 +764,27 @@ function closeHoSoModal(message) {
 
 function confirmHoSo() {
     if (!currentHoSo) return;
+    const input = document.getElementById('mMahosoInput');
+    const mahoso = input.value.trim();
+    if (!mahoso || !input.checkValidity()) {
+        alert('Vui lòng nhập mã hồ sơ hợp lệ: chỉ gồm chữ, số và các ký tự / . _ - (không có dấu cách)');
+        return input.focus();
+    }
 
-    fetch(`/hoso/${currentHoSo._id}/xac-nhan`, { method: 'PUT' })
+    fetch(`/hoso/${currentHoSo._id}/xac-nhan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mahoso })
+    })
         .then(res => res.json())
-        .then(obj => closeHoSoModal(obj.message))
+        .then(obj => {
+            // Mã trùng: giữ cửa sổ mở để nhập mã khác
+            if (obj.code !== 200) {
+                alert(obj.message);
+                return input.focus();
+            }
+            closeHoSoModal(obj.message);
+        })
         .catch(err => {
             console.error(err);
             alert('Không kết nối được server');
@@ -1075,6 +1106,8 @@ function openBaoCaoHoSo(id) {
     document.getElementById('bcMahoso').innerText = hs.mahoso;
     document.getElementById('bcTennguoi').innerText = hs.tennguoi;
     document.getElementById('bcCccd').innerText = hs.cccd;
+    document.getElementById('bcSdt').innerText = hs.sdt || '(Không có)';
+    document.getElementById('bcDiachi').innerText = hs.diachi || '(Không có)';
     document.getElementById('bcLoaihoso').innerText = hs.loaihoso;
     document.getElementById('bcOfficer').innerText = officer
         ? (officer.fullname || officer.userName) + (officer.phongban ? ` - ${officer.phongban.tenphong}` : '')

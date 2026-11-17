@@ -13,6 +13,8 @@ const {
 
 const { TRANG_THAI, GIAI_DOAN, GIAI_DOAN_TIEP_THEO, CAN_CU_CUONG_CHE } = HoSo;
 const CCCD_REGEX = /^\d{12}$/;
+const SDT_REGEX = /^0\d{9}$/;
+const CITIZEN_ROLE = 0;
 
 // Xóa file vừa upload khi yêu cầu không hợp lệ
 const removeUploadedFiles = (files = []) => {
@@ -56,42 +58,79 @@ const getUnassignedHoSo = async (req, res) => {
    }
 };
 
-/* ================== Người dân tra cứu hồ sơ theo CCCD ================== */
-const searchByCccd = async (req, res) => {
-   const { cccd } = req.query;
-   if (!CCCD_REGEX.test(cccd || "")) {
-      return res.status(400).json({ code: 400, message: "CCCD phải gồm 12 chữ số" });
+/* ================== Trang Tra cứu: thông tin và hồ sơ của một người dân ================== */
+const getHoSoNguoiDan = async (req, res) => {
+   const { accountId } = req.query;
+   if (!mongoose.isValidObjectId(accountId)) {
+      return res.status(401).json({ code: 401, message: "Vui lòng đăng nhập" });
    }
 
    try {
-      const hoso = await HoSo.find({ cccd })
-         .select("mahoso tennguoi loaihoso trangthai giaidoan phanhoi lichsu files createdAt updatedAt")
+      const account = await Account.findOne({ _id: accountId, role: CITIZEN_ROLE })
+         .select("userName fullname cccd phone diachi")
+         .lean();
+      if (!account) {
+         return res.status(401).json({ code: 401, message: "Không tìm thấy tài khoản người dân, vui lòng đăng nhập lại" });
+      }
+
+      const hoso = await HoSo.find({ nguoigui: account._id })
+         .select("mahoso tennguoi cccd sdt diachi noidung loaihoso trangthai giaidoan phanhoi phanhoinguoidan lichsu files assignedTo createdAt updatedAt")
+         .populate("assignedTo", "fullname userName phone")
          .sort({ createdAt: -1 })
          .lean();
-      res.status(200).json(hoso);
+
+      res.status(200).json({ nguoidan: account, hoso });
    } catch (error) {
       res.status(500).json({ code: 500, message: error.message });
    }
 };
 
 /* ================== Người dân gửi hồ sơ ================== */
+// multipart: accountId (tài khoản người dân đang đăng nhập), tennguoi, cccd, sdt, diachi, noidung, loaihoso, banan
 const createHoSo = async (req, res) => {
-   const { tennguoi, cccd, noidung, loaihoso, danhmuc } = req.body;
+   const { accountId, cccd, sdt, noidung, loaihoso, danhmuc } = req.body;
+   const tennguoi = (req.body.tennguoi || "").trim();
+   const diachi = (req.body.diachi || "").trim();
    const files = req.files || [];
 
-   if (!tennguoi || !CCCD_REGEX.test(cccd || "")) {
+   const fail = (status, message) => {
       removeUploadedFiles(files);
-      return res.status(400).json({ code: 400, message: "Vui lòng nhập họ tên và CCCD (12 chữ số)" });
+      return res.status(status).json({ code: status, message });
+   };
+
+   if (!mongoose.isValidObjectId(accountId)) {
+      return fail(401, "Vui lòng đăng nhập để gửi hồ sơ");
+   }
+   if (!tennguoi || !CCCD_REGEX.test(cccd || "")) {
+      return fail(400, "Vui lòng nhập họ tên và CCCD (12 chữ số)");
+   }
+   if (!SDT_REGEX.test(sdt || "")) {
+      return fail(400, "Số điện thoại phải gồm 10 chữ số, bắt đầu bằng 0");
+   }
+   if (!diachi) {
+      return fail(400, "Vui lòng nhập địa chỉ");
    }
    if (files.length === 0) {
-      return res.status(400).json({ code: 400, message: "Vui lòng đính kèm bản án" });
+      return fail(400, "Vui lòng đính kèm bản án");
    }
 
    try {
-      const hoso = await HoSo.create({
-         mahoso: "HS" + Date.now(),
+      // Lưu lại thông tin người dân vào tài khoản để hiện ở trang Tra cứu
+      const account = await Account.findOneAndUpdate(
+         { _id: accountId, role: CITIZEN_ROLE },
+         { $set: { fullname: tennguoi, cccd, phone: sdt, diachi } }
+      );
+      if (!account) {
+         return fail(401, "Tài khoản không phải tài khoản người dân, vui lòng đăng nhập lại");
+      }
+
+      // Mã hồ sơ do công chức nhập khi xác nhận
+      await HoSo.create({
          tennguoi,
          cccd,
+         sdt,
+         diachi,
+         nguoigui: account._id,
          noidung,
          loaihoso,
          danhmuc,
@@ -100,8 +139,8 @@ const createHoSo = async (req, res) => {
       });
       res.status(201).json({
          code: 201,
-         message: `Gửi hồ sơ thành công. Mã hồ sơ của bạn: ${hoso.mahoso}`,
-         mahoso: hoso.mahoso
+         message: "Gửi hồ sơ thành công. Mã hồ sơ sẽ được cấp khi cơ quan thi hành án xác nhận, "
+            + "bạn có thể theo dõi ở mục Tra cứu"
       });
    } catch (error) {
       removeUploadedFiles(files);
@@ -110,17 +149,32 @@ const createHoSo = async (req, res) => {
 };
 
 /* ================== Công chức xác nhận hồ sơ đủ điều kiện ================== */
+// Công chức nhập mã hồ sơ (body: { mahoso }) khi xác nhận
 const confirmHoSo = async (req, res) => {
+   const mahoso = (req.body.mahoso || "").trim();
    if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({ code: 400, message: "Mã hồ sơ không hợp lệ" });
+      return res.status(400).json({ code: 400, message: "Hồ sơ không hợp lệ" });
+   }
+   if (!HoSo.MAHOSO_REGEX.test(mahoso)) {
+      return res.status(400).json({
+         code: 400,
+         message: "Mã hồ sơ bắt buộc, tối đa 50 ký tự, chỉ gồm chữ, số và các ký tự / . _ - (không có dấu cách)"
+      });
    }
 
    try {
+      const trung = await HoSo.exists({ mahoso, _id: { $ne: req.params.id } });
+      if (trung) {
+         return res.status(409).json({ code: 409, message: `Mã hồ sơ "${mahoso}" đã tồn tại, vui lòng nhập mã khác` });
+      }
+
       const hoso = await HoSo.findOneAndUpdate(
          { _id: req.params.id, trangthai: { $in: [TRANG_THAI.CHO_XAC_NHAN, "Chưa xử lý"] } },
          {
-            $set: { trangthai: TRANG_THAI.DA_XAC_NHAN, phanhoi: "" },
-            $push: { lichsu: { trangthai: TRANG_THAI.DA_XAC_NHAN, ghichu: "Hồ sơ đủ điều kiện, chờ phân công" } }
+            $set: { mahoso, trangthai: TRANG_THAI.DA_XAC_NHAN, phanhoi: "" },
+            $push: {
+               lichsu: { trangthai: TRANG_THAI.DA_XAC_NHAN, ghichu: `Hồ sơ đủ điều kiện, cấp mã ${mahoso}, chờ phân công` }
+            }
          },
          { returnDocument: "after" }
       );
@@ -129,6 +183,10 @@ const confirmHoSo = async (req, res) => {
       }
       res.status(200).json({ code: 200, message: `Đã xác nhận hồ sơ ${hoso.mahoso}, hồ sơ đã chuyển sang phân công` });
    } catch (error) {
+      // Hai công chức nhập cùng một mã cùng lúc
+      if (error.code === 11000) {
+         return res.status(409).json({ code: 409, message: `Mã hồ sơ "${mahoso}" đã tồn tại, vui lòng nhập mã khác` });
+      }
       res.status(500).json({ code: 500, message: error.message });
    }
 };
@@ -155,7 +213,7 @@ const requestSupplement = async (req, res) => {
       if (!hoso) {
          return res.status(409).json({ code: 409, message: "Hồ sơ không tồn tại hoặc không ở trạng thái chờ xác nhận" });
       }
-      res.status(200).json({ code: 200, message: `Đã gửi yêu cầu bổ sung cho hồ sơ ${hoso.mahoso}` });
+      res.status(200).json({ code: 200, message: `Đã gửi yêu cầu bổ sung cho hồ sơ của ${hoso.tennguoi}` });
    } catch (error) {
       res.status(500).json({ code: 500, message: error.message });
    }
@@ -163,22 +221,22 @@ const requestSupplement = async (req, res) => {
 
 /* ================== Người dân gửi bổ sung bản án ================== */
 const supplementHoSo = async (req, res) => {
-   const { cccd } = req.body;
+   const { accountId } = req.body;
    const ghichu = (req.body.ghichu || "").trim();
    const files = req.files || [];
 
-   if (!mongoose.isValidObjectId(req.params.id) || !CCCD_REGEX.test(cccd || "")) {
+   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(accountId)) {
       removeUploadedFiles(files);
-      return res.status(400).json({ code: 400, message: "Thông tin hồ sơ hoặc CCCD không hợp lệ" });
+      return res.status(400).json({ code: 400, message: "Thông tin hồ sơ hoặc tài khoản không hợp lệ" });
    }
    if (files.length === 0 && !ghichu) {
       return res.status(400).json({ code: 400, message: "Vui lòng đính kèm file hoặc nhập nội dung bổ sung" });
    }
 
    try {
-      // CCCD phải khớp để người khác không bổ sung vào hồ sơ không phải của mình
+      // Chỉ tài khoản đã gửi hồ sơ mới được bổ sung
       const hoso = await HoSo.findOneAndUpdate(
-         { _id: req.params.id, cccd, trangthai: TRANG_THAI.CAN_BO_SUNG },
+         { _id: req.params.id, nguoigui: accountId, trangthai: TRANG_THAI.CAN_BO_SUNG },
          {
             $set: { trangthai: TRANG_THAI.CHO_XAC_NHAN },
             $push: {
@@ -190,11 +248,122 @@ const supplementHoSo = async (req, res) => {
       );
       if (!hoso) {
          removeUploadedFiles(files);
-         return res.status(409).json({ code: 409, message: "Không tìm thấy hồ sơ cần bổ sung với CCCD này" });
+         return res.status(409).json({ code: 409, message: "Không tìm thấy hồ sơ cần bổ sung của tài khoản này" });
       }
-      res.status(200).json({ code: 200, message: `Đã gửi bổ sung cho hồ sơ ${hoso.mahoso}, vui lòng chờ công chức xác nhận` });
+      res.status(200).json({ code: 200, message: "Đã gửi bổ sung hồ sơ, vui lòng chờ công chức xác nhận" });
    } catch (error) {
       removeUploadedFiles(files);
+      res.status(500).json({ code: 500, message: error.message });
+   }
+};
+
+/* ================== Người dân gửi phản hồi cho chấp hành viên ================== */
+const MAX_PHAN_HOI = 1000;
+
+const sendPhanHoi = async (req, res) => {
+   const { accountId } = req.body;
+   const noidung = (req.body.noidung || "").trim();
+   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(accountId)) {
+      return res.status(400).json({ code: 400, message: "Thông tin hồ sơ hoặc tài khoản không hợp lệ" });
+   }
+   if (!noidung) {
+      return res.status(400).json({ code: 400, message: "Vui lòng nhập nội dung phản hồi" });
+   }
+   if (noidung.length > MAX_PHAN_HOI) {
+      return res.status(400).json({ code: 400, message: `Nội dung phản hồi tối đa ${MAX_PHAN_HOI} ký tự` });
+   }
+
+   try {
+      const hoso = await HoSo.findOne({ _id: req.params.id, nguoigui: accountId }).select("mahoso assignedTo").lean();
+      if (!hoso) {
+         return res.status(404).json({ code: 404, message: "Không tìm thấy hồ sơ của tài khoản này" });
+      }
+      if (!hoso.assignedTo) {
+         return res.status(409).json({ code: 409, message: "Hồ sơ chưa được phân công chấp hành viên, chưa gửi phản hồi được" });
+      }
+
+      await HoSo.updateOne(
+         { _id: hoso._id },
+         { $push: { phanhoinguoidan: { noidung, nguoinhan: hoso.assignedTo } } }
+      );
+      await ThongBao.create({
+         nguoinhan: hoso.assignedTo,
+         hoso: hoso._id,
+         loai: "phanhoi",
+         tieude: "Phản hồi từ người dân",
+         noidung: `Hồ sơ ${hoso.mahoso}: ${noidung.length > 100 ? noidung.slice(0, 100) + "..." : noidung}`
+      });
+
+      res.status(200).json({ code: 200, message: "Đã gửi phản hồi cho chấp hành viên phụ trách" });
+   } catch (error) {
+      res.status(500).json({ code: 500, message: error.message });
+   }
+};
+
+/* ================== CHV trả lời phản hồi của người dân ================== */
+const traLoiPhanHoi = async (req, res) => {
+   const { id, phanhoiId } = req.params;
+   const { officerId } = req.body;
+   const noidung = (req.body.noidung || "").trim();
+   if (![id, phanhoiId, officerId].every(v => mongoose.isValidObjectId(v))) {
+      return res.status(400).json({ code: 400, message: "Thông tin hồ sơ, phản hồi hoặc chấp hành viên không hợp lệ" });
+   }
+   if (!noidung) {
+      return res.status(400).json({ code: 400, message: "Vui lòng nhập nội dung trả lời" });
+   }
+   if (noidung.length > MAX_PHAN_HOI) {
+      return res.status(400).json({ code: 400, message: `Nội dung trả lời tối đa ${MAX_PHAN_HOI} ký tự` });
+   }
+
+   try {
+      // Chỉ CHV đang phụ trách hồ sơ được trả lời, mỗi phản hồi trả lời một lần
+      const hoso = await HoSo.findOneAndUpdate(
+         {
+            _id: id,
+            assignedTo: officerId,
+            phanhoinguoidan: { $elemMatch: { _id: phanhoiId, traloiAt: null } }
+         },
+         {
+            $set: {
+               "phanhoinguoidan.$.traloi": noidung,
+               "phanhoinguoidan.$.nguoitraloi": officerId,
+               "phanhoinguoidan.$.traloiAt": new Date(),
+               "phanhoinguoidan.$.daxem": false
+            }
+         },
+         { returnDocument: "after" }
+      );
+      if (!hoso) {
+         return res.status(409).json({ code: 409, message: "Phản hồi không tồn tại, không thuộc hồ sơ của bạn hoặc đã được trả lời" });
+      }
+
+      // Đã trả lời thì thông báo phản hồi của hồ sơ này coi như đã xem
+      await ThongBao.updateMany(
+         { hoso: hoso._id, nguoinhan: officerId, loai: "phanhoi" },
+         { $set: { daxem: true } }
+      );
+
+      res.status(200).json({ code: 200, message: `Đã trả lời phản hồi của hồ sơ ${hoso.mahoso}` });
+   } catch (error) {
+      res.status(500).json({ code: 500, message: error.message });
+   }
+};
+
+/* ================== Người dân đánh dấu đã đọc câu trả lời ================== */
+const xemTraLoi = async (req, res) => {
+   const { accountId } = req.body;
+   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(accountId)) {
+      return res.status(400).json({ code: 400, message: "Thông tin hồ sơ hoặc tài khoản không hợp lệ" });
+   }
+
+   try {
+      await HoSo.updateOne(
+         { _id: req.params.id, nguoigui: accountId },
+         { $set: { "phanhoinguoidan.$[e].daxem": true } },
+         { arrayFilters: [{ "e.traloiAt": { $ne: null }, "e.daxem": false }] }
+      );
+      res.status(200).json({ code: 200, message: "Đã xem" });
+   } catch (error) {
       res.status(500).json({ code: 500, message: error.message });
    }
 };
@@ -306,8 +475,11 @@ const receiveHoSo = async (req, res) => {
          return res.status(409).json({ code: 409, message: "Hồ sơ không thuộc về bạn hoặc đã được xác minh trước đó" });
       }
 
-      // Thông báo của hồ sơ này coi như đã xem
-      await ThongBao.updateMany({ hoso: hoso._id, nguoinhan: officerId }, { $set: { daxem: true } });
+      // Thông báo phân công của hồ sơ này coi như đã xem (phản hồi của người dân vẫn giữ chưa xem)
+      await ThongBao.updateMany(
+         { hoso: hoso._id, nguoinhan: officerId, loai: { $ne: "phanhoi" } },
+         { $set: { daxem: true } }
+      );
 
       res.status(200).json({ code: 200, message: `Đã nhận hồ sơ ${hoso.mahoso}, hồ sơ chuyển sang xử lý` });
    } catch (error) {
@@ -487,11 +659,14 @@ module.exports = {
    getAllHoSo,
    getPendingHoSo,
    getUnassignedHoSo,
-   searchByCccd,
+   getHoSoNguoiDan,
    createHoSo,
    confirmHoSo,
    requestSupplement,
    supplementHoSo,
+   sendPhanHoi,
+   traLoiPhanHoi,
+   xemTraLoi,
    assignHoSo,
    getMyHoSo,
    receiveHoSo,

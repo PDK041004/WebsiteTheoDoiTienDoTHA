@@ -12,6 +12,11 @@ const thongBaoSchema = new Schema({
       ref: "HoSo",
       default: null
    },
+   // "phancong": được phân công hồ sơ, "phanhoi": người dân gửi phản hồi
+   loai: {
+      type: String,
+      default: "phancong"
+   },
    tieude: {
       type: String,
       required: true

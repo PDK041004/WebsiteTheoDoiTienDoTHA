@@ -5,6 +5,47 @@
 <title>Người dân - Quản lý hồ sơ</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+/* Các bước tiến độ */
+.stepper {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.step {
+    flex: 1 1 0;
+    min-width: 90px;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+.step.done {
+    border-color: #198754;
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.step.current {
+    border-color: #0d6efd;
+    background: #0d6efd;
+    color: white;
+    font-weight: 600;
+}
+.step.optional {
+    border-style: dashed;
+}
+.step.skipped {
+    border-style: dashed;
+    text-decoration: line-through;
+}
+.step small {
+    display: block;
+    font-weight: normal;
+}
+</style>
 </head>
 
 <body>
@@ -13,8 +54,9 @@
 <nav class="navbar navbar-dark bg-danger">
     <div class="container">
         <span class="navbar-brand">CỔNG DỊCH VỤ NGƯỜI DÂN</span>
-        <div class="ms-auto">
-          <a href="/homepage" class="btn btn-outline-light">Đăng xuất</a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <span class="text-white">Xin chào, <strong id="tenTaiKhoan"></strong></span>
+            <button class="btn btn-outline-light" onclick="logout()">Đăng xuất</button>
         </div>
     </div>
 </nav>
@@ -29,13 +71,8 @@
             </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tracuu">
-                Tra cứu hồ sơ
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tiendo">
-                Xem tiến độ
+            <button class="nav-link" id="tabTraCuu" data-bs-toggle="tab" data-bs-target="#tracuu">
+                Tra cứu
             </button>
         </li>
     </ul>
@@ -51,17 +88,30 @@
                 <div class="card-body">
 
                     <form id="hosoForm" onsubmit="sendHoSo(event)">
-                        <div class="mb-2">
-                            <label for="tennguoi">Tên người yêu cầu</label>
-                            <input type="text" id="tennguoi" class="form-control" required>
+                        <h6 class="text-danger">Thông tin người yêu cầu</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="tennguoi">Họ tên</label>
+                                <input type="text" id="tennguoi" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="cccd">CCCD</label>
+                                <input type="text" id="cccd" class="form-control" required
+                                       pattern="\d{12}" maxlength="12" title="CCCD gồm 12 chữ số">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="sdt">Số điện thoại</label>
+                                <input type="tel" id="sdt" class="form-control" required
+                                       pattern="0\d{9}" maxlength="10" title="Số điện thoại gồm 10 chữ số, bắt đầu bằng 0">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="diachi">Địa chỉ</label>
+                                <input type="text" id="diachi" class="form-control" required
+                                       placeholder="Số nhà, đường, phường/xã, tỉnh/thành phố">
+                            </div>
                         </div>
 
-                        <div class="mb-2">
-                            <label for="cccd">CCCD</label>
-                            <input type="text" id="cccd" class="form-control" required
-                                   pattern="\d{12}" maxlength="12" title="CCCD gồm 12 chữ số">
-                        </div>
-
+                        <h6 class="text-danger mt-3">Thông tin hồ sơ</h6>
                         <div class="mb-2">
                             <label for="noidung">Nội dung yêu cầu</label>
                             <textarea id="noidung" class="form-control"></textarea>
@@ -69,18 +119,7 @@
 
                         <div class="mb-2">
                             <label for="loaihoso">Loại hồ sơ</label>
-                            <select id="loaihoso" class="form-control">
-                                <option>Dân sự</option>
-                                <option>Kinh doanh thương mại</option>
-                                <option>Hình sự</option>
-                                <option>Lao động</option>
-                                <option>Trọng tải thương mại</option>
-                                <option>Phá sản</option>
-                                <option>Hành chính</option>
-                                <option>Vụ việc cạnh tranh</option>
-                                <option>Tín dụng ngân hàng</option>
-                                <option>Biện pháp khẩn cấp tạm thời</option>
-                            </select>
+                            <select id="loaihoso" class="form-select"></select>
                         </div>
 
                         <div class="mb-3">
@@ -98,19 +137,42 @@
 
         <!-- TRA CỨU -->
         <div class="tab-pane fade" id="tracuu">
+
+            <!-- THÔNG TIN NGƯỜI DÂN -->
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">Thông tin người dân</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6"><p class="mb-2"><strong>Họ tên:</strong> <span id="ttHoten"></span></p></div>
+                        <div class="col-md-6"><p class="mb-2"><strong>CCCD:</strong> <span id="ttCccd"></span></p></div>
+                        <div class="col-md-6"><p class="mb-2"><strong>Số điện thoại:</strong> <span id="ttSdt"></span></p></div>
+                        <div class="col-md-6"><p class="mb-2"><strong>Địa chỉ:</strong> <span id="ttDiachi"></span></p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HỒ SƠ CỦA TÔI -->
             <div class="card">
-                <div class="card-header bg-danger text-white">
-                    Tra cứu hồ sơ
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <span>Hồ sơ của tôi (<span id="tongHoso">0</span>)</span>
+                    <button class="btn btn-light btn-sm" onclick="loadTraCuu()">Tải lại</button>
                 </div>
                 <div class="card-body">
 
-                    <form class="input-group mb-3" onsubmit="searchHoSo(event)">
-                        <input type="text" id="cccdTraCuu" class="form-control" placeholder="Nhập CCCD đã dùng khi gửi hồ sơ"
-                               required pattern="\d{12}" maxlength="12" title="CCCD gồm 12 chữ số">
-                        <button class="btn btn-danger">Tra cứu</button>
-                    </form>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-5">
+                            <input type="text" id="timMahoso" class="form-control" placeholder="🔍 Tìm theo mã hồ sơ"
+                                   oninput="renderHoSo()">
+                        </div>
+                        <div class="col-md-4">
+                            <select id="timLoaihoso" class="form-select" onchange="renderHoSo()"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100" onclick="resetTimKiem()">Xóa bộ lọc</button>
+                        </div>
+                    </div>
 
-                    <table class="table table-bordered">
+                    <table class="table table-bordered align-middle">
                         <thead>
                             <tr>
                                 <th>Mã hồ sơ</th>
@@ -118,10 +180,11 @@
                                 <th>Ngày gửi</th>
                                 <th>Trạng thái</th>
                                 <th>Phản hồi từ cơ quan THA</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody id="tableHoso">
-                            <tr><td colspan="5" class="text-center text-muted">Nhập CCCD để tra cứu hồ sơ</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted">Đang tải...</td></tr>
                         </tbody>
                     </table>
 
@@ -129,29 +192,67 @@
             </div>
         </div>
 
-        <!-- TIẾN ĐỘ -->
-        <div class="tab-pane fade" id="tiendo">
-            <div class="card">
-                <div class="card-header bg-danger text-white">
-                    Tiến độ xử lý hồ sơ
-                </div>
-                <div class="card-body">
-
-                    <input type="text" class="form-control mb-2" placeholder="Nhập mã hồ sơ...">
-                    <button class="btn btn-danger mb-3">Xem tiến độ</button>
-
-                    <ul class="list-group">
-                        <li class="list-group-item">01/01/2026 - Tiếp nhận hồ sơ</li>
-                        <li class="list-group-item">02/01/2026 - Đang xác minh</li>
-                        <li class="list-group-item">05/01/2026 - Đang xử lý</li>
-                    </ul>
-
-                </div>
-            </div>
-        </div>
-
     </div>
 
+</div>
+
+<!-- MODAL TIẾN ĐỘ -->
+<div class="modal fade" id="tienDoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Tiến độ hồ sơ <span id="tdMahoso"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-2">
+                    <div class="col-md-6"><p class="mb-1"><strong>Loại hồ sơ:</strong> <span id="tdLoaihoso"></span></p></div>
+                    <div class="col-md-6"><p class="mb-1"><strong>Ngày gửi:</strong> <span id="tdNgaygui"></span></p></div>
+                    <div class="col-md-6"><p class="mb-1"><strong>Trạng thái:</strong> <span id="tdTrangthai"></span></p></div>
+                    <div class="col-md-6"><p class="mb-1"><strong>Chấp hành viên phụ trách:</strong> <span id="tdChv"></span></p></div>
+                </div>
+
+                <p class="mb-1 mt-3"><strong>Quá trình xử lý hồ sơ</strong></p>
+                <div id="tdQuyTrinh" class="stepper mb-3"></div>
+
+                <div id="tdThiHanh">
+                    <p class="mb-1"><strong>Tiến độ thi hành án</strong></p>
+                    <div id="tdGiaiDoan" class="stepper mb-3"></div>
+                </div>
+
+                <p class="mb-1"><strong>Lịch sử</strong></p>
+                <ul id="tdLichsu" class="list-group list-group-flush small"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PHẢN HỒI CHO CHẤP HÀNH VIÊN -->
+<div class="modal fade" id="phanHoiModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form class="modal-content" onsubmit="sendPhanHoi(event)">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Phản hồi hồ sơ <span id="phMahoso"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Gửi tới chấp hành viên:</strong> <span id="phChv"></span></p>
+
+                <p class="mb-1"><strong>Phản hồi đã gửi:</strong></p>
+                <ul id="phDaGui" class="list-group list-group-flush small mb-3"></ul>
+
+                <label for="phNoidung">Nội dung phản hồi</label>
+                <textarea id="phNoidung" class="form-control" rows="4" maxlength="1000" required
+                          oninput="document.getElementById('phDem').innerText = this.value.length"
+                          placeholder="VD: Người phải thi hành án đã có tài sản mới tại ..."></textarea>
+                <small class="text-muted"><span id="phDem">0</span>/1000 ký tự</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button id="btnPhanHoi" class="btn btn-primary">Gửi phản hồi</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- MODAL BỔ SUNG BẢN ÁN -->
@@ -186,6 +287,27 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+/* ================== Tài khoản đang đăng nhập ================== */
+const CITIZEN_ROLE = 0;
+let account = null;
+try {
+    account = JSON.parse(localStorage.getItem("account"));
+} catch (e) {}
+
+if (!account || account.role !== CITIZEN_ROLE) {
+    alert("Vui lòng đăng nhập bằng tài khoản người dân");
+    location = "/homepage";
+}
+
+function logout() {
+    localStorage.removeItem("account");
+    location = "/homepage";
+}
+
+const LOAI_HO_SO = [
+    "Dân sự", "Kinh doanh thương mại", "Hình sự", "Lao động", "Trọng tải thương mại",
+    "Phá sản", "Hành chính", "Vụ việc cạnh tranh", "Tín dụng ngân hàng", "Biện pháp khẩn cấp tạm thời"
+];
 const STATUS_COLORS = {
     'Chờ xác nhận': 'secondary',
     'Cần bổ sung': 'warning',
@@ -195,9 +317,10 @@ const STATUS_COLORS = {
     'Tạm dừng': 'warning',
     'Hoàn thành': 'success'
 };
+const GIAI_DOAN = ['Khởi động', 'Xác nhận điều kiện', 'Tự nguyện', 'Cưỡng chế', 'Kết thúc'];
+let nguoidan = null;
 let hosoList = [];
 let currentHoSo = null;
-let searchedCccd = "";
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -205,13 +328,275 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function formatDate(value) {
+    return value ? new Date(value).toLocaleString('vi-VN') : '';
+}
+
+/* ================== Thông tin người dân và hồ sơ ================== */
+function loadTraCuu() {
+    return fetch("/hoso/nguoi-dan?accountId=" + encodeURIComponent(account._id))
+        .then(res => res.json())
+        .then(data => {
+            if (!data.nguoidan) {
+                alert(data.message);
+                if (data.code === 401) logout();
+                return;
+            }
+            nguoidan = data.nguoidan;
+            hosoList = data.hoso;
+            renderThongTin();
+            renderHoSo();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Không kết nối được server");
+        });
+}
+
+function renderThongTin() {
+    const chua = '<span class="text-muted">Chưa cập nhật</span>';
+    document.getElementById("tenTaiKhoan").innerText = nguoidan.fullname || nguoidan.userName;
+    document.getElementById("ttHoten").innerHTML = nguoidan.fullname ? escapeHtml(nguoidan.fullname) : chua;
+    document.getElementById("ttCccd").innerHTML = nguoidan.cccd ? escapeHtml(nguoidan.cccd) : chua;
+    document.getElementById("ttSdt").innerHTML = nguoidan.phone ? escapeHtml(nguoidan.phone) : chua;
+    document.getElementById("ttDiachi").innerHTML = nguoidan.diachi ? escapeHtml(nguoidan.diachi) : chua;
+
+    // Điền sẵn form đăng ký bằng thông tin đã lưu (không ghi đè nội dung đang nhập)
+    const fill = (id, value) => {
+        const input = document.getElementById(id);
+        if (!input.value && value) input.value = value;
+    };
+    fill("tennguoi", nguoidan.fullname);
+    fill("cccd", nguoidan.cccd);
+    fill("sdt", nguoidan.phone);
+    fill("diachi", nguoidan.diachi);
+}
+
+function renderHoSo() {
+    const tuKhoa = document.getElementById("timMahoso").value.trim().toLowerCase();
+    const loai = document.getElementById("timLoaihoso").value;
+    const list = hosoList.filter(hs =>
+        (!tuKhoa || (hs.mahoso || '').toLowerCase().includes(tuKhoa))
+        && (!loai || hs.loaihoso === loai));
+
+    document.getElementById("tongHoso").innerText = list.length === hosoList.length
+        ? hosoList.length
+        : `${list.length}/${hosoList.length}`;
+
+    const tbody = document.getElementById("tableHoso");
+    if (hosoList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Bạn chưa gửi hồ sơ nào</td></tr>';
+        return;
+    }
+    if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không có hồ sơ nào phù hợp</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map(hs => `
+        <tr>
+            <td>${hs.mahoso ? escapeHtml(hs.mahoso) : '<span class="text-muted">Chưa cấp mã</span>'}</td>
+            <td>${escapeHtml(hs.loaihoso)}</td>
+            <td>${new Date(hs.createdAt).toLocaleDateString('vi-VN')}</td>
+            <td>
+                <span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span>
+                ${['Đang xử lý', 'Tạm dừng'].includes(hs.trangthai) ? `<br><small>Giai đoạn: ${escapeHtml(hs.giaidoan || 'Khởi động')}</small>` : ''}
+            </td>
+            <td>${renderPhanHoiCoQuan(hs)}</td>
+            <td class="text-nowrap">
+                <button class="btn btn-outline-danger btn-sm" onclick="openTienDo('${hs._id}')">Xem tiến độ</button>
+                ${hs.assignedTo
+                    ? `<button class="btn btn-outline-primary btn-sm" onclick="openPhanHoi('${hs._id}')">
+                           Phản hồi${demTraLoiMoi(hs) ? ` <span class="badge bg-danger">${demTraLoiMoi(hs)} trả lời mới</span>` : ''}
+                       </button>`
+                    : ''}
+            </td>
+        </tr>`).join('');
+}
+
+/* ================== Phản hồi từ cơ quan THA ================== */
+// Ưu tiên yêu cầu bổ sung của công chức, sau đó là câu trả lời mới nhất của chấp hành viên
+const RUT_GON = 120;
+
+function demTraLoiMoi(hs) {
+    return (hs.phanhoinguoidan || []).filter(p => p.traloiAt && !p.daxem).length;
+}
+
+function renderPhanHoiCoQuan(hs) {
+    if (hs.trangthai === 'Cần bổ sung') {
+        return `<small class="text-muted">Công chức yêu cầu bổ sung:</small>
+                <div class="text-danger mb-2" style="white-space:pre-wrap">${escapeHtml(hs.phanhoi)}</div>
+                <button class="btn btn-warning btn-sm" onclick="openBoSung('${hs._id}')">Bổ sung</button>`;
+    }
+
+    const daTraLoi = (hs.phanhoinguoidan || []).filter(p => p.traloiAt);
+    if (daTraLoi.length === 0) return '<span class="text-muted">-</span>';
+
+    const moiNhat = daTraLoi.reduce((a, b) => new Date(a.traloiAt) > new Date(b.traloiAt) ? a : b);
+    const chv = hs.assignedTo;
+    const noidung = moiNhat.traloi.length > RUT_GON ? moiNhat.traloi.slice(0, RUT_GON) + '...' : moiNhat.traloi;
+    return `<small class="text-muted">
+                ${moiNhat.daxem ? '' : '<span class="badge bg-danger">Mới</span>'}
+                Chấp hành viên ${chv ? escapeHtml(chv.fullname || chv.userName) : ''} trả lời (${formatDate(moiNhat.traloiAt)}):
+            </small>
+            <div style="white-space:pre-wrap">${escapeHtml(noidung)}</div>
+            <a href="#" onclick="openPhanHoi('${hs._id}'); return false;">Xem tất cả</a>`;
+}
+
+function resetTimKiem() {
+    document.getElementById("timMahoso").value = "";
+    document.getElementById("timLoaihoso").value = "";
+    renderHoSo();
+}
+
+/* ================== Xem tiến độ ================== */
+// Quá trình chung của hồ sơ, đánh dấu theo trạng thái hiện tại
+const QUY_TRINH = [
+    { ten: 'Gửi hồ sơ', trangthai: ['Chờ xác nhận', 'Cần bổ sung'] },
+    { ten: 'Đã xác nhận', trangthai: ['Đã xác nhận'] },
+    { ten: 'Đã phân công', trangthai: ['Đã phân công'] },
+    { ten: 'Thi hành án', trangthai: ['Đang xử lý', 'Tạm dừng'] },
+    { ten: 'Hoàn thành', trangthai: ['Hoàn thành'] }
+];
+
+function openTienDo(id) {
+    const hs = hosoList.find(h => h._id === id);
+    if (!hs) return;
+    const chv = hs.assignedTo;
+
+    document.getElementById("tdMahoso").innerText = hs.mahoso || '(chưa cấp mã)';
+    document.getElementById("tdLoaihoso").innerText = hs.loaihoso;
+    document.getElementById("tdNgaygui").innerText = formatDate(hs.createdAt);
+    document.getElementById("tdTrangthai").innerHTML =
+        `<span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span>`;
+    document.getElementById("tdChv").innerText = chv
+        ? (chv.fullname || chv.userName) + (chv.phone ? ` - ${chv.phone}` : '')
+        : 'Chưa phân công';
+
+    const viTri = QUY_TRINH.findIndex(b => b.trangthai.includes(hs.trangthai));
+    document.getElementById("tdQuyTrinh").innerHTML = QUY_TRINH.map((b, i) => {
+        let cls = i < viTri ? 'done' : i === viTri ? 'current' : '';
+        let phu = '';
+        if (i === viTri && hs.trangthai !== b.ten) phu = hs.trangthai;
+        if (i === viTri && hs.trangthai === 'Hoàn thành') cls = 'done';
+        return `<div class="step ${cls}">${i + 1}. ${b.ten}${phu ? `<small>${escapeHtml(phu)}</small>` : ''}</div>`;
+    }).join('');
+
+    // Tiến độ thi hành án chỉ có từ khi chấp hành viên nhận hồ sơ
+    const coGiaiDoan = ['Đang xử lý', 'Tạm dừng', 'Hoàn thành'].includes(hs.trangthai);
+    document.getElementById("tdThiHanh").style.display = coGiaiDoan ? 'block' : 'none';
+    if (coGiaiDoan) {
+        const current = hs.giaidoan || 'Khởi động';
+        const viTriGD = GIAI_DOAN.indexOf(current);
+        const quaCuongChe = hs.lichsu.some(l => l.giaidoan === 'Cưỡng chế');
+        document.getElementById("tdGiaiDoan").innerHTML = GIAI_DOAN.map((gd, i) => {
+            let cls = '';
+            let phu = '';
+            if (gd === current) cls = current === 'Kết thúc' ? 'done' : 'current';
+            else if (gd === 'Cưỡng chế') {
+                if (quaCuongChe) cls = 'done';
+                else if (current === 'Kết thúc') { cls = 'skipped'; phu = 'Không cần'; }
+                else { cls = 'optional'; phu = 'Nếu có vi phạm'; }
+            } else if (i < viTriGD) cls = 'done';
+            return `<div class="step ${cls}">${i + 1}. ${gd}${phu ? `<small>${phu}</small>` : ''}</div>`;
+        }).join('');
+    }
+
+    document.getElementById("tdLichsu").innerHTML = [...hs.lichsu].reverse().map(l => `
+        <li class="list-group-item px-0">
+            <strong>${formatDate(l.thoigian)}</strong> - ${escapeHtml(l.trangthai)}
+            ${l.giaidoan ? `<span class="badge bg-secondary">${escapeHtml(l.giaidoan)}</span>` : ''}
+            ${l.ghichu ? `<br><span class="text-muted">${escapeHtml(l.ghichu)}</span>` : ''}
+        </li>`).join('') || '<li class="list-group-item px-0 text-muted">Chưa có lịch sử</li>';
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("tienDoModal")).show();
+}
+
+/* ================== Phản hồi cho chấp hành viên ================== */
+function openPhanHoi(id) {
+    currentHoSo = hosoList.find(hs => hs._id === id);
+    if (!currentHoSo) return;
+    const chv = currentHoSo.assignedTo;
+    const daGui = currentHoSo.phanhoinguoidan || [];
+
+    document.getElementById("phMahoso").innerText = currentHoSo.mahoso || "";
+    document.getElementById("phChv").innerText = chv ? (chv.fullname || chv.userName) : "";
+    document.getElementById("phDaGui").innerHTML = daGui.length === 0
+        ? '<li class="list-group-item px-0 text-muted">Chưa gửi phản hồi nào</li>'
+        : [...daGui].reverse().map(p => `
+            <li class="list-group-item px-0">
+                <strong>${formatDate(p.thoigian)}</strong> - Bạn
+                <div style="white-space:pre-wrap">${escapeHtml(p.noidung)}</div>
+                ${p.traloiAt
+                    ? `<div class="border-start border-3 border-primary ps-2 mt-2">
+                           <small class="text-primary">
+                               ${p.daxem ? '' : '<span class="badge bg-danger">Mới</span>'}
+                               <strong>Chấp hành viên trả lời</strong> - ${formatDate(p.traloiAt)}
+                           </small>
+                           <div style="white-space:pre-wrap">${escapeHtml(p.traloi)}</div>
+                       </div>`
+                    : '<small class="text-muted fst-italic">Chưa có trả lời</small>'}
+            </li>`).join('');
+    document.getElementById("phNoidung").value = "";
+    document.getElementById("phDem").innerText = "0";
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("phanHoiModal")).show();
+
+    // Mở cửa sổ coi như đã đọc các câu trả lời
+    if (demTraLoiMoi(currentHoSo) > 0) {
+        const hs = currentHoSo;
+        fetch(`/hoso/${hs._id}/phan-hoi/da-xem`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accountId: account._id })
+        })
+            .then(res => res.json())
+            .then(obj => {
+                if (obj.code !== 200) return;
+                hs.phanhoinguoidan.forEach(p => { if (p.traloiAt) p.daxem = true; });
+                renderHoSo();
+            })
+            .catch(console.error);
+    }
+}
+
+function sendPhanHoi(e) {
+    e.preventDefault();
+    if (!currentHoSo) return;
+    const noidung = document.getElementById("phNoidung").value.trim();
+    if (!noidung) return alert("Vui lòng nhập nội dung phản hồi");
+
+    const btn = document.getElementById("btnPhanHoi");
+    btn.disabled = true;
+
+    fetch(`/hoso/${currentHoSo._id}/phan-hoi`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: account._id, noidung })
+    })
+    .then(res => res.json())
+    .then(obj => {
+        alert(obj.message);
+        if (obj.code === 200) {
+            const id = currentHoSo._id;
+            loadTraCuu().then(() => openPhanHoi(id));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Không kết nối được server");
+    })
+    .finally(() => btn.disabled = false);
+}
+
 /* ================== Gửi hồ sơ ================== */
 function sendHoSo(e){
     e.preventDefault();
 
     const data = new FormData();
+    data.append("accountId", account._id);
     data.append("tennguoi", document.getElementById("tennguoi").value.trim());
     data.append("cccd", document.getElementById("cccd").value.trim());
+    data.append("sdt", document.getElementById("sdt").value.trim());
+    data.append("diachi", document.getElementById("diachi").value.trim());
     data.append("noidung", document.getElementById("noidung").value);
     data.append("loaihoso", document.getElementById("loaihoso").value);
     data.append("danhmuc", "Chưa phân loại");
@@ -230,7 +615,10 @@ function sendHoSo(e){
     .then(obj => {
         alert(obj.message);
         if (obj.code === 201) {
-            document.getElementById("hosoForm").reset();
+            // Giữ lại thông tin người dân, chỉ xóa phần hồ sơ
+            document.getElementById("noidung").value = "";
+            document.getElementById("banan").value = "";
+            loadTraCuu();
         }
     })
     .catch(err => {
@@ -240,54 +628,12 @@ function sendHoSo(e){
     .finally(() => btn.disabled = false);
 }
 
-/* ================== Tra cứu hồ sơ ================== */
-function searchHoSo(e){
-    if (e) e.preventDefault();
-    const cccd = e ? document.getElementById("cccdTraCuu").value.trim() : searchedCccd;
-    searchedCccd = cccd;
-
-    fetch("/hoso/tra-cuu?cccd=" + encodeURIComponent(cccd))
-    .then(res => res.json())
-    .then(result => {
-        const tbody = document.getElementById("tableHoso");
-        if (!Array.isArray(result)) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${escapeHtml(result.message)}</td></tr>`;
-            return;
-        }
-        hosoList = result;
-        if (result.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không tìm thấy hồ sơ nào với CCCD này</td></tr>';
-            return;
-        }
-        tbody.innerHTML = result.map(hs => `
-            <tr>
-                <td>${escapeHtml(hs.mahoso)}</td>
-                <td>${escapeHtml(hs.loaihoso)}</td>
-                <td>${new Date(hs.createdAt).toLocaleDateString('vi-VN')}</td>
-                <td>
-                    <span class="badge bg-${STATUS_COLORS[hs.trangthai] || 'secondary'}">${escapeHtml(hs.trangthai)}</span>
-                    ${['Đang xử lý', 'Tạm dừng'].includes(hs.trangthai) ? `<br><small>Giai đoạn: ${escapeHtml(hs.giaidoan || 'Khởi động')}</small>` : ''}
-                </td>
-                <td>
-                    ${hs.trangthai === 'Cần bổ sung'
-                        ? `<div class="text-danger mb-2" style="white-space:pre-wrap">${escapeHtml(hs.phanhoi)}</div>
-                           <button class="btn btn-warning btn-sm" onclick="openBoSung('${hs._id}')">Bổ sung</button>`
-                        : '<span class="text-muted">-</span>'}
-                </td>
-            </tr>`).join('');
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Không kết nối được server");
-    });
-}
-
 /* ================== Bổ sung bản án ================== */
 function openBoSung(id){
     currentHoSo = hosoList.find(hs => hs._id === id);
     if (!currentHoSo) return;
 
-    document.getElementById("bsMahoso").innerText = currentHoSo.mahoso;
+    document.getElementById("bsMahoso").innerText = currentHoSo.mahoso || "";
     document.getElementById("bsPhanhoi").innerText = currentHoSo.phanhoi;
     document.getElementById("bsFiles").value = "";
     document.getElementById("bsGhichu").value = "";
@@ -306,7 +652,7 @@ function sendBoSung(e){
     }
 
     const data = new FormData();
-    data.append("cccd", searchedCccd);
+    data.append("accountId", account._id);
     data.append("ghichu", ghichu);
     for (const file of files) {
         data.append("banan", file);
@@ -324,7 +670,7 @@ function sendBoSung(e){
         alert(obj.message);
         if (obj.code === 200) {
             bootstrap.Modal.getInstance(document.getElementById("boSungModal")).hide();
-            searchHoSo();
+            loadTraCuu();
         }
     })
     .catch(err => {
@@ -332,6 +678,16 @@ function sendBoSung(e){
         alert("Không kết nối được server");
     })
     .finally(() => btn.disabled = false);
+}
+
+/* ================== Khởi tạo ================== */
+document.getElementById("loaihoso").innerHTML = LOAI_HO_SO.map(l => `<option>${l}</option>`).join('');
+document.getElementById("timLoaihoso").innerHTML = '<option value="">-- Tất cả loại hồ sơ --</option>'
+    + LOAI_HO_SO.map(l => `<option>${l}</option>`).join('');
+
+if (account) {
+    document.getElementById("tenTaiKhoan").innerText = account.fullname || account.userName;
+    loadTraCuu();
 }
 </script>
 

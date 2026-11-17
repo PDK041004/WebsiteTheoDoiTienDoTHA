@@ -9,8 +9,8 @@ router.route("/")
    .get(hosoController.getAllHoSo)
    .post(uploadBanAn, hosoController.createHoSo);
 
-// Người dân tra cứu hồ sơ theo CCCD
-router.get("/tra-cuu", hosoController.searchByCccd);
+// Trang Tra cứu: thông tin và toàn bộ hồ sơ của tài khoản người dân (?accountId=<id>)
+router.get("/nguoi-dan", hosoController.getHoSoNguoiDan);
 
 // Hồ sơ chờ công chức xác nhận
 router.get("/cho-xac-nhan", hosoController.getPendingHoSo);
@@ -39,6 +39,15 @@ router.put("/:id/tien-do", hosoController.updateTienDo);
 
 // Chấp hành viên cập nhật nội dung, trạng thái, tài liệu hồ sơ
 router.put("/:id/cap-nhat", uploadBanAn, hosoController.updateHoSo);
+
+// Người dân gửi phản hồi cho chấp hành viên phụ trách (`{ accountId, noidung }`)
+router.post("/:id/phan-hoi", hosoController.sendPhanHoi);
+
+// Người dân đánh dấu đã đọc câu trả lời (`{ accountId }`)
+router.put("/:id/phan-hoi/da-xem", hosoController.xemTraLoi);
+
+// Chấp hành viên trả lời một phản hồi (`{ officerId, noidung }`)
+router.put("/:id/phan-hoi/:phanhoiId/tra-loi", hosoController.traLoiPhanHoi);
 
 // Người dân gửi bổ sung bản án
 router.put("/:id/bo-sung", uploadBanAn, hosoController.supplementHoSo);
