@@ -47,7 +47,7 @@ const createAccount = async (req, res) => {
       });
    } catch(err) {
       if(phoneNumber.length > 10) {
-         return res.status(400).json({ message: "Phone number must be 10 digits or less." });
+         return res.status(422).json({ message: "Phone number must be 10 digits or less." });
       }
       else {
          return res.status(500).json({
@@ -97,7 +97,7 @@ const deleteAccount = async (req, res) => {
 
    try {
       await Account.deleteOne({ _id }).exec();
-      res.status(200).json({ message: "Account deleted successfully." });
+      res.status(200).json({ message: "Account deleted successfully!" });
    } catch(error) {
       res.status(500).json({ message: error.message });
    }
