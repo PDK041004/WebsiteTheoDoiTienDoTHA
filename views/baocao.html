@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Báo cáo hồ sơ theo tháng</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-danger">
+    <div class="container">
+        <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
+        <div class="ms-auto">
+            <a class="btn btn-outline-light me-2" href="/tai-khoan">Quản lý tài khoản</a>
+            <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h4>Báo cáo hồ sơ theo tháng</h4>
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <label for="thang" class="mb-0">Tháng tạo hồ sơ:</label>
+        <input type="month" id="thang" class="form-control w-auto" onchange="loadBaoCao()">
+        <span class="ms-3">Tổng: <b id="tong">0</b> hồ sơ</span>
+    </div>
+
+    <h6>Theo trạng thái</h6>
+    <div class="row g-2 mb-3" id="theTrangThai"></div>
+
+    <h6>Theo giai đoạn tiến độ</h6>
+    <div class="row g-2 mb-3" id="theGiaiDoan"></div>
+
+    <table class="table table-bordered">
+        <thead class="table-danger">
+            <tr>
+                <th>STT</th>
+                <th>Mã hồ sơ</th>
+                <th>Người thi hành</th>
+                <th>Loại hồ sơ</th>
+                <th>Ngày tạo</th>
+                <th>Chấp hành viên</th>
+                <th>Trạng thái</th>
+                <th>Giai đoạn</th>
+            </tr>
+        </thead>
+        <tbody id="hosoBody"></tbody>
+    </table>
+</div>
+
+<script>
+function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderThe(id, obj, color) {
+    document.getElementById(id).innerHTML = Object.entries(obj).map(([ten, so]) => `
+        <div class="col-6 col-md-3 col-lg">
+            <div class="border rounded p-2 text-center">
+                <div class="fs-4 fw-bold text-${color}">${so}</div>
+                <div class="small">${esc(ten)}</div>
+            </div>
+        </div>`).join("");
+}
+
+async function loadBaoCao() {
+    const thang = document.getElementById("thang").value;
+    const res = await fetch("/bao-cao/api?thang=" + encodeURIComponent(thang), { credentials: "include" });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message); return; }
+
+    document.getElementById("tong").textContent = data.tong;
+    renderThe("theTrangThai", data.theoTrangThai, "danger");
+    renderThe("theGiaiDoan", data.theoGiaiDoan, "primary");
+
+    const body = document.getElementById("hosoBody");
+    if (!data.hoso.length) {
+        body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không có hồ sơ trong tháng này</td></tr>';
+        return;
+    }
+    body.innerHTML = data.hoso.map((hs, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${esc(hs.mahoso || "Chưa có")}</td>
+            <td>${esc(hs.tennguoi)}</td>
+            <td>${esc(hs.loaihoso)}</td>
+            <td>${new Date(hs.createdAt).toLocaleDateString("vi-VN")}</td>
+            <td>${esc(hs.assignedTo ? (hs.assignedTo.fullname || hs.assignedTo.userName) : "Chưa phân công")}</td>
+            <td>${esc(hs.trangthai)}</td>
+            <td>${esc(hs.giaidoan || "—")}</td>
+        </tr>`).join("");
+}
+
+async function signOut() {
+    const res = await fetch("/dang-xuat", { method: "GET", credentials: "include" });
+    const data = await res.json();
+    alert(data.message);
+    location = "/trang-chu";
+}
+
+// Mặc định chọn tháng hiện tại rồi tải dữ liệu
+const now = new Date();
+document.getElementById("thang").value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+loadBaoCao();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

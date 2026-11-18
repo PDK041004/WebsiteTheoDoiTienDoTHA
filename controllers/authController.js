@@ -61,12 +61,19 @@ const handleSignIn = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
    const { userName, otp } = req.body;
-   if(!userName || !otp) return res.status(401).json({ message: "Missing required fields."});
+   if(!userName || !otp) return res.status(400).json({ message: "Missing required fields."});
 
    try {
       const account = await Account.findOne({ userName }).exec();
+      if(!account || !account.otp) {
+         return res.status(401).json({ message: "No OTP was requested." });
+      }
 
-      if (account.otpExpires < new Date()) {
+      if(account.otpAttempts >= 5) {
+         return res.status(429).json({ message: "Too many wrong attempts. Please sign in again." });
+      }
+
+      if(!account.otpExpiry || account.otpExpiry < new Date()) {
          return res.status(401).json({ message: "OTP expired." });
       }
 
@@ -79,6 +86,8 @@ const verifyOTP = async (req, res) => {
 
       account.otp = null;
       account.otpExpiry = null;
+      account.otpAttempts = 0;
+
       const accessToken = jwt.sign(
          { "userName": account.userName },
          process.env.ACCESS_TOKEN,
@@ -94,7 +103,7 @@ const verifyOTP = async (req, res) => {
       account.refreshToken = refreshToken;
       await account.save();
 
-      res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "None", secure: true, maxAge: 24 * 60 * 60 * 1000 });
+      res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "Lax", maxAge: 24 * 60 * 60 * 1000 });
 
       console.log(`User "${userName}" has signed in successfully!`);
 
@@ -102,7 +111,7 @@ const verifyOTP = async (req, res) => {
    } catch(error) {
       res.status(500).json({ message: error.message });
    }
-}
+};
 
 module.exports = {
    handleSignIn,

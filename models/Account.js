@@ -21,18 +21,6 @@ const accountSchema = new Schema({
       type: String,
       default: ""
    },
-   otp: { 
-      type: String, 
-      default: null 
-   },
-   otpExpires: { 
-      type: Date, 
-      default: null 
-   },
-   otpAttempts: { 
-      type: Number, 
-      default: 0 
-   },
    phone: {
    type: String,
    default: ""

@@ -14,6 +14,7 @@
     <div class="container">
         <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
         <div class="ms-auto">
+             <a class="btn btn-outline-light me-2" href="/bao-cao">Báo cáo hồ sơ</a>
           <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
         </div>
     </div>
@@ -23,12 +24,10 @@
 
     <h4>Quản lý tài khoản & phân quyền</h4>
 
-    <!-- BUTTON -->
     <button class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#addModal">
         + Thêm tài khoản
     </button>
 
-    <!-- TABLE -->
     <table class="table table-bordered">
         <thead class="table-danger">
             <tr>
@@ -40,9 +39,7 @@
                 <th>Thao tác</th>
             </tr>
         </thead>
-
-        <tbody>
-        </tbody>
+        <tbody id="accountBody"></tbody>
     </table>
 
 </div>
@@ -58,31 +55,31 @@
     </div>
 
     <div class="modal-body">
-        <form onsubmit="addUser(event)">
+        <form id="addForm" onsubmit="addUser(event)">
 
             <div class="mb-2">
                 <label>Tên đăng nhập</label>
-                <input type="user-name" class="form-control">
+                <input type="text" id="addUserName" class="form-control" required>
+            </div>
+
+            <div class="mb-2">
+                <label>Họ tên</label>
+                <input type="text" id="addFullname" class="form-control">
             </div>
 
             <div class="mb-2">
                 <label>Số điện thoại</label>
-                <input type="phone-number" maxlength="10" class="form-control">
+                <input type="text" id="addPhone" maxlength="10" class="form-control" required>
             </div>
 
             <div class="mb-2">
                 <label>Mật khẩu</label>
-                <input type="password" class="form-control">
+                <input type="password" id="addPassword" class="form-control" required>
             </div>
-
-            <!-- <div class="mb-2">
-                <label>Họ tên</label>
-                <input type="text" class="form-control">
-            </div> -->
 
             <div class="mb-2">
                 <label>Vai trò</label>
-                <select class="form-control">
+                <select id="addRole" class="form-control">
                     <option value="0">Người dân</option>
                     <option value="1">Chấp hành viên</option>
                     <option value="2">Công chức</option>
@@ -112,32 +109,39 @@
     <div class="modal-body">
         <form onsubmit="updateUser(event)">
 
-    <div class="mb-2">
-        <label>Tên đăng nhập</label>
-        <input type="text" id="editUsername" class="form-control" readonly>
-    </div>
+            <div class="mb-2">
+                <label>Tên đăng nhập</label>
+                <input type="text" id="editUsername" class="form-control" readonly>
+            </div>
 
-    <div class="mb-2">
-        <label>Họ tên</label>
-        <input type="text" id="editFullname" class="form-control">
-    </div>
-    <div class="mb-2">
-        <label>Số điện thoại</label>
-        <input type="text" id="editPhone" class="form-control">
-    </div>
-    <div class="mb-2">
-        <label>Vai trò</label>
-        <select id="editRole" class="form-control">
-            <option>Admin</option>
-            <option>Công chức</option>
-            <option>Chấp hành viên</option>
-            <option>Người dân</option>
-        </select>
-    </div>
+            <div class="mb-2">
+                <label>Họ tên</label>
+                <input type="text" id="editFullname" class="form-control">
+            </div>
 
-    <button class="btn btn-warning w-100">Cập nhật</button>
+            <div class="mb-2">
+                <label>Số điện thoại</label>
+                <input type="text" id="editPhone" maxlength="10" class="form-control">
+            </div>
 
-</form>
+            <div class="mb-2">
+                <label>Mật khẩu mới (để trống nếu không đổi)</label>
+                <input type="password" id="editPassword" class="form-control">
+            </div>
+
+            <div class="mb-2">
+                <label>Vai trò</label>
+                <select id="editRole" class="form-control">
+                    <option value="0">Người dân</option>
+                    <option value="1">Chấp hành viên</option>
+                    <option value="2">Công chức</option>
+                    <option value="3">Admin</option>
+                </select>
+            </div>
+
+            <button class="btn btn-warning w-100">Cập nhật</button>
+
+        </form>
     </div>
 
 </div>
@@ -147,20 +151,26 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+const ROLE_NAMES = { 0: "Người dân", 1: "Chấp hành viên", 2: "Công chức", 3: "Admin" };
+const ROLE_BADGES = { 0: "bg-primary", 1: "bg-success", 2: "bg-info text-dark", 3: "bg-danger" };
 
+let accountsList = [];
+let currentId = null;
 
+// Chống chèn mã HTML từ dữ liệu người dùng
+function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+}
 
-</script>
-
-<script>
 async function signOut() {
     try {
         const res = await fetch("/dang-xuat", {
             method: "GET",
             credentials: "include",
-            headers: { "Content-Type":"application/json" }
+            headers: { "Content-Type": "application/json" }
         });
-        
         const data = await res.json();
         alert(data.message);
         window.location.href = "/trang-chu";
@@ -172,117 +182,125 @@ async function signOut() {
 
 async function loadAccounts() {
     try {
-        const res = await fetch("/tai-khoan/api", {
-            method: "GET",
-            credentials: "include",
-            headers:{ "Content-Type":"application/json" }
-        })
+        const res = await fetch("/tai-khoan/api", { credentials: "include" });
         const data = await res.json();
-        alert(data.accounts.length + " accounts found.");
+        if (!res.ok) { alert(data.message || "Không tải được danh sách"); return; }
 
-        let html = "";
+        accountsList = data.accounts;
 
-        data.accounts.forEach(account => {
-            if(account.role === 0) { account.role = "Người dân"; }
-            else if(account.role === 1) { account.role = "Chấp hành viên"; }
-            else if(account.role === 2) { account.role = "Công chức"; }
-            else if(account.role === 3) { account.role = "Admin"; }
-            html += `
+        // Mỗi dòng có đúng 6 ô, khớp với 6 cột tiêu đề
+        document.getElementById("accountBody").innerHTML = accountsList.map((a, i) => `
             <tr>
-                <td>${account._id}</td>
-                <td>${account.userName}</td>
-                <td></td>
-                <td>${account.role}</td>
+                <td>${i + 1}</td>
+                <td>${esc(a.userName)}</td>
+                <td>${esc(a.fullname)}</td>
+                <td>${esc(a.phoneNumber)}</td>
+                <td><span class="badge ${ROLE_BADGES[a.role] || "bg-secondary"}">${esc(ROLE_NAMES[a.role] ?? "Người dân")}</span></td>
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editUser(${account.id}, '${account.fullname}', '${account.role}')">Sửa</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${account.id})">Xóa</button>
+                    <button class="btn btn-warning btn-sm" onclick="editUser(${i})">Sửa</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${i})">Xóa</button>
                 </td>
             </tr>
-            `;
-        });
-
-        document.querySelector("tbody").innerHTML = html;
+        `).join("");
     } catch (error) {
         console.error(error);
         alert("Error finding accounts");
     }
 }
 
-async function addUser(e){
+async function addUser(e) {
     e.preventDefault();
 
     const data = {
-        userName: document.querySelector("#addModal input[type='user-name']").value,
-        phoneNumber: document.querySelector("#addModal input[type='phone-number'][maxlength='10']").value,
-        password: document.querySelector("#addModal input[type='password']").value,
-        role: document.querySelector("#addModal select").value
+        userName: document.getElementById("addUserName").value.trim(),
+        fullname: document.getElementById("addFullname").value.trim(),
+        phoneNumber: document.getElementById("addPhone").value.trim(),
+        password: document.getElementById("addPassword").value,
+        role: Number(document.getElementById("addRole").value)
     };
 
-    const res = await fetch("/tai-khoan/api",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(data)
-    })
-
-    const obj = await res.json();
+    try {
+        const res = await fetch("/tai-khoan/api", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const obj = await res.json();
         alert(obj.message);
-        loadAccounts();
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById("addModal")).hide();
+            document.getElementById("addForm").reset();
+            loadAccounts();
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error creating account");
+    }
 }
 
-window.onload = loadAccounts();
-</script>
+function editUser(index) {
+    const u = accountsList[index];
+    currentId = u._id;
 
-<script>
-let currentId = null;
-
-function editUser(index){
-    const u = usersList[index];
-    currentId = u.id;
-
-    document.getElementById("editUsername").value = u.username;
-    document.getElementById("editFullname").value = u.fullname;
-    document.getElementById("editPhone").value = u.phone;
+    document.getElementById("editUsername").value = u.userName;
+    document.getElementById("editFullname").value = u.fullname || "";
+    document.getElementById("editPhone").value = u.phoneNumber || "";
+    document.getElementById("editPassword").value = "";
     document.getElementById("editRole").value = u.role;
 
-    new bootstrap.Modal(document.getElementById('editModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("editModal")).show();
 }
 
-function updateUser(e){
+async function updateUser(e) {
     e.preventDefault();
 
     const data = {
-    fullname: document.getElementById("editFullname").value,
-    phone: document.getElementById("editPhone").value,
-    role: document.getElementById("editRole").value
-};
+        fullname: document.getElementById("editFullname").value.trim(),
+        phoneNumber: document.getElementById("editPhone").value.trim(),
+        role: Number(document.getElementById("editRole").value)
+    };
+    const newPassword = document.getElementById("editPassword").value;
+    if (newPassword) data.password = newPassword;
 
-    fetch("/users/" + currentId,{
-        method:"PUT",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(data)
-    })
-    .then(res=>res.text())
-    .then(msg=>{
-        alert(msg);
-        loadUsers();
-        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-    });
-}
-</script>
-
-<script>
-function deleteUser(id){
-    if(confirm("Xóa tài khoản này?")){
-        fetch("/tai-khoan/dang-ky" + id,{
-            method:"DELETE"
-        })
-        .then(res=>res.text())
-        .then(msg=>{
-            alert(msg);
-            loadUsers();
+    try {
+        const res = await fetch("/tai-khoan/api/" + currentId, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
         });
+        const obj = await res.json();
+        alert(obj.message);
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+            loadAccounts();
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error updating account");
     }
 }
+
+async function deleteUser(index) {
+    const u = accountsList[index];
+    if (!confirm("Xóa tài khoản " + u.userName + "?")) return;
+
+    try {
+        const res = await fetch("/tai-khoan/api/" + u._id, {
+            method: "DELETE",
+            credentials: "include"
+        });
+        const obj = await res.json();
+        alert(obj.message);
+        if (res.ok) loadAccounts();
+    } catch (error) {
+        console.error(error);
+        alert("Error deleting account");
+    }
+}
+
+window.addEventListener("DOMContentLoaded", loadAccounts);
 </script>
 
 </body>

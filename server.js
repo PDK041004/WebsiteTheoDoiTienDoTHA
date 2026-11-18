@@ -36,6 +36,8 @@ app.use("/dang-xuat", require(path.join(__dirname, "routes", "api", "signout")))
 
 app.use("/tai-khoan", require(path.join(__dirname, "routes", "api", "accounts"))); //Quản lý tài khoản
 
+app.use("/bao-cao", require(path.join(__dirname, "routes", "api", "adminBaoCao"))); //Báo cáo hồ sơ theo tháng (admin)
+
 app.use("/thi-hanh-an", require(path.join(__dirname, "routes", "api", "bailiffs"))); //Thi hành án
 
 app.use("/ban-an", require(path.join(__dirname, "routes", "api", "judgements"))); //Theo dõi tiến độ và yêu cầu thi hành bản án

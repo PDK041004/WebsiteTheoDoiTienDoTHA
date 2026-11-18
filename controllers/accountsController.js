@@ -1,71 +1,113 @@
 const path = require("path");
 const Account = require(path.join(__dirname, "..", "models", "Account"));
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-async function sendSms(phone, text) {
-   console.log(`[SMS gửi tới ${phone}] ${text}`);
-}
+
+// Không bao giờ trả mật khẩu, OTP, token về trình duyệt
+const SAFE_FIELDS = "-password -otp -otpExpiry -otpAttempts -refreshToken";
+const PHONE_REGEX = /^0\d{9}$/;
 
 /* ================== Truy vấn tài khoản ================== */
 // Toàn bộ
 const getAllAccounts = async (req, res) => {
-   const accounts = await Account.find().exec();
-   if(!accounts) return res.status(200).json({ message: "No account was found."});
-   return res.status(200).json({ accounts })
-}
+   try {
+      const accounts = await Account.find().select(SAFE_FIELDS).sort({ createdAt: 1 }).exec();
+      return res.status(200).json({ accounts });
+   } catch(err) {
+      return res.status(500).json({ message: err.message });
+   }
+};
 
 // Một
 const getAccount = async (req, res) => {
-   const { userName } = req.body;
-
-   const match = await Account.findOne({ userName }).exec();
-   if(match) { return res.status(200).json({ match }); }
-}
+   try {
+      const { userName } = req.query;
+      if(!userName) return res.status(400).json({ message: "Username is required." });
+      const match = await Account.findOne({ userName }).select(SAFE_FIELDS).exec();
+      if(!match) return res.status(404).json({ message: "Account not found." });
+      return res.status(200).json({ match });
+   } catch(err) {
+      return res.status(500).json({ message: err.message });
+   }
+};
 
 /* ================== Tạo tài khoản ================== */
 const createAccount = async (req, res) => {
-   const { userName, phoneNumber, password, role } = req.body;
+   const { userName, phoneNumber, password, fullname, role } = req.body;
    if(!userName || !phoneNumber || !password) {
       return res.status(400).json({ message: "Username, phone number, and password are required." });
    }
-
-   const duplicate = await Account.findOne({ userName }).exec();
-   if(duplicate) { return res.status(409).json({ message: "This account already exist." }); }
+   if(!PHONE_REGEX.test(phoneNumber)) {
+      return res.status(400).json({ message: "Phone number must be 10 digits and start with 0." });
+   }
 
    try {
-      const hashedPassword = await bcrypt.hash(password, 10)
+      const duplicate = await Account.findOne({ userName }).exec();
+      if(duplicate) return res.status(409).json({ message: "This account already exist." });
 
+      const phoneUsed = await Account.findOne({ phoneNumber }).exec();
+      if(phoneUsed) return res.status(409).json({ message: "This phone number is already used." });
+
+      const hashedPassword = await bcrypt.hash(password, 10);
       const newAccount = await Account.create({
-         "userName": userName,
-         "phoneNumber": phoneNumber,
-         "password": hashedPassword,
-         "role": role
+         userName,
+         phoneNumber,
+         password: hashedPassword,
+         fullname: fullname || "",
+         role: Number(role) || 0
       });
 
-      console.log(newAccount);
-      
       return res.status(201).json({
          message: `Account ${userName} registered successfully!`,
-         account: newAccount
+         account: { _id: newAccount._id, userName: newAccount.userName }
       });
    } catch(err) {
-      if(phoneNumber.length > 10) {
-         return res.status(400).json({ message: "Phone number must be 10 digits or less." });
-      }
-      else {
-         return res.status(500).json({
-            message: err.message
-         });
-      }
+      return res.status(500).json({ message: err.message });
    }
 };
 
 /* ================== Cập nhật tài khoản ================== */
 const updateAccount = async (req, res) => {
-   const { userName, newUserName, newPhoneNumber, newPassword, newRole } = req.body;
+   const { id } = req.params;
+   const { fullname, phoneNumber, role, password } = req.body;
+
+   try {
+      const account = await Account.findById(id).exec();
+      if(!account) return res.status(404).json({ message: "Account not found." });
+
+      if(phoneNumber !== undefined && phoneNumber !== account.phoneNumber) {
+         if(!PHONE_REGEX.test(phoneNumber)) {
+            return res.status(400).json({ message: "Phone number must be 10 digits and start with 0." });
+         }
+         const phoneUsed = await Account.findOne({ phoneNumber }).exec();
+         if(phoneUsed) return res.status(409).json({ message: "This phone number is already used." });
+         account.phoneNumber = phoneNumber;
+      }
+      if(fullname !== undefined) account.fullname = fullname;
+      if(role !== undefined) account.role = Number(role);
+      if(password) account.password = await bcrypt.hash(password, 10);
+
+      await account.save();
+      return res.status(200).json({ message: "Account updated successfully!" });
+   } catch(err) {
+      return res.status(500).json({ message: err.message });
+   }
 };
+
+/* ================== Xóa tài khoản ================== */
+const deleteAccount = async (req, res) => {
+   try {
+      const deleted = await Account.findByIdAndDelete(req.params.id).exec();
+      if(!deleted) return res.status(404).json({ message: "Account not found." });
+      return res.status(200).json({ message: "Account deleted successfully!" });
+   } catch(err) {
+      return res.status(500).json({ message: err.message });
+   }
+};
+
 module.exports = {
    getAllAccounts,
    getAccount,
-   createAccount
+   createAccount,
+   updateAccount,
+   deleteAccount
 };
