@@ -9,6 +9,6 @@ router.get("/", (req, res) => {
 });
 
 // Dữ liệu hồ sơ theo tháng
-router.get("/api", baocaoController.getHoSoTheoThang);
+router.get("/api", adminBaoCaoController.getHoSoTheoThang);
 
 module.exports = router;
