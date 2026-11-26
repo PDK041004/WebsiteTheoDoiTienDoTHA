@@ -5,13 +5,13 @@ const Account = require(path.join(__dirname, "..", "models", "Account"));
 const handleSignOut = async (req, res) => {
    // Xóa cookie jwt nếu có
    const cookies = req.cookies;
-   if(!cookies?.jwt) return res.status(204).json({ message: "No token to clear" });
+   if(!cookies?.jwt) return res.status(200).json({ message: "No token to clear" });
    const refreshToken = cookies.jwt;
 
    // Xóa refreshToken khỏi cơ sở dữ liệu
    const account = await Account.findOne({ refreshToken }).exec();
    if(!account) {
-         res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+         res.clearCookie("jwt", { httpOnly: true, sameSite: "Lax" });
          return res.status(200).json({ message: "No token to clear" });
       }
    
@@ -20,7 +20,7 @@ const handleSignOut = async (req, res) => {
 
       console.log(`User "${account.userName}" has signed out successfully!`);
 
-      res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+      res.clearCookie("jwt", { httpOnly: true, sameSite: "Lax" });
       return res.status(200).json({ message: "Sign-out successful!" });
 };
 
