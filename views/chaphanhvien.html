@@ -551,25 +551,27 @@ function renderHoSo() {
 /* ================== Tiến độ thi hành án ================== */
 const GIAI_DOAN = {
     KHOI_DONG: "Khởi động",
-    XAC_NHAN_DIEU_KIEN: "Xác nhận điều kiện",
     TU_NGUYEN: "Tự nguyện",
+    XAC_NHAN_DIEU_KIEN: "Xác nhận điều kiện",
     CUONG_CHE: "Cưỡng chế",
     KET_THUC: "Kết thúc"
 };
 const THU_TU_GIAI_DOAN = Object.values(GIAI_DOAN);
+// Nhánh chỉ đi qua khi người phải thi hành án không tự nguyện
+const NHANH_KHONG_TU_NGUYEN = [GIAI_DOAN.XAC_NHAN_DIEU_KIEN, GIAI_DOAN.CUONG_CHE];
 
 // Các nút chuyển giai đoạn (server cũng kiểm tra thứ tự này)
 const HANH_DONG = {
     [GIAI_DOAN.KHOI_DONG]: [
-        { den: GIAI_DOAN.XAC_NHAN_DIEU_KIEN, nhan: "Chuyển sang Xác nhận điều kiện", mau: "primary" }
-    ],
-    [GIAI_DOAN.XAC_NHAN_DIEU_KIEN]: [
         { den: GIAI_DOAN.TU_NGUYEN, nhan: "Chuyển sang Tự nguyện", mau: "primary" }
     ],
     [GIAI_DOAN.TU_NGUYEN]: [
         { den: GIAI_DOAN.KET_THUC, nhan: "Đã tự nguyện thi hành → Kết thúc", mau: "success" },
+        { den: GIAI_DOAN.XAC_NHAN_DIEU_KIEN, nhan: "Không tự nguyện → Xác nhận điều kiện", mau: "warning" }
+    ],
+    [GIAI_DOAN.XAC_NHAN_DIEU_KIEN]: [
         // Cưỡng chế mở khung nhập điều kiện trước khi chuyển
-        { den: GIAI_DOAN.CUONG_CHE, nhan: "Có vi phạm → Chuyển sang Cưỡng chế", mau: "danger", onclick: "showCuongChe()" }
+        { den: GIAI_DOAN.CUONG_CHE, nhan: "Đủ điều kiện → Chuyển sang Cưỡng chế", mau: "danger", onclick: "showCuongChe()" }
     ],
     [GIAI_DOAN.CUONG_CHE]: [
         { den: GIAI_DOAN.KET_THUC, nhan: "Cưỡng chế xong → Kết thúc", mau: "success" }
@@ -596,7 +598,7 @@ function openTienDo(hosoId) {
     if (!currentTienDo) return;
 
     const current = getGiaiDoan(currentTienDo);
-    const quaCuongChe = currentTienDo.lichsu.some(l => l.giaidoan === GIAI_DOAN.CUONG_CHE);
+    const daQua = new Set(currentTienDo.lichsu.map(l => l.giaidoan).filter(Boolean));
     const viTri = THU_TU_GIAI_DOAN.indexOf(current);
 
     document.getElementById("tdMahoso").innerText = currentTienDo.mahoso;
@@ -608,11 +610,11 @@ function openTienDo(hosoId) {
         let phu = "";
         if (gd === current) {
             cls = "current";
-        } else if (gd === GIAI_DOAN.CUONG_CHE) {
-            // Cưỡng chế chỉ xảy ra khi có vi phạm
-            if (quaCuongChe) cls = "done";
+        } else if (NHANH_KHONG_TU_NGUYEN.includes(gd)) {
+            // Xác nhận điều kiện và Cưỡng chế chỉ xảy ra khi không tự nguyện thi hành
+            if (daQua.has(gd)) cls = "done";
             else if (current === GIAI_DOAN.KET_THUC) { cls = "skipped"; phu = "Không cần"; }
-            else { cls = "optional"; phu = "Nếu có vi phạm"; }
+            else { cls = "optional"; phu = "Nếu không tự nguyện"; }
         } else if (i < viTri) {
             cls = "done";
         }

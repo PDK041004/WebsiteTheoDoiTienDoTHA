@@ -26,18 +26,18 @@ const CAN_CU_CUONG_CHE = [
 // Tiến độ thi hành án khi hồ sơ đang xử lý
 const GIAI_DOAN = {
    KHOI_DONG: "Khởi động",
-   XAC_NHAN_DIEU_KIEN: "Xác nhận điều kiện",
    TU_NGUYEN: "Tự nguyện",
+   XAC_NHAN_DIEU_KIEN: "Xác nhận điều kiện",
    CUONG_CHE: "Cưỡng chế",
    KET_THUC: "Kết thúc"
 };
 
-// Giai đoạn được phép chuyển tới: Tự nguyện kết thúc luôn,
-// chỉ khi có vi phạm mới sang Cưỡng chế rồi mới Kết thúc
+// Giai đoạn được phép chuyển tới: đã tự nguyện thi hành thì Kết thúc luôn,
+// không tự nguyện thì Xác nhận điều kiện -> Cưỡng chế -> Kết thúc
 const GIAI_DOAN_TIEP_THEO = {
-   [GIAI_DOAN.KHOI_DONG]: [GIAI_DOAN.XAC_NHAN_DIEU_KIEN],
-   [GIAI_DOAN.XAC_NHAN_DIEU_KIEN]: [GIAI_DOAN.TU_NGUYEN],
-   [GIAI_DOAN.TU_NGUYEN]: [GIAI_DOAN.KET_THUC, GIAI_DOAN.CUONG_CHE],
+   [GIAI_DOAN.KHOI_DONG]: [GIAI_DOAN.TU_NGUYEN],
+   [GIAI_DOAN.TU_NGUYEN]: [GIAI_DOAN.KET_THUC, GIAI_DOAN.XAC_NHAN_DIEU_KIEN],
+   [GIAI_DOAN.XAC_NHAN_DIEU_KIEN]: [GIAI_DOAN.CUONG_CHE],
    [GIAI_DOAN.CUONG_CHE]: [GIAI_DOAN.KET_THUC],
    [GIAI_DOAN.KET_THUC]: []
 };

@@ -24,6 +24,11 @@ Tài liệu này tóm tắt các thay đổi trong đợt cập nhật gần nh�
     - toàn bộ hồ sơ của tài khoản, tìm được theo mã và loại hồ sơ;
     - xem tiến độ của từng hồ sơ.
   - Người dân **gửi phản hồi** cho chấp hành viên phụ trách. Chấp hành viên **trả lời**, và câu trả lời hiện ở cột "Phản hồi từ cơ quan THA".
+- **Đợt 4:**
+  - **Đổi thứ tự tiến độ:** Tự nguyện đứng trước Xác nhận điều kiện. Đã tự nguyện thi hành thì đi thẳng tới Kết thúc.
+  - **Phiếu thu** tính theo **giá trị bằng tiền của bản án = án phí + tiền thi hành án** (nếu có), thay cho phí thi hành án lũy tiến cũ.
+  - Công chức có thêm mục **Bảng án phí** (mỗi loại hồ sơ một mức án phí) và mục **Doanh thu** (theo khoảng thời gian, theo loại hồ sơ, theo từng tháng).
+  - Mục **Báo cáo** lọc được theo ngày phân công: 7, 14, 30 hoặc 60 ngày qua.
 
 ### Luồng xử lý hồ sơ
 
@@ -57,8 +62,8 @@ Mỗi lần đổi trạng thái đều được ghi vào **lịch sử hồ sơ
 ### Tiến độ thi hành án (khi hồ sơ "Đang xử lý")
 
 ```
-1. Khởi động → 2. Xác nhận điều kiện → 3. Tự nguyện ─┬─ (tự nguyện thi hành) ──────────→ 5. Kết thúc
-                                                      └─ (có vi phạm) → 4. Cưỡng chế ──→ 5. Kết thúc
+1. Khởi động → 2. Tự nguyện ─┬─ (đã tự nguyện thi hành) ──────────────────────────────→ 5. Kết thúc
+                             └─ (không tự nguyện) → 3. Xác nhận điều kiện → 4. Cưỡng chế → 5. Kết thúc
 ```
 
 - **Trạng thái** và **tiến độ** được tách riêng:
@@ -157,7 +162,7 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
   - **Giới hạn 200 hồ sơ/chấp hành viên** được kiểm tra cả ở giao diện lẫn server. Hồ sơ "Hoàn thành" hoặc "Đã hủy" không tính vào giới hạn.
   - Khi phân công, hệ thống tự gửi thông báo cho chấp hành viên.
 - **Báo cáo:**
-  - Theo dõi tiến độ mọi hồ sơ đã phân công. Tra cứu theo **phòng ban**, **tên chấp hành viên** và **trạng thái**, kèm các ô thống kê nhanh.
+  - Theo dõi tiến độ mọi hồ sơ đã phân công. Tra cứu theo **phòng ban**, **tên chấp hành viên**, **trạng thái** và **thời gian phân công** (7 / 14 / 30 / 60 ngày qua), kèm các ô thống kê nhanh.
   - Nút **Xem** mở chi tiết hồ sơ, gồm:
     - thông tin hồ sơ;
     - bản án và tài liệu của chấp hành viên;
@@ -165,13 +170,25 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
     - điều kiện cưỡng chế (nếu có);
     - lịch sử tiến độ.
   - **Lập phiếu thu:** chỉ lập được khi hồ sơ đã **Hoàn thành** ở giai đoạn **Kết thúc**, và mỗi hồ sơ chỉ có một phiếu.
-    - Công chức nhập số tiền hoặc giá trị tài sản thực nhận. Phí được tính **lũy tiến từng phần** theo biểu phí, và trang hiện chi tiết từng bậc.
-    - Biên lai có số tiền bằng chữ, chỗ ký của hai bên và nút **In phiếu thu**.
+    - **Giá trị bằng tiền của bản án = án phí + tiền thi hành án** (nếu có), và tổng phải lớn hơn 0.
+    - **Án phí** được điền sẵn theo loại hồ sơ từ **Bảng án phí**, công chức vẫn sửa được nếu bản án quy định khác.
+    - Phiếu in có tiêu đề "PHIẾU THU", gồm bảng các khoản, số tiền bằng chữ, chỗ ký của hai bên và nút **In phiếu thu**.
+    - Phiếu lập trước đợt 4 (tính phí thi hành án lũy tiến) vẫn xem, in được theo mẫu cũ và vẫn được cộng vào doanh thu.
 - **Thống kê theo tháng:**
   - Số bản án hoàn thành trong tháng.
   - Số **bản án treo**: đã phân công nhưng đến cuối tháng chưa hoàn thành. Có hiện riêng số bản án đang tạm dừng.
-  - Bảng **giá trị thành tiền của từng bản án** hoàn thành (giá trị thi hành và phí, lấy từ phiếu thu), cùng **tổng của tháng**. Bản án chưa lập phiếu thu được đánh dấu và chưa cộng vào tổng.
+  - Bảng **giá trị thành tiền của từng bản án** hoàn thành (án phí, tiền thi hành án, tổng, lấy từ phiếu thu), cùng **tổng của tháng**. Bản án chưa lập phiếu thu được đánh dấu và chưa cộng vào tổng.
   - Danh sách bản án treo kèm số ngày treo.
+- **Doanh thu** (tính theo ngày lập phiếu thu):
+  - **Theo khoảng thời gian:** chọn từ ngày – đến ngày, hoặc bấm nhanh 7/14/30/60 ngày. Trang hiện:
+    - tổng số phiếu, án phí, tiền thi hành án, tổng doanh thu;
+    - **doanh thu theo loại hồ sơ**, kèm tỷ trọng;
+    - danh sách phiếu thu.
+  - **Theo từng tháng:** chọn năm để xem 12 tháng, kèm dòng tổng cả năm.
+- **Bảng án phí:**
+  - Mỗi loại hồ sơ một mức án phí, kèm ghi chú căn cứ. Công chức thêm, sửa, xóa được; loại hồ sơ không được trùng.
+  - Nút **"Thêm mức mẫu còn thiếu"** tạo nhanh các mức mẫu cho những loại chưa có.
+  - Sửa hoặc xóa mức án phí không ảnh hưởng phiếu thu đã lập, vì mỗi phiếu lưu số tiền tại lúc lập.
 
 ### Chấp hành viên (`views/chaphanhvien.html`)
 
@@ -227,11 +244,24 @@ File bản án được lưu trong thư mục `uploads/banan/`. Thư mục này 
 
 | Phương thức | Đường dẫn | Mô tả |
 |---|---|---|
-| GET | `/baocao?phongban=&chv=&trangthai=` | Hồ sơ đã phân công kèm chấp hành viên, phòng ban, phiếu thu. `phongban=none` lọc chấp hành viên chưa có phòng |
-| GET | `/baocao/thong-ke?thang=YYYY-MM` | Thống kê tháng: bản án hoàn thành, bản án treo, tổng giá trị và phí |
-| GET | `/baocao/bieu-phi` | Biểu phí thi hành án |
+| GET | `/baocao?phongban=&chv=&trangthai=&songay=` | Hồ sơ đã phân công kèm chấp hành viên, phòng ban, phiếu thu. `phongban=none` lọc chấp hành viên chưa có phòng; `songay` nhận 7, 14, 30 hoặc 60 (lọc theo ngày phân công) |
+| GET | `/baocao/thong-ke?thang=YYYY-MM` | Thống kê tháng: bản án hoàn thành, bản án treo, tổng án phí, tiền thi hành án, tổng giá trị |
+| GET | `/baocao/doanh-thu?tu=YYYY-MM-DD&den=YYYY-MM-DD` | Doanh thu trong khoảng thời gian (gồm cả ngày `den`): tổng, theo loại hồ sơ, danh sách phiếu thu |
+| GET | `/baocao/doanh-thu/theo-thang?nam=YYYY` | Doanh thu từng tháng trong năm |
 | GET | `/baocao/:id/phieu-thu` | Xem phiếu thu của hồ sơ |
-| POST | `/baocao/:id/phieu-thu` | Lập phiếu thu (`{ sotienthucnhan, nguoinop, hinhthuc, noidung, accountId }`) |
+| POST | `/baocao/:id/phieu-thu` | Lập phiếu thu (`{ anphi, tienthihanhan, nguoinop, hinhthuc, noidung, accountId }`) |
+
+Đợt 4 bỏ `GET /baocao/bieu-phi`.
+
+### Bảng án phí – `/anphi`
+
+| Phương thức | Đường dẫn | Mô tả |
+|---|---|---|
+| GET | `/anphi` | Bảng án phí |
+| POST | `/anphi` | Thêm mức án phí (`{ loaihoso, mucanphi, ghichu }`) |
+| PUT | `/anphi/:id` | Sửa mức án phí |
+| DELETE | `/anphi/:id` | Xóa mức án phí |
+| POST | `/anphi/mau` | Thêm các mức án phí mẫu cho loại hồ sơ chưa có |
 
 ### Chấp hành viên – `/enforcers`
 
@@ -270,7 +300,8 @@ Các API trả về JSON dạng `{ code, message }`, với thông báo bằng ti
 | `hosos` | `models/HoSo.js` | **Mới.** Hồ sơ, file bản án (`files`), phản hồi (`phanhoi`), lịch sử (`lichsu`), chấp hành viên được giao (`assignedTo`) |
 | `phongbans` | `models/PhongBan.js` | **Mới.** Phòng ban và trưởng phòng (`truongphong`) |
 | `thongbaos` | `models/ThongBao.js` | **Mới.** Thông báo gửi cho từng tài khoản |
-| `phieuthus` | `models/PhieuThu.js` | **Mới (đợt 2).** Phiếu thu phí thi hành án, mỗi hồ sơ một phiếu |
+| `phieuthus` | `models/PhieuThu.js` | **Mới (đợt 2).** Phiếu thu, mỗi hồ sơ một phiếu. Đợt 4 đổi sang `anphi`, `tienthihanhan`, `tongtien`, `loaihoso`; phiếu cũ vẫn giữ `sotienthucnhan`, `phithihanhan` |
+| `anphis` | `models/AnPhi.js` | **Mới (đợt 4).** Bảng án phí: `loaihoso` (không trùng), `mucanphi`, `ghichu` |
 | `accounts` | `models/Account.js` | Thêm các trường `fullname`, `phone`, `phongban`; đợt 3 thêm `cccd`, `diachi` (thông tin người dân) |
 
 Đợt 2 thêm vào `hosos` các trường:
@@ -299,7 +330,7 @@ Các giá trị được khai báo tập trung, muốn đổi chỉ cần sửa 
 | Giai đoạn | `HoSo.GIAI_DOAN` trong `models/HoSo.js` |
 | Thứ tự chuyển giai đoạn | `HoSo.GIAI_DOAN_TIEP_THEO` trong `models/HoSo.js` |
 | Căn cứ cưỡng chế | `HoSo.CAN_CU_CUONG_CHE` trong `models/HoSo.js` |
-| Biểu phí | `BIEU_PHI` trong `models/PhieuThu.js` |
+| Mức án phí mẫu | `AnPhi.AN_PHI_MAU` trong `models/AnPhi.js` (mức đang dùng do công chức quản lý trong mục Bảng án phí) |
 | Giới hạn 200 hồ sơ | `MAX_HOSO_PER_ENFORCER` trong `controllers/enforcersController.js` |
 
 ---
@@ -319,15 +350,18 @@ routes/api/hoso.js
 routes/api/enforcers.js
 routes/api/phongban.js
 routes/api/thongbao.js
-models/PhieuThu.js                  (đợt 2) Phiếu thu, biểu phí và hàm tính phí
-controllers/baocaoController.js     (đợt 2) Báo cáo, thống kê tháng, phiếu thu
+models/PhieuThu.js                  (đợt 2) Phiếu thu
+controllers/baocaoController.js     (đợt 2) Báo cáo, thống kê tháng, phiếu thu, doanh thu
 routes/api/baocao.js                (đợt 2)
 scripts/doi-index-mahoso.js         (đợt 3) Đổi index mã hồ sơ, chạy một lần
+models/AnPhi.js                     (đợt 4) Bảng án phí và mức mẫu
+controllers/anphiController.js      (đợt 4)
+routes/api/anphi.js                 (đợt 4)
 ```
 
 **Cập nhật:**
 ```
-server.js                           Gỡ route hồ sơ MySQL, gắn các route mới (gồm /baocao), phục vụ /uploads
+server.js                           Gỡ route hồ sơ MySQL, gắn các route mới (gồm /baocao, /anphi), phục vụ /uploads
 models/Account.js
 controllers/enforcersController.js
 views/nguoidan.html
@@ -345,7 +379,10 @@ package.json                        Thêm multer
   - Tài khoản đăng nhập chỉ lưu ở `localStorage`. Server tin `accountId` / `officerId` do trình duyệt gửi lên, nên ai biết id tài khoản của người khác vẫn gọi API thay họ được.
   - File bản án trong `/uploads` mở được nếu có link (tên file được đặt ngẫu nhiên).
   - Đợt 3 đã bỏ tra cứu theo CCCD, vì trước đó ai biết CCCD của người khác cũng xem được hồ sơ của họ.
-- **Biểu phí** thi hành án (3% / 2% / 1% / 0,5% theo bậc) được đặt theo Thông tư 216/2016/TT-BTC nhưng **chưa được đối chiếu lại** với văn bản hiện hành. Danh sách **căn cứ cưỡng chế** là bản soạn sẵn. Cần kiểm tra cả hai trước khi dùng thật.
+- **Mức án phí mẫu** (Dân sự 300.000 đ, Hình sự 200.000 đ, ...) **chưa được đối chiếu** với văn bản về án phí. Danh sách **căn cứ cưỡng chế** là bản soạn sẵn. Cần kiểm tra cả hai trước khi dùng thật.
+- Bảng án phí trên database chung đang trống: cần vào mục **Bảng án phí** bấm "Thêm mức mẫu còn thiếu" rồi chỉnh lại.
+- Loại hồ sơ "Trọng tải thương mại" có lẽ là lỗi chính tả của "Trọng tài thương mại". Tên này được giữ nguyên để khớp dữ liệu cũ.
+- Bước **Xác nhận điều kiện** chỉ đi tiếp được sang Cưỡng chế, chưa có lựa chọn "không có điều kiện thi hành".
 - Người lập phiếu thu lấy từ tài khoản đang đăng nhập, lưu ở `localStorage` của trình duyệt. Trang công chức chưa kiểm tra đăng nhập.
 - Hồ sơ gửi trước đợt 3 chưa gắn với tài khoản người dân (`nguoigui` rỗng) nên không hiện ở trang Tra cứu và không gửi phản hồi được.
 - Trang **quản lý tài khoản** (`views/taikhoan.html`) vẫn gọi các route `/users` viết cho MySQL, nên chưa hoạt động.

@@ -317,7 +317,8 @@ const STATUS_COLORS = {
     'Tạm dừng': 'warning',
     'Hoàn thành': 'success'
 };
-const GIAI_DOAN = ['Khởi động', 'Xác nhận điều kiện', 'Tự nguyện', 'Cưỡng chế', 'Kết thúc'];
+const GIAI_DOAN = ['Khởi động', 'Tự nguyện', 'Xác nhận điều kiện', 'Cưỡng chế', 'Kết thúc'];
+const NHANH_KHONG_TU_NGUYEN = ['Xác nhận điều kiện', 'Cưỡng chế'];
 let nguoidan = null;
 let hosoList = [];
 let currentHoSo = null;
@@ -487,15 +488,16 @@ function openTienDo(id) {
     if (coGiaiDoan) {
         const current = hs.giaidoan || 'Khởi động';
         const viTriGD = GIAI_DOAN.indexOf(current);
-        const quaCuongChe = hs.lichsu.some(l => l.giaidoan === 'Cưỡng chế');
+        const daQua = new Set(hs.lichsu.map(l => l.giaidoan).filter(Boolean));
         document.getElementById("tdGiaiDoan").innerHTML = GIAI_DOAN.map((gd, i) => {
             let cls = '';
             let phu = '';
             if (gd === current) cls = current === 'Kết thúc' ? 'done' : 'current';
-            else if (gd === 'Cưỡng chế') {
-                if (quaCuongChe) cls = 'done';
+            else if (NHANH_KHONG_TU_NGUYEN.includes(gd)) {
+                // Chỉ đi qua khi không tự nguyện thi hành
+                if (daQua.has(gd)) cls = 'done';
                 else if (current === 'Kết thúc') { cls = 'skipped'; phu = 'Không cần'; }
-                else { cls = 'optional'; phu = 'Nếu có vi phạm'; }
+                else { cls = 'optional'; phu = 'Nếu không tự nguyện'; }
             } else if (i < viTriGD) cls = 'done';
             return `<div class="step ${cls}">${i + 1}. ${gd}${phu ? `<small>${phu}</small>` : ''}</div>`;
         }).join('');

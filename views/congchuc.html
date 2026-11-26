@@ -35,6 +35,8 @@
         <a href="#" onclick="showSection('xacnhan')">Xác nhận hồ sơ</a>
         <a href="#" onclick="showSection('baocao')">Báo cáo</a>
         <a href="#" onclick="showSection('thongke')">Thống kê</a>
+        <a href="#" onclick="showSection('doanhthu')">Doanh thu</a>
+        <a href="#" onclick="showSection('anphi')">Bảng án phí</a>
         <a href="/homepage">Đăng xuất</a>
     </div>
 
@@ -179,11 +181,21 @@
                                     <option value="">-- Tất cả phòng ban --</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="bcChv">Tên chấp hành viên</label>
                                 <input type="text" id="bcChv" class="form-control" placeholder="Nhập họ tên hoặc tài khoản">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <label for="bcSongay">Phân công trong</label>
+                                <select id="bcSongay" class="form-select" onchange="loadBaoCao()">
+                                    <option value="">-- Mọi thời gian --</option>
+                                    <option value="7">7 ngày qua</option>
+                                    <option value="14">14 ngày qua</option>
+                                    <option value="30">30 ngày qua</option>
+                                    <option value="60">60 ngày qua</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
                                 <label for="bcTrangthai">Trạng thái</label>
                                 <select id="bcTrangthai" class="form-select">
                                     <option value="">-- Tất cả --</option>
@@ -243,8 +255,9 @@
                                     <th>Chấp hành viên</th>
                                     <th>Ngày hoàn thành</th>
                                     <th>Phiếu thu</th>
-                                    <th class="text-end">Giá trị thi hành</th>
-                                    <th class="text-end">Phí thi hành án</th>
+                                    <th class="text-end">Án phí</th>
+                                    <th class="text-end">Tiền thi hành án</th>
+                                    <th class="text-end">Tổng giá trị</th>
                                 </tr>
                             </thead>
                             <tbody id="tkHoanThanh"></tbody>
@@ -270,12 +283,159 @@
                 </div>
             </div>
 
+            <!-- DOANH THU -->
+            <div id="doanhthu" class="section" style="display:none">
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">Doanh thu theo khoảng thời gian</div>
+                    <div class="card-body">
+                        <form class="row g-2 align-items-end mb-3" onsubmit="event.preventDefault(); loadDoanhThu()">
+                            <div class="col-md-3">
+                                <label for="dtTu">Từ ngày</label>
+                                <input type="date" id="dtTu" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="dtDen">Đến ngày</label>
+                                <input type="date" id="dtDen" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-danger w-100">Xem</button>
+                            </div>
+                            <div class="col-md-4 d-flex gap-1 flex-wrap">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="chonKhoang(7)">7 ngày</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="chonKhoang(14)">14 ngày</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="chonKhoang(30)">30 ngày</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="chonKhoang(60)">60 ngày</button>
+                            </div>
+                        </form>
+
+                        <div class="row g-2 mb-4 text-center" id="dtTong"></div>
+
+                        <h6>Doanh thu theo loại hồ sơ</h6>
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Loại hồ sơ</th>
+                                    <th class="text-end">Số phiếu</th>
+                                    <th class="text-end">Án phí</th>
+                                    <th class="text-end">Tiền thi hành án</th>
+                                    <th class="text-end">Tổng thu</th>
+                                    <th style="width:20%">Tỷ trọng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dtTheoLoai"></tbody>
+                        </table>
+
+                        <h6 class="mt-4">Danh sách phiếu thu</h6>
+                        <table class="table table-bordered table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Số phiếu</th>
+                                    <th>Ngày lập</th>
+                                    <th>Hồ sơ</th>
+                                    <th>Loại hồ sơ</th>
+                                    <th>Người nộp</th>
+                                    <th class="text-end">Án phí</th>
+                                    <th class="text-end">Tiền THA</th>
+                                    <th class="text-end">Tổng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dtPhieuThu"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Doanh thu từng tháng</span>
+                        <form class="d-flex gap-2" onsubmit="event.preventDefault(); loadDoanhThuThang()">
+                            <input type="number" id="dtNam" class="form-control form-control-sm" style="width:100px" min="2000" max="2100" required>
+                            <button class="btn btn-light btn-sm text-nowrap">Xem</button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Tháng</th>
+                                    <th class="text-end">Số phiếu</th>
+                                    <th class="text-end">Án phí</th>
+                                    <th class="text-end">Tiền thi hành án</th>
+                                    <th class="text-end">Tổng thu</th>
+                                    <th style="width:30%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="dtThang"></tbody>
+                            <tfoot id="dtThangTong" class="fw-bold"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG ÁN PHÍ -->
+            <div id="anphi" class="section" style="display:none">
+                <div class="card">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span>Bảng án phí theo loại hồ sơ</span>
+                        <span>
+                            <button class="btn btn-outline-light btn-sm" onclick="taoAnPhiMau()">Thêm mức mẫu còn thiếu</button>
+                            <button class="btn btn-light btn-sm" onclick="openAnPhiForm()">+ Thêm án phí</button>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Án phí ở đây được điền sẵn khi lập phiếu thu, theo loại hồ sơ. Khi lập phiếu, công chức vẫn sửa được nếu bản án quy định khác.</p>
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Loại hồ sơ</th>
+                                    <th class="text-end">Mức án phí</th>
+                                    <th>Ghi chú</th>
+                                    <th>Cập nhật</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="anphiTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
 </div>
 </div>
 
+
+<!-- MODAL THÊM / SỬA ÁN PHÍ -->
+<div class="modal fade" id="anphiModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" onsubmit="saveAnPhi(event)">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="apModalTitle">Thêm án phí</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label for="apLoaihoso">Loại hồ sơ</label>
+                    <input type="text" id="apLoaihoso" class="form-control" required list="apLoaiGoiY">
+                    <datalist id="apLoaiGoiY"></datalist>
+                </div>
+                <div class="mb-2">
+                    <label for="apMuc">Mức án phí (VNĐ)</label>
+                    <input type="number" id="apMuc" class="form-control" required min="0" step="1">
+                </div>
+                <div class="mb-2">
+                    <label for="apGhichu">Ghi chú</label>
+                    <input type="text" id="apGhichu" class="form-control" placeholder="VD: Căn cứ Nghị quyết ...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-danger">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- MODAL XEM HỒ SƠ / BẢN ÁN -->
 <div class="modal fade" id="hosoModal" tabindex="-1">
@@ -444,8 +604,13 @@
                     <input type="text" id="ptNguoinop" class="form-control" required>
                 </div>
                 <div class="mb-2">
-                    <label for="ptSotien">Số tiền / giá trị tài sản thực nhận (VNĐ)</label>
-                    <input type="number" id="ptSotien" class="form-control" required min="1" step="1" oninput="previewPhi()">
+                    <label for="ptAnphi">Án phí (VNĐ)</label>
+                    <input type="number" id="ptAnphi" class="form-control" required min="0" step="1" oninput="previewTongTien()">
+                    <small id="ptAnphiHint" class="text-muted"></small>
+                </div>
+                <div class="mb-2">
+                    <label for="ptTienTHA">Tiền thi hành án (VNĐ, nếu có)</label>
+                    <input type="number" id="ptTienTHA" class="form-control" min="0" step="1" placeholder="0" oninput="previewTongTien()">
                 </div>
                 <div class="mb-2">
                     <label for="ptHinhthuc">Hình thức thu</label>
@@ -459,7 +624,7 @@
                     <input type="text" id="ptNoidung" class="form-control">
                 </div>
                 <div class="border rounded p-2 bg-light">
-                    <p class="mb-1"><strong>Phí thi hành án:</strong> <span id="ptPhi" class="text-danger fs-5">0 đ</span></p>
+                    <p class="mb-1"><strong>Giá trị bằng tiền của bản án:</strong> <span id="ptTong" class="text-danger fs-5">0 đ</span></p>
                     <div id="ptChitiet" class="small text-muted"></div>
                 </div>
             </div>
@@ -498,6 +663,8 @@ function showSection(id) {
     if (id === 'phongban') loadPhongBan();
     if (id === 'baocao') openBaoCao();
     if (id === 'thongke') loadThongKe();
+    if (id === 'doanhthu') openDoanhThu();
+    if (id === 'anphi') loadAnPhi().then(renderAnPhi);
 }
 
 function escapeHtml(text) {
@@ -993,9 +1160,9 @@ function removeMember(accountId) {
 
 /* ================== Báo cáo tiến độ ================== */
 const STATUS_COLORS = { 'Đã phân công': 'info', 'Đang xử lý': 'primary', 'Tạm dừng': 'warning', 'Hoàn thành': 'success' };
-const THU_TU_GIAI_DOAN = ['Khởi động', 'Xác nhận điều kiện', 'Tự nguyện', 'Cưỡng chế', 'Kết thúc'];
+const THU_TU_GIAI_DOAN = ['Khởi động', 'Tự nguyện', 'Xác nhận điều kiện', 'Cưỡng chế', 'Kết thúc'];
+const NHANH_KHONG_TU_NGUYEN = ['Xác nhận điều kiện', 'Cưỡng chế'];
 let baocaoList = [];
-let bieuPhi = [];
 let currentBaoCao = null;
 
 function getCurrentAccount() {
@@ -1020,9 +1187,6 @@ function openBaoCao() {
         select.value = [...select.options].some(o => o.value === selected) ? selected : '';
         loadBaoCao();
     });
-    if (bieuPhi.length === 0) {
-        fetch('/baocao/bieu-phi').then(res => res.json()).then(list => bieuPhi = list).catch(console.error);
-    }
 }
 
 function loadBaoCao() {
@@ -1030,9 +1194,11 @@ function loadBaoCao() {
     const phongban = document.getElementById('bcPhongban').value;
     const chv = document.getElementById('bcChv').value.trim();
     const trangthai = document.getElementById('bcTrangthai').value;
+    const songay = document.getElementById('bcSongay').value;
     if (phongban) params.set('phongban', phongban);
     if (chv) params.set('chv', chv);
     if (trangthai) params.set('trangthai', trangthai);
+    if (songay) params.set('songay', songay);
 
     fetch('/baocao?' + params)
         .then(res => res.json())
@@ -1124,7 +1290,8 @@ function openBaoCaoHoSo(id) {
             + `<span style="white-space:pre-wrap">${escapeHtml(cc.noidung)}</span>`;
     }
 
-    // Thanh giai đoạn: đã qua (xanh lá), hiện tại (xanh dương), Cưỡng chế bị bỏ qua (gạch ngang)
+    // Thanh giai đoạn: đã qua (xanh lá), hiện tại (xanh dương),
+    // Xác nhận điều kiện / Cưỡng chế bị bỏ qua khi đã tự nguyện thi hành (gạch ngang)
     const current = hs.trangthai === 'Đã phân công' ? null : (hs.giaidoan || 'Khởi động');
     const visited = new Set(hs.lichsu.map(l => l.giaidoan).filter(Boolean));
     if (current) visited.add(current);
@@ -1132,7 +1299,7 @@ function openBaoCaoHoSo(id) {
         let cls = 'bg-light text-muted border';
         if (gd === current) cls = current === 'Kết thúc' ? 'bg-success' : 'bg-primary';
         else if (visited.has(gd)) cls = 'bg-success';
-        else if (gd === 'Cưỡng chế' && current === 'Kết thúc') cls = 'bg-light text-muted border text-decoration-line-through';
+        else if (NHANH_KHONG_TU_NGUYEN.includes(gd) && current === 'Kết thúc') cls = 'bg-light text-muted border text-decoration-line-through';
         return `<span class="badge fs-6 ${cls}">${i + 1}. ${gd}</span>`;
     }).join('');
 
@@ -1171,44 +1338,46 @@ function previewBaoCaoFile(index) {
 }
 
 /* ================== Phiếu thu ================== */
-// Phí tính lũy tiến từng phần theo biểu phí lấy từ server
-function tinhPhi(sotien) {
-    const chitiet = [];
-    const phi = bieuPhi.reduce((tong, bac) => {
-        if (sotien <= bac.tu) return tong;
-        const den = bac.den === null ? sotien : Math.min(sotien, bac.den);
-        const tien = (den - bac.tu) * bac.tyle;
-        chitiet.push(`${formatMoney(bac.tu)} - ${formatMoney(den)}: ${(bac.tyle * 100).toLocaleString('vi-VN')}% = ${formatMoney(Math.round(tien))}`);
-        return tong + tien;
-    }, 0);
-    return { phi: Math.round(phi), chitiet };
+// Giá trị bằng tiền của bản án = án phí (theo bảng án phí) + tiền thi hành án (nếu có)
+function getTienPhieuThu() {
+    const anphi = Number(document.getElementById('ptAnphi').value) || 0;
+    const tienTHA = Number(document.getElementById('ptTienTHA').value) || 0;
+    return { anphi, tienTHA, tong: anphi + tienTHA };
 }
 
-function previewPhi() {
-    const sotien = Number(document.getElementById('ptSotien').value) || 0;
-    const { phi, chitiet } = tinhPhi(sotien);
-    document.getElementById('ptPhi').innerText = formatMoney(phi);
-    document.getElementById('ptChitiet').innerHTML = chitiet.map(escapeHtml).join('<br>');
+function previewTongTien() {
+    const { anphi, tienTHA, tong } = getTienPhieuThu();
+    document.getElementById('ptTong').innerText = formatMoney(tong);
+    document.getElementById('ptChitiet').innerText = `Án phí ${formatMoney(anphi)} + Tiền thi hành án ${formatMoney(tienTHA)}`;
 }
 
 function openPhieuThu(id) {
     currentBaoCao = baocaoList.find(hs => hs._id === id);
     if (!currentBaoCao) return;
 
-    document.getElementById('ptMahoso').innerText = currentBaoCao.mahoso;
-    document.getElementById('ptNguoinop').value = currentBaoCao.tennguoi;
-    document.getElementById('ptSotien').value = '';
-    document.getElementById('ptHinhthuc').value = 'Tiền mặt';
-    document.getElementById('ptNoidung').value = `Thu phí thi hành án hồ sơ ${currentBaoCao.mahoso}`;
-    previewPhi();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('ptModal')).show();
+    // Lấy bảng án phí mới nhất để điền sẵn án phí theo loại hồ sơ
+    loadAnPhi().then(() => {
+        const muc = anphiList.find(a => a.loaihoso === currentBaoCao.loaihoso);
+        document.getElementById('ptMahoso').innerText = currentBaoCao.mahoso;
+        document.getElementById('ptNguoinop').value = currentBaoCao.tennguoi;
+        document.getElementById('ptAnphi').value = muc ? muc.mucanphi : '';
+        document.getElementById('ptAnphiHint').innerText = muc
+            ? `Theo bảng án phí loại "${muc.loaihoso}". Có thể chỉnh nếu bản án quy định khác.`
+            : `Loại "${currentBaoCao.loaihoso || 'không rõ'}" chưa có trong bảng án phí, vui lòng nhập tay.`;
+        document.getElementById('ptTienTHA').value = '';
+        document.getElementById('ptHinhthuc').value = 'Tiền mặt';
+        document.getElementById('ptNoidung').value = `Thu án phí và tiền thi hành án hồ sơ ${currentBaoCao.mahoso}`;
+        previewTongTien();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('ptModal')).show();
+    });
 }
 
 function savePhieuThu(e) {
     e.preventDefault();
     if (!currentBaoCao) return;
-    const sotien = Number(document.getElementById('ptSotien').value);
-    if (!confirm(`Lập phiếu thu phí ${formatMoney(tinhPhi(sotien).phi)} cho hồ sơ ${currentBaoCao.mahoso}?`)) return;
+    const { anphi, tienTHA, tong } = getTienPhieuThu();
+    if (tong <= 0) return alert('Tổng tiền của phiếu thu phải lớn hơn 0');
+    if (!confirm(`Lập phiếu thu ${formatMoney(tong)} cho hồ sơ ${currentBaoCao.mahoso}?`)) return;
 
     const account = getCurrentAccount();
     const btn = document.getElementById('btnPhieuThu');
@@ -1219,7 +1388,8 @@ function savePhieuThu(e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             nguoinop: document.getElementById('ptNguoinop').value.trim(),
-            sotienthucnhan: sotien,
+            anphi,
+            tienthihanhan: tienTHA,
             hinhthuc: document.getElementById('ptHinhthuc').value,
             noidung: document.getElementById('ptNoidung').value.trim(),
             accountId: account ? account._id : null
@@ -1281,6 +1451,14 @@ function showReceipt(hosoId) {
         .then(pt => {
             if (!pt.sophieu) return alert(pt.message);
             const ngay = new Date(pt.createdAt);
+            // Phiếu cũ (trước khi có án phí) chỉ có số tiền thực nhận và phí thi hành án
+            const phieuCu = pt.tongtien == null;
+            const tong = phieuCu ? pt.phithihanhan || 0 : pt.tongtien;
+            const dong = (ten, tien, dam) => `<tr><td style="padding:4px 8px;border:1px solid #000">${ten}</td>`
+                + `<td style="padding:4px 8px;border:1px solid #000;text-align:right">${dam ? '<strong>' : ''}${formatMoney(tien)}${dam ? '</strong>' : ''}</td></tr>`;
+            const bangTien = phieuCu
+                ? dong('Số tiền / giá trị tài sản thực nhận', pt.sotienthucnhan) + dong('Phí thi hành án', pt.phithihanhan, true)
+                : dong('Án phí', pt.anphi) + dong('Tiền thi hành án', pt.tienthihanhan) + dong('Tổng cộng', tong, true);
             document.getElementById('receiptContent').innerHTML = `
                 <div id="receiptPrint" style="font-family:'Times New Roman',serif">
                     <div style="display:flex;justify-content:space-between">
@@ -1290,16 +1468,15 @@ function showReceipt(hosoId) {
                             <em>Độc lập - Tự do - Hạnh phúc</em>
                         </div>
                     </div>
-                    <h4 style="text-align:center;margin:24px 0 4px">BIÊN LAI THU PHÍ THI HÀNH ÁN</h4>
+                    <h4 style="text-align:center;margin:24px 0 4px">${phieuCu ? 'BIÊN LAI THU PHÍ THI HÀNH ÁN' : 'PHIẾU THU'}</h4>
                     <p style="text-align:center;margin:0">Số: ${escapeHtml(pt.sophieu)}</p>
                     <p style="text-align:center"><em>Ngày ${ngay.getDate()} tháng ${ngay.getMonth() + 1} năm ${ngay.getFullYear()}</em></p>
                     <p>Họ tên người nộp: <strong>${escapeHtml(pt.nguoinop)}</strong></p>
                     <p>Số CCCD: ${escapeHtml(pt.cccd)}</p>
                     <p>Hồ sơ thi hành án: ${escapeHtml(pt.hoso ? pt.hoso.mahoso : '')}${pt.hoso && pt.hoso.loaihoso ? ` (${escapeHtml(pt.hoso.loaihoso)})` : ''}</p>
                     <p>Nội dung thu: ${escapeHtml(pt.noidung)}</p>
-                    <p>Số tiền / giá trị tài sản thực nhận: ${formatMoney(pt.sotienthucnhan)}</p>
-                    <p>Số tiền phí phải nộp: <strong>${formatMoney(pt.phithihanhan)}</strong></p>
-                    <p>Bằng chữ: <em>${docSoTien(pt.phithihanhan)}</em></p>
+                    <table style="border-collapse:collapse;width:100%;margin-bottom:12px">${bangTien}</table>
+                    <p>Bằng chữ: <em>${docSoTien(tong)}</em></p>
                     <p>Hình thức thu: ${escapeHtml(pt.hinhthuc)}</p>
                     <div style="display:flex;justify-content:space-around;text-align:center;margin-top:32px">
                         <div><strong>Người nộp tiền</strong><br><em>(Ký, ghi rõ họ tên)</em><br><br><br><br>${escapeHtml(pt.nguoinop)}</div>
@@ -1317,7 +1494,7 @@ function showReceipt(hosoId) {
 function printReceipt() {
     const win = window.open('', '_blank');
     if (!win) return alert('Trình duyệt đã chặn cửa sổ in, vui lòng cho phép pop-up');
-    win.document.write(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Biên lai thu phí</title></head>`
+    win.document.write(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Phiếu thu</title></head>`
         + `<body style="padding:24px">${document.getElementById('receiptPrint').outerHTML}</body></html>`);
     win.document.close();
     win.focus();
@@ -1346,8 +1523,9 @@ function loadThongKe() {
                 [`Hoàn thành ${tenThang}`, tong.hoanthanh, 'success'],
                 ['Bản án treo', tong.treo, 'danger'],
                 ['Trong đó tạm dừng', tong.tamdung, 'warning'],
-                ['Tổng giá trị thi hành', formatMoney(tong.giatri), 'primary'],
-                ['Tổng phí thi hành án', formatMoney(tong.phi), 'dark']
+                ['Tổng án phí', formatMoney(tong.anphi), 'primary'],
+                ['Tổng tiền thi hành án', formatMoney(tong.tienthihanhan), 'primary'],
+                ['Tổng giá trị', formatMoney(tong.tongtien), 'dark']
             ];
             document.getElementById('tkTong').innerHTML = cards.map(([ten, so, mau]) => `
                 <div class="col">
@@ -1360,7 +1538,7 @@ function loadThongKe() {
             const officerName = (o) => o ? escapeHtml(o.fullname || o.userName) : '-';
 
             document.getElementById('tkHoanThanh').innerHTML = data.hoanthanh.length === 0
-                ? `<tr><td colspan="8" class="text-center text-muted">Không có bản án nào hoàn thành trong ${tenThang}</td></tr>`
+                ? `<tr><td colspan="9" class="text-center text-muted">Không có bản án nào hoàn thành trong ${tenThang}</td></tr>`
                 : data.hoanthanh.map(hs => `
                     <tr>
                         <td>${escapeHtml(hs.mahoso)}</td>
@@ -1369,14 +1547,16 @@ function loadThongKe() {
                         <td>${officerName(hs.assignedTo)}</td>
                         <td>${new Date(hs.hoanthanhAt).toLocaleDateString('vi-VN')}</td>
                         <td>${hs.phieuthu ? escapeHtml(hs.phieuthu.sophieu) : '<span class="badge bg-warning text-dark">Chưa lập</span>'}</td>
-                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.sotienthucnhan) : '-'}</td>
-                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.phithihanhan) : '-'}</td>
+                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.anphi) : '-'}</td>
+                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.tienthihanhan) : '-'}</td>
+                        <td class="text-end">${hs.phieuthu ? formatMoney(hs.phieuthu.tongtien) : '-'}</td>
                     </tr>`).join('');
             document.getElementById('tkHoanThanhTong').innerHTML = `
                 <tr>
                     <td colspan="6" class="text-end">Tổng ${tenThang}${tong.chuaLapPhieu ? ` (${tong.chuaLapPhieu} bản án chưa lập phiếu thu, chưa tính)` : ''}</td>
-                    <td class="text-end">${formatMoney(tong.giatri)}</td>
-                    <td class="text-end">${formatMoney(tong.phi)}</td>
+                    <td class="text-end">${formatMoney(tong.anphi)}</td>
+                    <td class="text-end">${formatMoney(tong.tienthihanhan)}</td>
+                    <td class="text-end">${formatMoney(tong.tongtien)}</td>
                 </tr>`;
 
             // Số ngày treo tính tới cuối tháng (hoặc hôm nay nếu là tháng hiện tại)
@@ -1400,6 +1580,221 @@ function loadThongKe() {
         .catch(err => {
             console.error(err);
             alert('Không tải được thống kê');
+        });
+}
+
+/* ================== Bảng án phí ================== */
+// Loại hồ sơ người dân chọn được khi gửi hồ sơ, dùng để gợi ý khi thêm án phí
+const LOAI_HO_SO = [
+    "Dân sự", "Kinh doanh thương mại", "Hình sự", "Lao động", "Trọng tải thương mại",
+    "Phá sản", "Hành chính", "Vụ việc cạnh tranh", "Tín dụng ngân hàng", "Biện pháp khẩn cấp tạm thời"
+];
+let anphiList = [];
+let editingAnPhiId = null;
+
+function loadAnPhi() {
+    return fetch('/anphi')
+        .then(res => res.json())
+        .then(list => anphiList = Array.isArray(list) ? list : [])
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được bảng án phí');
+        });
+}
+
+function renderAnPhi() {
+    const tbody = document.getElementById('anphiTable');
+    if (anphiList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Chưa có mức án phí nào. '
+            + 'Bấm "Thêm mức mẫu còn thiếu" để tạo nhanh rồi chỉnh lại cho đúng quy định.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = anphiList.map(a => `
+        <tr>
+            <td>${escapeHtml(a.loaihoso)}</td>
+            <td class="text-end">${formatMoney(a.mucanphi)}</td>
+            <td>${escapeHtml(a.ghichu)}</td>
+            <td>${formatDate(a.updatedAt)}</td>
+            <td class="text-nowrap">
+                <button class="btn btn-warning btn-sm" onclick="openAnPhiForm('${a._id}')">Sửa</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAnPhi('${a._id}')">Xóa</button>
+            </td>
+        </tr>`).join('');
+}
+
+function openAnPhiForm(id) {
+    const a = anphiList.find(x => x._id === id);
+    editingAnPhiId = a ? a._id : null;
+    document.getElementById('apModalTitle').innerText = a ? 'Sửa án phí' : 'Thêm án phí';
+    document.getElementById('apLoaihoso').value = a ? a.loaihoso : '';
+    document.getElementById('apMuc').value = a ? a.mucanphi : '';
+    document.getElementById('apGhichu').value = a ? a.ghichu : '';
+    const daCo = new Set(anphiList.map(x => x.loaihoso));
+    document.getElementById('apLoaiGoiY').innerHTML = LOAI_HO_SO.filter(l => !daCo.has(l))
+        .map(l => `<option value="${escapeHtml(l)}">`).join('');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('anphiModal')).show();
+}
+
+function saveAnPhi(e) {
+    e.preventDefault();
+    const data = {
+        loaihoso: document.getElementById('apLoaihoso').value.trim(),
+        mucanphi: document.getElementById('apMuc').value,
+        ghichu: document.getElementById('apGhichu').value.trim()
+    };
+
+    fetch(editingAnPhiId ? `/anphi/${editingAnPhiId}` : '/anphi', {
+        method: editingAnPhiId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => {
+            bootstrap.Modal.getInstance(document.getElementById('anphiModal')).hide();
+            loadAnPhi().then(renderAnPhi);
+        }))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function deleteAnPhi(id) {
+    const a = anphiList.find(x => x._id === id);
+    if (!a || !confirm(`Xóa án phí loại "${a.loaihoso}"? Các phiếu thu đã lập không bị ảnh hưởng.`)) return;
+
+    fetch(`/anphi/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => loadAnPhi().then(renderAnPhi)))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+function taoAnPhiMau() {
+    if (!confirm('Thêm các mức án phí mẫu cho những loại hồ sơ chưa có trong bảng? Mức mẫu cần được đối chiếu lại với quy định.')) return;
+    fetch('/anphi/mau', { method: 'POST' })
+        .then(res => res.json())
+        .then(obj => handleResult(obj, () => loadAnPhi().then(renderAnPhi)))
+        .catch(err => {
+            console.error(err);
+            alert('Không kết nối được server');
+        });
+}
+
+/* ================== Doanh thu ================== */
+// Ngày theo giờ máy, dạng YYYY-MM-DD cho ô chọn ngày
+function toInputDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function openDoanhThu() {
+    if (!document.getElementById('dtTu').value) chonKhoang(30);
+    else loadDoanhThu();
+    const nam = document.getElementById('dtNam');
+    if (!nam.value) nam.value = new Date().getFullYear();
+    loadDoanhThuThang();
+}
+
+// Chọn nhanh N ngày gần nhất, tính cả hôm nay
+function chonKhoang(soNgay) {
+    const den = new Date();
+    const tu = new Date(den.getFullYear(), den.getMonth(), den.getDate() - soNgay + 1);
+    document.getElementById('dtTu').value = toInputDate(tu);
+    document.getElementById('dtDen').value = toInputDate(den);
+    loadDoanhThu();
+}
+
+function thanhTyTrong(giaTri, lonNhat) {
+    const percent = lonNhat > 0 ? giaTri / lonNhat * 100 : 0;
+    return `<div class="progress" style="height:14px"><div class="progress-bar bg-danger" style="width:${percent}%"></div></div>`;
+}
+
+function loadDoanhThu() {
+    const tu = document.getElementById('dtTu').value;
+    const den = document.getElementById('dtDen').value;
+    fetch(`/baocao/doanh-thu?tu=${encodeURIComponent(tu)}&den=${encodeURIComponent(den)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.tong) return alert(data.message);
+            const tong = data.tong;
+            const cards = [
+                ['Số phiếu thu', tong.sophieu, 'secondary'],
+                ['Án phí', formatMoney(tong.anphi), 'primary'],
+                ['Tiền thi hành án', formatMoney(tong.tienthihanhan), 'primary'],
+                ['Tổng doanh thu', formatMoney(tong.tongtien), 'danger']
+            ];
+            document.getElementById('dtTong').innerHTML = cards.map(([ten, so, mau]) => `
+                <div class="col">
+                    <div class="border border-${mau} rounded p-2 h-100">
+                        <div class="fs-5 fw-bold text-${mau}">${so}</div>
+                        <small>${ten}</small>
+                    </div>
+                </div>`).join('');
+
+            document.getElementById('dtTheoLoai').innerHTML = data.theoloai.length === 0
+                ? '<tr><td colspan="6" class="text-center text-muted">Không có phiếu thu nào trong khoảng thời gian này</td></tr>'
+                : data.theoloai.map(l => `
+                    <tr>
+                        <td>${escapeHtml(l.loaihoso)}</td>
+                        <td class="text-end">${l.sophieu}</td>
+                        <td class="text-end">${formatMoney(l.anphi)}</td>
+                        <td class="text-end">${formatMoney(l.tienthihanhan)}</td>
+                        <td class="text-end fw-bold">${formatMoney(l.tongtien)}</td>
+                        <td>${thanhTyTrong(l.tongtien, tong.tongtien)}
+                            <small class="text-muted">${tong.tongtien ? (l.tongtien / tong.tongtien * 100).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) : 0}%</small></td>
+                    </tr>`).join('');
+
+            document.getElementById('dtPhieuThu').innerHTML = data.phieuthu.length === 0
+                ? '<tr><td colspan="8" class="text-center text-muted">Không có phiếu thu</td></tr>'
+                : data.phieuthu.map(p => `
+                    <tr>
+                        <td>${escapeHtml(p.sophieu)}</td>
+                        <td>${formatDate(p.createdAt)}</td>
+                        <td>${p.hoso ? escapeHtml(p.hoso.mahoso) : '-'}</td>
+                        <td>${escapeHtml(p.loaihoso)}</td>
+                        <td>${escapeHtml(p.nguoinop)}</td>
+                        <td class="text-end">${p.anphi ? formatMoney(p.anphi) : '-'}</td>
+                        <td class="text-end">${p.tienthihanhan ? formatMoney(p.tienthihanhan) : '-'}</td>
+                        <td class="text-end">${formatMoney(p.tongtien)}${p.phithihanhan != null && p.anphi == null ? ' <small class="text-muted">(phí THA, phiếu cũ)</small>' : ''}</td>
+                    </tr>`).join('');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được doanh thu');
+        });
+}
+
+function loadDoanhThuThang() {
+    const nam = document.getElementById('dtNam').value;
+    fetch('/baocao/doanh-thu/theo-thang?nam=' + encodeURIComponent(nam))
+        .then(res => res.json())
+        .then(data => {
+            if (!data.thang) return alert(data.message);
+            const lonNhat = Math.max(...data.thang.map(t => t.tongtien));
+            document.getElementById('dtThang').innerHTML = data.thang.map(t => `
+                <tr class="${t.sophieu ? '' : 'text-muted'}">
+                    <td>Tháng ${t.thang}</td>
+                    <td class="text-end">${t.sophieu}</td>
+                    <td class="text-end">${formatMoney(t.anphi)}</td>
+                    <td class="text-end">${formatMoney(t.tienthihanhan)}</td>
+                    <td class="text-end fw-bold">${formatMoney(t.tongtien)}</td>
+                    <td>${thanhTyTrong(t.tongtien, lonNhat)}</td>
+                </tr>`).join('');
+            document.getElementById('dtThangTong').innerHTML = `
+                <tr>
+                    <td>Cả năm ${data.nam}</td>
+                    <td class="text-end">${data.tong.sophieu}</td>
+                    <td class="text-end">${formatMoney(data.tong.anphi)}</td>
+                    <td class="text-end">${formatMoney(data.tong.tienthihanhan)}</td>
+                    <td class="text-end">${formatMoney(data.tong.tongtien)}</td>
+                    <td></td>
+                </tr>`;
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không tải được doanh thu theo tháng');
         });
 }
 

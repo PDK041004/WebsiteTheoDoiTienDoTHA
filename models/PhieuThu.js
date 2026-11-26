@@ -1,23 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Biểu phí thi hành án dân sự theo lũy tiến từng phần trên số tiền / giá trị tài sản thực nhận
-// (theo Thông tư 216/2016/TT-BTC; cập nhật bảng này nếu văn bản thay đổi)
-const BIEU_PHI = [
-   { tu: 0, den: 45000000, tyle: 0.03 },
-   { tu: 45000000, den: 5000000000, tyle: 0.02 },
-   { tu: 5000000000, den: 7000000000, tyle: 0.01 },
-   { tu: 7000000000, den: Infinity, tyle: 0.005 }
-];
-
-const tinhPhi = (sotien) => {
-   const phi = BIEU_PHI.reduce((tong, bac) => {
-      if (sotien <= bac.tu) return tong;
-      return tong + (Math.min(sotien, bac.den) - bac.tu) * bac.tyle;
-   }, 0);
-   return Math.round(phi);
-};
-
+// Phiếu thu: giá trị bằng tiền của bản án = án phí + tiền thi hành án (nếu có)
 const phieuThuSchema = new Schema({
    sophieu: {
       type: String,
@@ -43,17 +27,28 @@ const phieuThuSchema = new Schema({
       type: String,
       default: ""
    },
-   // Số tiền / giá trị tài sản thực nhận dùng để tính phí
-   sotienthucnhan: {
+   // Loại hồ sơ tại thời điểm lập phiếu, dùng cho báo cáo doanh thu
+   loaihoso: {
+      type: String,
+      default: ""
+   },
+   anphi: {
       type: Number,
-      required: true,
+      min: 0,
+      default: 0
+   },
+   tienthihanhan: {
+      type: Number,
+      min: 0,
+      default: 0
+   },
+   tongtien: {
+      type: Number,
       min: 0
    },
-   phithihanhan: {
-      type: Number,
-      required: true,
-      min: 0
-   },
+   // Phiếu lập trước khi đổi sang án phí + tiền THA chỉ có 2 trường này
+   sotienthucnhan: { type: Number },
+   phithihanhan: { type: Number },
    hinhthuc: {
       type: String,
       enum: ["Tiền mặt", "Chuyển khoản"],
@@ -70,8 +65,10 @@ const phieuThuSchema = new Schema({
    }
 }, { timestamps: true });
 
+// Tổng tiền của phiếu, phiếu cũ tính theo phí thi hành án đã thu
+const tongTien = (phieu) => phieu.tongtien ?? phieu.phithihanhan ?? 0;
+
 const PhieuThu = mongoose.model("PhieuThu", phieuThuSchema);
-PhieuThu.BIEU_PHI = BIEU_PHI;
-PhieuThu.tinhPhi = tinhPhi;
+PhieuThu.tongTien = tongTien;
 
 module.exports = PhieuThu;
