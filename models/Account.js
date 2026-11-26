@@ -21,6 +21,18 @@ const accountSchema = new Schema({
       type: String,
       default: ""
    },
+      cccd: {
+      type: String,
+      default: ""
+   },
+   diachi: {
+      type: String,
+      default: ""
+   },
+   ngaysinh: {
+      type: Date,
+      default: null
+   },
    phone: {
    type: String,
    default: ""

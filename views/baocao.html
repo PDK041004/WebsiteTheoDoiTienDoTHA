@@ -12,18 +12,22 @@
     <div class="container">
         <span class="navbar-brand">QUẢN TRỊ HỆ THỐNG</span>
         <div class="ms-auto">
-            <a class="btn btn-outline-light me-2" href="/tai-khoan">Quản lý tài khoản</a>
+                        <a class="btn btn-outline-light me-2" href="/tai-khoan">Quản lý tài khoản</a>
+                        <a class="btn btn-outline-light me-2" href="/phieu-thu">Lập phiếu thu</a>
+                        <a class="btn btn-outline-light me-2" href="/doanh-thu">Báo cáo doanh thu</a>
             <button class="btn btn-outline-light" onclick="signOut()">Đăng xuất</button>
         </div>
     </div>
 </nav>
 
 <div class="container mt-4">
-    <h4>Báo cáo hồ sơ theo tháng</h4>
+        <h4>Báo cáo hồ sơ theo thời gian</h4>
 
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <label for="thang" class="mb-0">Tháng tạo hồ sơ:</label>
-        <input type="month" id="thang" class="form-control w-auto" onchange="loadBaoCao()">
+    <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+        <label for="tu" class="mb-0">Từ ngày:</label>
+        <input type="date" id="tu" class="form-control w-auto" onchange="loadBaoCao()">
+        <label for="den" class="mb-0">đến ngày:</label>
+        <input type="date" id="den" class="form-control w-auto" onchange="loadBaoCao()">
         <span class="ms-3">Tổng: <b id="tong">0</b> hồ sơ</span>
     </div>
 
@@ -66,8 +70,14 @@ function renderThe(id, obj, color) {
 }
 
 async function loadBaoCao() {
-    const thang = document.getElementById("thang").value;
-    const res = await fetch("/bao-cao/api?thang=" + encodeURIComponent(thang), { credentials: "include" });
+    const tu = document.getElementById("tu").value;
+    const den = document.getElementById("den").value;
+    if (!tu || !den) return;
+    if (tu > den) {
+        alert("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.");
+        return;
+    }
+    const res = await fetch("/bao-cao/api?tu=" + encodeURIComponent(tu) + "&den=" + encodeURIComponent(den), { credentials: "include" });
     const data = await res.json();
     if (!res.ok) { alert(data.message); return; }
 
@@ -99,10 +109,13 @@ async function signOut() {
     alert(data.message);
     location = "/trang-chu";
 }
-
-// Mặc định chọn tháng hiện tại rồi tải dữ liệu
+// Mặc định: từ ngày đầu tháng đến hôm nay
+function dinhDang(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 const now = new Date();
-document.getElementById("thang").value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+document.getElementById("tu").value = dinhDang(new Date(now.getFullYear(), now.getMonth(), 1));
+document.getElementById("den").value = dinhDang(now);
 loadBaoCao();
 </script>
 

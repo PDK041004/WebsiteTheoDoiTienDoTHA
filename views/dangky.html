@@ -2,13 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đăng ký tài khoản</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
 
@@ -18,55 +19,63 @@
                 </div>
 
                 <div class="card-body">
-                    <form onsubmit="register(event)">
+                    <form onsubmit="sendOTP(event)">
 
                         <div class="mb-2">
                             <label>Họ và tên</label>
-                            <input type="name" class="form-control" required>
+                            <input type="text" id="fullname" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
                             <label>Số điện thoại</label>
-                            <input type="phone" class="form-control" required>
+                            <input type="text" id="phoneNumber" class="form-control" maxlength="10" required>
                         </div>
 
                         <div class="mb-2">
                             <label>CCCD</label>
-                            <input type="citizenid" class="form-control" required>
+                            <input type="text" id="cccd" class="form-control" maxlength="12" required>
                         </div>
 
                         <div class="mb-2">
-    <label>Tên đăng nhập</label>
-    <input type="text" id="username" class="form-control" required>
-</div>
+                            <label>Tên đăng nhập</label>
+                            <input type="text" id="username" class="form-control" required>
+                        </div>
 
                         <div class="mb-2">
                             <label>Địa chỉ</label>
-                            <input type="address" class="form-control" required>
+                            <input type="text" id="diachi" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
-                            <label>Ngày sinh</label>
-                            <input type="date" class="form-control" required>
+                            <label>Ngày sinh (đủ 18 tuổi trở lên)</label>
+                            <input type="date" id="ngaysinh" class="form-control" required>
                         </div>
 
                         <div class="mb-2">
-    <label>Mật khẩu</label>
-    <input type="password" id="password" class="form-control" required>
-</div>
+                            <label>Mật khẩu</label>
+                            <input type="password" id="password" class="form-control" required>
+                        </div>
 
-<div class="mb-2">
-    <label>Nhập lại mật khẩu</label>
-    <input type="password" id="password2" class="form-control" required>
-</div>
+                        <div class="mb-2">
+                            <label>Nhập lại mật khẩu</label>
+                            <input type="password" id="password2" class="form-control" required>
+                        </div>
 
                         <button class="btn btn-danger w-100 mt-3">Đăng ký</button>
-
-                        <div class="text-center mt-3">
-                            <a href="/trang-chu">← Quay lại trang chủ</a>
-                        </div>
-
                     </form>
+
+                    <!-- Ô OTP nằm ngoài form để nhấn Enter không gửi lại form -->
+                    <div class="mt-3" id="otpBox" style="display:none">
+                        <label>Mã OTP (gửi qua SMS)</label>
+                        <input type="text" id="otp" class="form-control" maxlength="6"
+                               onkeydown="if(event.key === 'Enter') verifyOTP()">
+                        <button type="button" class="btn btn-danger w-100 mt-2" onclick="verifyOTP()">Xác nhận đăng ký</button>
+                        <div class="form-text">Mã hết hạn sau 5 phút. Muốn nhận mã mới, bấm "Đăng ký" lần nữa.</div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="/trang-chu">← Quay lại trang chủ</a>
+                    </div>
                 </div>
 
             </div>
@@ -76,33 +85,72 @@
 </div>
 
 <script>
-function register(e){
+const $ = id => document.getElementById(id);
+let pendingUser = "";   // tên đăng nhập đã gửi OTP, dùng lại khi xác nhận
+
+// Ô ngày sinh chỉ cho chọn người đủ 18 tuổi (server vẫn kiểm tra lại)
+(function () {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    $("ngaysinh").max = `${d.getFullYear()}-${mm}-${dd}`;
+})();
+
+async function sendOTP(e) {
     e.preventDefault();
 
-    const password = document.getElementById("password").value;
-    if (password !== document.getElementById("password2").value) {
+    if ($("password").value !== $("password2").value) {
         alert("Mật khẩu nhập lại không khớp");
         return;
     }
 
     const data = {
-        userName: document.querySelector("input[type='name']").value,
-        phoneNumber: document.querySelector("input[type='phone']").value,
-        password: document.querySelector("input[type='password']").value
+        fullname: $("fullname").value,
+        phoneNumber: $("phoneNumber").value,
+        cccd: $("cccd").value,
+        userName: $("username").value,
+        diachi: $("diachi").value,
+        ngaysinh: $("ngaysinh").value,
+        password: $("password").value
     };
 
-    fetch("/tai-khoan/api",{
-        method:"POST",
-        headers:{"Content-Type": "application/json"},
-        body:JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(obj => {
+    try {
+        const res = await fetch("/tai-khoan/dang-ky/gui-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const obj = await res.json();
         alert(obj.message);
-        if(obj.account){
-            location = "/ban-an";
-        }
-    });
+
+        if (!res.ok || !obj.requireOTP) return;
+
+        pendingUser = data.userName.trim();
+        $("otpBox").style.display = "block";
+        $("otp").value = "";
+        $("otp").focus();
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi kết nối tới máy chủ");
+    }
+}
+
+async function verifyOTP() {
+    try {
+        const res = await fetch("/tai-khoan/dang-ky/xac-nhan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userName: pendingUser, otp: $("otp").value })
+        });
+        const obj = await res.json();
+        alert(obj.message);
+
+        if (res.ok) location = "/trang-chu";
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi kết nối tới máy chủ");
+    }
 }
 </script>
 
